@@ -4,17 +4,10 @@ const std = @import("std");
 // declaratively construct a build graph that will be executed by an external
 // runner.
 pub fn build(b: *std.Build) !void {
-    // Standard target options allows the person running `zig build` to choose
-    // what target to build for. Here we do not override the defaults, which
-    // means any target is allowed, and the default is native. Other options
-    // for restricting supported target set are available.
     const target = b.standardTargetOptions(.{});
-
-    // Standard optimization options allow the person running `zig build` to select
-    // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall. Here we do not
-    // set a preferred release mode, allowing the user to decide how to optimize.
     const optimize = b.standardOptimizeOption(.{});
 
+    // make separate modules for `src/model` and `src/rest` so that `rest` can import model as `@import("model")`
     const model_module = b.createModule(.{
         .root_source_file = .{ .path = "src/model.zig" },
         .target = target,
@@ -26,6 +19,8 @@ pub fn build(b: *std.Build) !void {
         .optimize = optimize,
         .imports = &.{.{ .name = "model", .module = model_module }},
     });
+
+    // install as a static library i guess
     const lib = b.addStaticLibrary(.{
         .name = "deancord",
         .target = target,
@@ -39,6 +34,9 @@ pub fn build(b: *std.Build) !void {
 
     const test_step = b.step("test", "Run unit tests");
 
+    // `test_step` runs tests on all .zig files under `src`.
+    // making dependency trees with test blocks is too easy to mess up,
+    // and `std.testing.refAllDeclsRecursive` is a straight-up hack that causes infinite loops.
     var src_dir = try std.fs.cwd().openDir("src", .{ .iterate = true });
     defer src_dir.close();
     var walker = try src_dir.walk(b.allocator);
