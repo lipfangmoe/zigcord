@@ -1,13 +1,12 @@
 const std = @import("std");
-
-const model = @import("../model.zig");
-const rest = @import("../rest.zig");
+const model = @import("model");
+const rest = @import("../../rest.zig");
 const Snowflake = model.Snowflake;
-const RestResult = rest.Context.Result;
-const Context = rest.Context;
+const RestResult = rest.Client.Result;
+const Client = rest.Client;
 const AuditLog = model.AuditLog;
 
-pub fn auditLogs(ctx: *Context, guild_id: Snowflake) !RestResult(AuditLog) {
+pub fn auditLogs(ctx: *Client, guild_id: Snowflake) !RestResult(AuditLog) {
     const path = try std.fmt.allocPrint(ctx.allocator, "/guilds/{d}/audit-logs", .{guild_id.asU64()});
     defer ctx.allocator.free(path);
 

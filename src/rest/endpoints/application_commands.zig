@@ -1,21 +1,20 @@
 const std = @import("std");
-const root = @import("../root.zig");
-const rest = @import("../rest.zig");
-const model = @import("../model.zig");
+const model = @import("model");
+const rest = @import("../../rest.zig");
 const Omittable = model.deanson.Omittable;
 const stringifyWithOmit = model.deanson.stringifyWithOmit;
-const Result = rest.Context.Result;
+const Result = rest.Client.Result;
 const ApplicationCommandOption = model.interaction.command_option.ApplicationCommandOption;
 const ApplicationCommand = model.interaction.command.ApplicationCommand;
 const ApplicationCommandType = model.interaction.command.ApplicationCommandType;
-const Context = rest.Context;
+const Client = rest.Client;
 const Snowflake = model.Snowflake;
 
 /// The objects returned by this endpoint may be augmented with additional fields if localization is active.
 ///
 /// Fetch all of the global commands for your application. Returns an array of application command objects.
 pub fn getGlobalApplicationCommands(
-    ctx: *Context,
+    ctx: *Client,
     applicationId: Snowflake,
     with_localizations: ?bool,
 ) !Result([]ApplicationCommand) {
@@ -38,7 +37,7 @@ pub fn getGlobalApplicationCommands(
 /// already exist, or a `200` if it does (in which case the previous command will be overwritten).
 /// Both responses include an application command object.
 pub fn createGlobalApplicationCommand(
-    ctx: *Context,
+    ctx: *Client,
     application_id: Snowflake,
     body: CreateGlobalApplicationCommandBody,
 ) !Result(ApplicationCommand) {
@@ -52,7 +51,7 @@ pub fn createGlobalApplicationCommand(
 
 /// Fetch a global command for your application. Returns an application command object.
 pub fn getGlobalApplicationCommand(
-    ctx: *Context,
+    ctx: *Client,
     application_id: Snowflake,
     command_id: Snowflake,
 ) !Result(ApplicationCommand) {
@@ -67,7 +66,7 @@ pub fn getGlobalApplicationCommand(
 /// Edit a global command. Returns `200` and an application command object.
 /// All fields are optional, but any fields provided will entirely overwrite the existing values of those fields.
 pub fn editGlobalApplicationCommand(
-    ctx: *Context,
+    ctx: *Client,
     application_id: Snowflake,
     command_id: Snowflake,
     body: EditGlobalApplicationCommandBody,
@@ -82,7 +81,7 @@ pub fn editGlobalApplicationCommand(
 
 /// Deletes a global command. Returns `204 No Content` on success.
 pub fn deleteGlobalApplicationCommand(
-    ctx: *Context,
+    ctx: *Client,
     application_id: Snowflake,
     command_id: Snowflake,
 ) !Result(void) {
@@ -100,7 +99,7 @@ pub fn deleteGlobalApplicationCommand(
 ///
 /// This will overwrite all types of application commands: slash commands, user commands, and message commands.
 pub fn bulkOverwriteGlobalApplicationCommands(
-    ctx: *Context,
+    ctx: *Client,
     application_id: Snowflake,
     new_commands: []const ApplicationCommand,
 ) !Result([]ApplicationCommand) {
@@ -113,7 +112,7 @@ pub fn bulkOverwriteGlobalApplicationCommands(
 }
 
 pub fn getGuildApplicationCommands(
-    ctx: *Context,
+    ctx: *Client,
     application_id: Snowflake,
     guild_id: Snowflake,
     with_localizations: ?bool,
@@ -132,7 +131,7 @@ pub fn getGuildApplicationCommands(
 }
 
 pub fn createGuildApplicationCommand(
-    ctx: *Context,
+    ctx: *Client,
     application_id: Snowflake,
     guild_id: Snowflake,
     body: CreateGuildApplicationCommandBody,
@@ -146,7 +145,7 @@ pub fn createGuildApplicationCommand(
 }
 
 pub fn getGuildApplicationCommand(
-    ctx: *Context,
+    ctx: *Client,
     application_id: Snowflake,
     guild_id: Snowflake,
     command_id: Snowflake,
@@ -160,7 +159,7 @@ pub fn getGuildApplicationCommand(
 }
 
 pub fn editGuildApplicationCommand(
-    ctx: *Context,
+    ctx: *Client,
     application_id: Snowflake,
     guild_id: Snowflake,
     command_id: Snowflake,
@@ -175,7 +174,7 @@ pub fn editGuildApplicationCommand(
 }
 
 pub fn deleteGuildApplicationCommand(
-    ctx: *Context,
+    ctx: *Client,
     application_id: Snowflake,
     guild_id: Snowflake,
     command_id: Snowflake,
@@ -189,7 +188,7 @@ pub fn deleteGuildApplicationCommand(
 }
 
 pub fn bulkOverwriteGuildApplicationCommands(
-    ctx: *Context,
+    ctx: *Client,
     application_id: Snowflake,
     guild_id: Snowflake,
     new_commands: []const ApplicationCommand,
@@ -203,7 +202,7 @@ pub fn bulkOverwriteGuildApplicationCommands(
 }
 
 pub fn getGuildApplicationCommandPermissions(
-    ctx: *Context,
+    ctx: *Client,
     application_id: Snowflake,
     guild_id: Snowflake,
 ) !Result([]GuildApplicationCommandPermissions) {
@@ -216,7 +215,7 @@ pub fn getGuildApplicationCommandPermissions(
 }
 
 pub fn getApplicationCommandPermissions(
-    ctx: *Context,
+    ctx: *Client,
     application_id: Snowflake,
     guild_id: Snowflake,
     command_id: Snowflake,
@@ -230,7 +229,7 @@ pub fn getApplicationCommandPermissions(
 }
 
 pub fn editApplicationCommandPermissions(
-    ctx: *Context,
+    ctx: *Client,
     application_id: Snowflake,
     guild_id: Snowflake,
     command_id: Snowflake,

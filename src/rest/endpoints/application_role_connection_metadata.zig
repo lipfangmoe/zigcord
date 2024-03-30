@@ -1,12 +1,12 @@
 const std = @import("std");
-const model = @import("../model.zig");
-const rest = @import("../rest.zig");
+const model = @import("model");
+const rest = @import("../../rest.zig");
 const Snowflake = model.Snowflake;
 const ApplicationRoleConnectionMetadata = model.ApplicationRoleConnectionMetadata;
-const Context = rest.Context;
-const RestResult = Context.Result;
+const Client = rest.Client;
+const RestResult = Client.Result;
 
-pub fn getApplicationRoleConnectionMetadataRecords(ctx: *Context, applicationId: Snowflake) !RestResult([]ApplicationRoleConnectionMetadata) {
+pub fn getApplicationRoleConnectionMetadataRecords(ctx: *Client, applicationId: Snowflake) !RestResult([]ApplicationRoleConnectionMetadata) {
     const path = try std.fmt.allocPrint(ctx.allocator, "/applications/{d}/role-connections/metadata", .{applicationId.asU64()});
     defer ctx.allocator.free(path);
 
@@ -15,7 +15,7 @@ pub fn getApplicationRoleConnectionMetadataRecords(ctx: *Context, applicationId:
     return ctx.request([]ApplicationRoleConnectionMetadata, .GET, url);
 }
 
-pub fn updateApplicationRoleConnectionMetadataRecords(ctx: *Context, applicationId: Snowflake, new_records: []const ApplicationRoleConnectionMetadata) !RestResult([]ApplicationRoleConnectionMetadata) {
+pub fn updateApplicationRoleConnectionMetadataRecords(ctx: *Client, applicationId: Snowflake, new_records: []const ApplicationRoleConnectionMetadata) !RestResult([]ApplicationRoleConnectionMetadata) {
     const path = try std.fmt.allocPrint(ctx.allocator, "/applications/{d}/role-connections/metadata", .{applicationId.asU64()});
     defer ctx.allocator.free(path);
 

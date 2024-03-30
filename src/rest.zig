@@ -7,7 +7,7 @@ pub const application_commands = @import("./rest/application_commands.zig");
 pub const application_role_connection_metadata = @import("./rest/application_role_connection_metadata.zig");
 pub const application = @import("./rest/application.zig");
 pub const audit_log = @import("./rest/audit_log.zig");
-pub const Context = @import("./rest/Context.zig");
+pub const Client = @import("./rest/Client.zig");
 pub const interactions = @import("./rest/interactions.zig");
 
 pub fn discordApiCallUri(allocator: std.mem.Allocator, path: []const u8, query: ?[]const u8) !std.Uri {

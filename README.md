@@ -1,14 +1,15 @@
-# deancord
+# deancord (WIP)
 
 A Discord API for the Zig programming language.
+
+Currently built off of Zig Version `0.12.0-dev.2928+6fddc9cd3`. If you notice that it is broken
+on a more recent patch of Zig, please create an issue!
 
 To include this in your zig project, use the Zig Package Manager:
 
 ```sh
 zig fetch --save {TODO: PUT TARBALL URL HERE}
 ```
-
-Still in-progress as I add more of discord's structures to `model` and more endpoints to `rest`. websocket API is still WIP.
 
 # Basic Usage
 
@@ -22,7 +23,7 @@ pub fn main() !void {
     const gpa = std.heap.GeneralPurposeAllocator(.{}) {};
     defer gpa.deinit();
 
-    const ctx = deancord.rest.Context.init(gpa.allocator(), .{ .bot = std.os.getenv("TOKEN") });
+    const ctx = deancord.rest.Client.init(gpa.allocator(), .{ .bot = std.os.getenv("TOKEN") });
     defer ctx.deinit();
 
     // === calling an endpoint which is already in deancord ===
@@ -53,7 +54,7 @@ pub fn main() !void {
 
 still like 99% uncompleted
  - should probably refactor `src/rest`
-   - `rest.Context` -> `rest.Config`
+   - `rest.Client` -> `rest.Config`
    - `rest.*.endpointName(ctx, ...)` -> `rest.ApiClient.init(rest.Client).endpointName(...)`
  - still needs more structures in `src/model`
  - still needs more endpoints in `src/rest`

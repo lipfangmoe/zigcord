@@ -11,6 +11,7 @@ pub const Flags = @import("./model/flags.zig").Flags;
 pub const deanson = @import("./model/deanson.zig");
 pub const AuditLog = @import("./model/AuditLog.zig");
 pub const Message = @import("./model/Message.zig");
+pub const AutoModerationRule = @import("./model/AutoModerationRule.zig");
 
 /// Represents an array of localization entries, ie:
 /// [["en-US", "please enable cookies"], ["en-GB", "please enable biscuits"]]

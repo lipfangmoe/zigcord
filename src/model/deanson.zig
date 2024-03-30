@@ -7,13 +7,13 @@ pub fn stringifyEnumAsInt(self: anytype, json_writer: anytype) !void {
     comptime {
         const self_typeinfo = @typeInfo(@TypeOf(self));
         if (self_typeinfo != .Pointer) {
-            @compileError("inlineEnum may only be called on *const <enumT>, found \"" ++ @typeName(@TypeOf(self)) ++ "\"");
+            @compileError("stringifyEnumAsInt may only be called on *const <enumT>, found \"" ++ @typeName(@TypeOf(self)) ++ "\"");
         }
         if (!self_typeinfo.Pointer.is_const) {
-            @compileError("inlineEnum may only be called on *const <enumT>, found \"" ++ @typeName(@TypeOf(self)) ++ "\"");
+            @compileError("stringifyEnumAsInt may only be called on *const <enumT>, found \"" ++ @typeName(@TypeOf(self)) ++ "\"");
         }
         if (@typeInfo(self_typeinfo.Pointer.child) != .Enum) {
-            @compileError("inlineEnum may only be called on *const <enumT>, found \"" ++ @typeName(@TypeOf(self)) ++ "\"");
+            @compileError("stringifyEnumAsInt may only be called on *const <enumT>, found \"" ++ @typeName(@TypeOf(self)) ++ "\"");
         }
     }
     try json_writer.write(@intFromEnum(self.*));
@@ -66,13 +66,13 @@ pub fn stringifyUnionInline(self: anytype, json_writer: anytype) !void {
     comptime {
         const self_typeinfo = @typeInfo(@TypeOf(self));
         if (self_typeinfo != .Pointer) {
-            @compileError("inlineUnion may only be called on *const <unionT>, found \"" ++ @typeName(@TypeOf(self)) ++ "\"");
+            @compileError("stringifyUnionInline may only be called on *const <unionT>, found \"" ++ @typeName(@TypeOf(self)) ++ "\"");
         }
         if (!self_typeinfo.Pointer.is_const) {
-            @compileError("inlineUnion may only be called on *const <unionT>, found \"" ++ @typeName(@TypeOf(self)) ++ "\"");
+            @compileError("stringifyUnionInline may only be called on *const <unionT>, found \"" ++ @typeName(@TypeOf(self)) ++ "\"");
         }
         if (@typeInfo(self_typeinfo.Pointer.child) != .Union) {
-            @compileError("inlineUnion may only be called on *const <unionT>, found \"" ++ @typeName(@TypeOf(self)) ++ "\"");
+            @compileError("stringifyUnionInline may only be called on *const <unionT>, found \"" ++ @typeName(@TypeOf(self)) ++ "\"");
         }
     }
 
@@ -230,10 +230,3 @@ pub fn Omittable(comptime T: type) type {
 }
 
 test "json nullable" {}
-
-pub fn UnwrapOptional(comptime T: type) type {
-    return switch (@typeInfo(T)) {
-        .Optional => |Opt| Opt.child,
-        else => T,
-    };
-}

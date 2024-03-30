@@ -1,18 +1,17 @@
 const std = @import("std");
+const model = @import("model");
+const rest = @import("../../rest.zig");
 
-const model = @import("../model.zig");
-const rest = @import("../rest.zig");
-
-const RestResult = rest.Context.Result;
-const Context = rest.Context;
+const RestResult = rest.Client.Result;
+const Client = rest.Client;
 const Application = model.Application;
 
-pub fn getCurrentApplication(ctx: *Context) !RestResult(Application) {
+pub fn getCurrentApplication(ctx: *Client) !RestResult(Application) {
     const url = rest.base_url ++ "/application/@me";
     return ctx.request(Application, .GET, try std.Uri.parse(url));
 }
 
-pub fn editCurrentApplication(ctx: *Context, params: EditParams) !RestResult(Application) {
+pub fn editCurrentApplication(ctx: *Client, params: EditParams) !RestResult(Application) {
     const url = rest.base_url ++ "/application/@me";
 
     return ctx.requestWithValueBody(Application, .PATCH, try std.Uri.parse(url), params, .{});
