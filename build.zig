@@ -7,6 +7,8 @@ pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
+    const websocket_dependency = b.dependency("websocket", .{});
+
     // make separate modules for `src/model` and `src/rest` so that `rest` can import model as `@import("model")`
     const model_module = b.createModule(.{
         .root_source_file = .{ .path = "src/model.zig" },
@@ -19,18 +21,27 @@ pub fn build(b: *std.Build) !void {
         .optimize = optimize,
         .imports = &.{.{ .name = "model", .module = model_module }},
     });
+    const gateway_module = b.createModule(
+        .{
+            .root_source_file = .{ .path = "src/gateway.zig" },
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "model", .module = model_module },
+                .{ .name = "websocket", .module = websocket_dependency.module("websocket") },
+            },
+        },
+    );
 
-    // install as a static library i guess
-    const lib = b.addStaticLibrary(.{
-        .name = "deancord",
+    _ = b.addModule("deancord", .{
         .target = target,
         .optimize = optimize,
-        .root_source_file = .{ .path = "src/root.zig" },
+        .imports = &.{
+            .{ .name = "model", .module = model_module },
+            .{ .name = "rest", .module = rest_module },
+            .{ .name = "gateway", .module = gateway_module },
+        },
     });
-    lib.root_module.addImport("model", model_module);
-    lib.root_module.addImport("rest", rest_module);
-
-    b.installArtifact(lib);
 
     const test_step = b.step("test", "Run unit tests");
 

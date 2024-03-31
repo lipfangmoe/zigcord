@@ -3,12 +3,8 @@ const http = std.http;
 
 pub const base_url = "https://discord.com/api/v10";
 
-pub const application_commands = @import("./rest/application_commands.zig");
-pub const application_role_connection_metadata = @import("./rest/application_role_connection_metadata.zig");
-pub const application = @import("./rest/application.zig");
-pub const audit_log = @import("./rest/audit_log.zig");
+pub const endpoints = @import("./rest/endpoints.zig");
 pub const Client = @import("./rest/Client.zig");
-pub const interactions = @import("./rest/interactions.zig");
 
 pub fn discordApiCallUri(allocator: std.mem.Allocator, path: []const u8, query: ?[]const u8) !std.Uri {
     const realPath = try std.mem.concat(allocator, u8, &.{ "/api/v10", path });

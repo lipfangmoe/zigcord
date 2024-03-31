@@ -6,15 +6,15 @@ const RestResult = rest.Client.Result;
 const Client = rest.Client;
 const Application = model.Application;
 
-pub fn getCurrentApplication(ctx: *Client) !RestResult(Application) {
+pub fn getCurrentApplication(client: *Client) !RestResult(Application) {
     const url = rest.base_url ++ "/application/@me";
-    return ctx.request(Application, .GET, try std.Uri.parse(url));
+    return client.request(Application, .GET, try std.Uri.parse(url));
 }
 
-pub fn editCurrentApplication(ctx: *Client, params: EditParams) !RestResult(Application) {
+pub fn editCurrentApplication(client: *Client, params: EditParams) !RestResult(Application) {
     const url = rest.base_url ++ "/application/@me";
 
-    return ctx.requestWithValueBody(Application, .PATCH, try std.Uri.parse(url), params, .{});
+    return client.requestWithValueBody(Application, .PATCH, try std.Uri.parse(url), params, .{});
 }
 
 pub const EditParams = struct {

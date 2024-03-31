@@ -6,11 +6,11 @@ const RestResult = rest.Client.Result;
 const Client = rest.Client;
 const AuditLog = model.AuditLog;
 
-pub fn auditLogs(ctx: *Client, guild_id: Snowflake) !RestResult(AuditLog) {
-    const path = try std.fmt.allocPrint(ctx.allocator, "/guilds/{d}/audit-logs", .{guild_id.asU64()});
-    defer ctx.allocator.free(path);
+pub fn auditLogs(client: *Client, guild_id: Snowflake) !RestResult(AuditLog) {
+    const path = try std.fmt.allocPrint(client.allocator, "/guilds/{d}/audit-logs", .{guild_id.asU64()});
+    defer client.allocator.free(path);
 
-    const url = try rest.discordApiCallUri(ctx.allocator, path, null);
+    const url = try rest.discordApiCallUri(client.allocator, path, null);
 
-    return ctx.request(AuditLog, .GET, url);
+    return client.request(AuditLog, .GET, url);
 }

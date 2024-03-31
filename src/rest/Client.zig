@@ -247,8 +247,8 @@ const Tests = struct {
         });
         defer test_server.destroy();
 
-        var ctx = init(allocator, .{ .token = .{ .bot = "sometoken" } });
-        defer ctx.deinit();
+        var client = init(allocator, .{ .token = .{ .bot = "sometoken" } });
+        defer client.deinit();
 
         const url = std.Uri{
             .host = "127.0.0.1",
@@ -257,7 +257,7 @@ const Tests = struct {
             .port = test_server.port(),
         };
 
-        const result = try ctx.request(SomeJsonObj, .GET, url);
+        const result = try client.request(SomeJsonObj, .GET, url);
         defer result.deinit();
 
         const expected: SomeJsonObj = .{ .str = "some string", .num = 123 };
@@ -290,8 +290,8 @@ const Tests = struct {
             .num = 42,
         };
 
-        var ctx = init(allocator, .{ .token = .{ .bot = "sometoken" } });
-        defer ctx.deinit();
+        var client = init(allocator, .{ .token = .{ .bot = "sometoken" } });
+        defer client.deinit();
 
         const url = std.Uri{
             .host = "127.0.0.1",
@@ -299,7 +299,7 @@ const Tests = struct {
             .scheme = "http",
             .port = test_server.port(),
         };
-        const result = ctx.requestWithValueBody(SomeJsonObj, .POST, url, obj, .{ .emit_null_optional_fields = true }) catch undefined;
+        const result = client.requestWithValueBody(SomeJsonObj, .POST, url, obj, .{ .emit_null_optional_fields = true }) catch undefined;
         defer result.deinit();
 
         switch (result.value()) {

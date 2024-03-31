@@ -24,7 +24,7 @@ pub fn main() !void {
     defer gpa.deinit();
 
     const ctx = deancord.rest.Client.init(gpa.allocator(), .{ .bot = std.os.getenv("TOKEN") });
-    defer ctx.deinit();
+    defer client.deinit();
 
     // === calling an endpoint which is already in deancord ===
 
@@ -40,12 +40,12 @@ pub fn main() !void {
     const path = "/some/random/path"
     const query = "with_localizations=true";
 
-    const url = try rest.discordApiCallUri(ctx.allocator, path, query);
-    defer ctx.allocator.free(url);
+    const url = try rest.discordApiCallUri(client.allocator, path, query);
+    defer client.allocator.free(url);
 
     const body: SomeStruct = .{ .foo = 10 };
 
-    const response: ResponseBodyType = ctx.requestWithValueBody(ResponseBodyType, .GET, url, body, .{});
+    const response: ResponseBodyType = client.requestWithValueBody(ResponseBodyType, .GET, url, body, .{});
     std.debug.print("{}\n", .{response});
 }
 ```

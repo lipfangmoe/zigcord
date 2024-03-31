@@ -6,20 +6,20 @@ const ApplicationRoleConnectionMetadata = model.ApplicationRoleConnectionMetadat
 const Client = rest.Client;
 const RestResult = Client.Result;
 
-pub fn getApplicationRoleConnectionMetadataRecords(ctx: *Client, applicationId: Snowflake) !RestResult([]ApplicationRoleConnectionMetadata) {
-    const path = try std.fmt.allocPrint(ctx.allocator, "/applications/{d}/role-connections/metadata", .{applicationId.asU64()});
-    defer ctx.allocator.free(path);
+pub fn getApplicationRoleConnectionMetadataRecords(client: *Client, applicationId: Snowflake) !RestResult([]ApplicationRoleConnectionMetadata) {
+    const path = try std.fmt.allocPrint(client.allocator, "/applications/{d}/role-connections/metadata", .{applicationId.asU64()});
+    defer client.allocator.free(path);
 
-    const url = try rest.discordApiCallUri(ctx.allocator, path, null);
+    const url = try rest.discordApiCallUri(client.allocator, path, null);
 
-    return ctx.request([]ApplicationRoleConnectionMetadata, .GET, url);
+    return client.request([]ApplicationRoleConnectionMetadata, .GET, url);
 }
 
-pub fn updateApplicationRoleConnectionMetadataRecords(ctx: *Client, applicationId: Snowflake, new_records: []const ApplicationRoleConnectionMetadata) !RestResult([]ApplicationRoleConnectionMetadata) {
-    const path = try std.fmt.allocPrint(ctx.allocator, "/applications/{d}/role-connections/metadata", .{applicationId.asU64()});
-    defer ctx.allocator.free(path);
+pub fn updateApplicationRoleConnectionMetadataRecords(client: *Client, applicationId: Snowflake, new_records: []const ApplicationRoleConnectionMetadata) !RestResult([]ApplicationRoleConnectionMetadata) {
+    const path = try std.fmt.allocPrint(client.allocator, "/applications/{d}/role-connections/metadata", .{applicationId.asU64()});
+    defer client.allocator.free(path);
 
-    const url = try rest.discordApiCallUri(ctx.allocator, path, null);
+    const url = try rest.discordApiCallUri(client.allocator, path, null);
 
-    return ctx.requestWithValueBody([]ApplicationRoleConnectionMetadata, .GET, url, new_records, .{});
+    return client.requestWithValueBody([]ApplicationRoleConnectionMetadata, .GET, url, new_records, .{});
 }
