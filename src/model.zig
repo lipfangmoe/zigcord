@@ -12,6 +12,11 @@ pub const deanson = @import("./model/deanson.zig");
 pub const AuditLog = @import("./model/AuditLog.zig");
 pub const Message = @import("./model/Message.zig");
 pub const AutoModerationRule = @import("./model/AutoModerationRule.zig");
+pub const AutoModerationAction = @import("./model/AutoModerationAction.zig");
+pub const Entitlement = @import("./model/Entitlement.zig");
+pub const voice = @import("./model/voice.zig");
+pub const Emoji = @import("./model/Emoji.zig");
+pub const Sticker = @import("./model/Sticker.zig");
 
 /// Represents an array of localization entries, ie:
 /// [["en-US", "please enable cookies"], ["en-GB", "please enable biscuits"]]
@@ -19,6 +24,10 @@ pub const AutoModerationRule = @import("./model/AutoModerationRule.zig");
 /// See https://discord.com/developers/docs/reference#locales for the locales that discord supports
 pub const Localizations = struct {
     entries: []const [2][]const u8,
+
+    pub fn init(entries: []const [2][]const u8) Localizations {
+        return Localizations{ .entries = entries };
+    }
 
     pub fn jsonStringify(self: *const @This(), jsonWriter: anytype) !void {
         try jsonWriter.beginObject();
@@ -29,6 +38,20 @@ pub const Localizations = struct {
         try jsonWriter.endObject();
     }
 };
+
+test "localizations intended usage" {
+    const localizations = Localizations{ .entries = &.{
+        .{ "en-US", "please enable cookies" },
+        .{ "en-GB", "please enable biscuits" },
+    } };
+
+    const stringified = try std.json.stringifyAlloc(std.testing.allocator, localizations, .{});
+    defer std.testing.allocator.free(stringified);
+
+    try std.testing.expectEqualStrings(
+        \\{"en-US":"please enable cookies","en-GB":"please enable biscuits"}
+    , stringified);
+}
 
 pub const Permissions = packed struct {
     create_instant_invite: bool = false, // 1 << 0
@@ -95,6 +118,16 @@ pub const Permissions = packed struct {
         try jsonWriter.write(self.asU64());
     }
 
+    pub fn jsonParse(alloc: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !Permissions {
+        const int = try std.json.innerParse(u47, alloc, source, options);
+        return fromU64(int);
+    }
+
+    pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, options: std.json.ParseOptions) !Permissions {
+        const int = try std.json.innerParseFromValue(u47, alloc, source, options);
+        return fromU64(int);
+    }
+
     test "basic permission expectations" {
         // just test some expected permissions to make sure that certain permissions are not missed
         try std.testing.expectEqual(1 << 10, (Permissions{ .view_channel = true }).asU64());
@@ -102,5 +135,49 @@ pub const Permissions = packed struct {
         try std.testing.expectEqual(1 << 30, (Permissions{ .manage_guild_expressions = true }).asU64());
         try std.testing.expectEqual(1 << 40, (Permissions{ .moderate_members = true }).asU64());
         try std.testing.expectEqual(1 << 46, (Permissions{ .send_voice_messages = true }).asU64());
+    }
+};
+
+pub const Intents = packed struct {
+    guilds: bool = false, // 1 << 0
+    guild_members: bool = false,
+    guild_moderation: bool = false,
+    guild_emojis_and_stickers: bool = false,
+    guild_integrations: bool = false,
+    guild_webhooks: bool = false,
+    guild_invites: bool = false,
+    guild_voice_states: bool = false,
+    guild_presences: bool = false,
+    guild_messages: bool = false,
+    guild_message_reactions: bool = false, // 1 << 10
+    guild_message_typing: bool = false,
+    direct_messages: bool = false,
+    direct_message_reactions: bool = false,
+    direct_message_typing: bool = false,
+    message_content: bool = false,
+    guild_scheduled_events: bool = false,
+    gap: u3 = 0, // gap of 3 removed(?) intents
+    auto_moderation_configuration: bool = false, // 1 << 20
+    auto_moderation_execution: bool = false,
+    gap2: u2 = 0, // gap of 2 more removed(?) intents
+    guild_message_polls: bool = false,
+    direct_message_polls: bool = false, // 1 << 25
+
+    pub fn fromU64(int: u64) Permissions {
+        return @bitCast(@as(u26, @truncate(int)));
+    }
+
+    pub fn asU64(self: Permissions) u64 {
+        return @intCast(@as(u26, @bitCast(self)));
+    }
+
+    pub fn jsonParse(alloc: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !Permissions {
+        const int = try std.json.innerParse(u26, alloc, source, options);
+        return fromU64(int);
+    }
+
+    pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, options: std.json.ParseOptions) !Permissions {
+        const int = try std.json.innerParseFromValue(u26, alloc, source, options);
+        return fromU64(int);
     }
 };

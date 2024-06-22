@@ -8,38 +8,21 @@ pub fn build(b: *std.Build) !void {
     const optimize = b.standardOptimizeOption(.{});
 
     const websocket_dependency = b.dependency("websocket", .{});
+    const websocket_module = websocket_dependency.module("websocket");
 
-    // make separate modules for `src/model` and `src/rest` so that `rest` can import model as `@import("model")`
-    const model_module = b.createModule(.{
-        .root_source_file = .{ .path = "src/model.zig" },
+    const lib = b.addStaticLibrary(.{
+        .name = "deancord",
+        .root_source_file = b.path("src/root.zig"),
         .target = target,
         .optimize = optimize,
     });
-    const rest_module = b.createModule(.{
-        .root_source_file = .{ .path = "src/rest.zig" },
-        .target = target,
-        .optimize = optimize,
-        .imports = &.{.{ .name = "model", .module = model_module }},
-    });
-    const gateway_module = b.createModule(
-        .{
-            .root_source_file = .{ .path = "src/gateway.zig" },
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{
-                .{ .name = "model", .module = model_module },
-                .{ .name = "websocket", .module = websocket_dependency.module("websocket") },
-            },
-        },
-    );
+    lib.root_module.addImport("websocket", websocket_module);
 
     _ = b.addModule("deancord", .{
         .target = target,
         .optimize = optimize,
         .imports = &.{
-            .{ .name = "model", .module = model_module },
-            .{ .name = "rest", .module = rest_module },
-            .{ .name = "gateway", .module = gateway_module },
+            .{ .name = "websocket", .module = websocket_module },
         },
     });
 
@@ -61,6 +44,7 @@ pub fn build(b: *std.Build) !void {
                 .target = target,
                 .optimize = optimize,
             });
+            file_runner.root_module.addImport("websocket", websocket_module);
             const run_file = b.addRunArtifact(file_runner);
             test_step.dependOn(&run_file.step);
         }

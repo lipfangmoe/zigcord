@@ -15,9 +15,10 @@
     // Once all dependencies are fetched, `zig build` no longer requires
     // Internet connectivity.
     .dependencies = .{
+        // TODO - move back to karlseguin's version once Server.accept is public
         .websocket = .{
-            .url = "https://github.com/karlseguin/websocket.zig/archive/dabf2310783000482ceb959e49e4be222cab02ed.tar.gz",
-            .hash = "1220376acac4a7fa2c1772d0bd2a1d030513fb3599322552f11c5bd743de58d0e486",
+            .url = "https://github.com/deanveloper/websocket.zig/archive/zig-0.12.tar.gz",
+            .hash = "1220e108d8ed58a321a90eab8d558036deb2f786b65b6e99b69f0d06b332f787a3be",
         },
     },
 

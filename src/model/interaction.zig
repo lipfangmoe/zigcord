@@ -1,5 +1,3 @@
-pub const command = @import("./interaction/command.zig");
-pub const command_option = @import("./interaction/command_option.zig");
 const std = @import("std");
 const model = @import("../model.zig");
 const Snowflake = model.Snowflake;
@@ -9,6 +7,9 @@ const Member = model.guild.Member;
 const Role = model.guild.Role;
 const channel = model.guild.channel;
 const Omittable = model.deanson.Omittable;
+
+pub const command = @import("./interaction/command.zig");
+pub const command_option = @import("./interaction/command_option.zig");
 
 // TODO - a lot of this file still doesn't use Omittable
 
@@ -24,7 +25,7 @@ pub const Interaction = struct {
 };
 
 // TODO - discord says `channel` is a partial channel, but doesn't say what's included/excluded.
-pub const PartialChannel = std.json.ObjectMap;
+pub const PartialChannel = std.json.Value;
 
 pub const InteractionType = enum(u8) {
     ping = 1,

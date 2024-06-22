@@ -1,5 +1,6 @@
 const std = @import("std");
 const model = @import("../model.zig");
+const Omittable = model.deanson.Omittable;
 
 /// This user's snowflake
 id: model.Snowflake,
@@ -8,33 +9,33 @@ username: []const u8,
 /// This user's discriminator. May likely be #0 after the username update.
 discriminator: []const u8,
 /// This user's display name. This should be used where possible.
-global_name: ?[]const u8 = null,
+global_name: ?[]const u8,
 /// This user's avatar hash. See https://discord.com/developers/docs/reference#image-formatting
-avatar: ?[]const u8 = null,
+avatar: ?[]const u8,
 /// true if this user is a bot.
-bot: ?bool = null,
+bot: Omittable(bool) = .{ .omitted = void{} },
 /// true if this user is a system user (ie, part of the urgent message system, whatever that is)
-system: ?bool = null,
+system: Omittable(bool) = .{ .omitted = void{} },
 /// true if this user has MFA enabled
-mfa_enabled: ?bool = null,
+mfa_enabled: Omittable(bool) = .{ .omitted = void{} },
 /// This user's banner hash. See https://discord.com/developers/docs/reference#image-formatting
-banner: ?[]const u8 = null,
+banner: Omittable(?[]const u8) = .{ .omitted = void{} },
 /// This user's banner color encoded as an integer.
-accent_color: ?u64 = null,
+accent_color: Omittable(?i64) = .{ .omitted = void{} },
 /// The user's chosen language. See https://discord.com/developers/docs/reference#locales
-locale: ?[]const u8 = null,
+locale: Omittable([]const u8) = .{ .omitted = void{} },
 /// true if this user's email is verified.
-verified: ?bool = null,
+verified: Omittable(bool) = .{ .omitted = void{} },
 /// The user's email
-email: ?[]const u8 = null,
+email: Omittable(?[]const u8) = .{ .omitted = void{} },
 /// The user's account flags
-flags: ?Flags = null,
+flags: Omittable(Flags) = .{ .omitted = void{} },
 /// What kind of nitro this user has
-premium_type: ?NitroType = null,
+premium_type: Omittable(NitroType) = .{ .omitted = void{} },
 /// The user's public flags
-public_flags: ?Flags = null,
-/// The user's avatar decoration hash. See https://discord.com/developers/docs/reference#image-formatting
-avatar_decoration: ?[]const u8 = null,
+public_flags: Omittable(Flags) = .{ .omitted = void{} },
+/// The user's avatar decoration data.
+avatar_decoration_data: Omittable(?AvatarDecorationData) = .{ .omitted = void{} },
 
 pub const Flags = model.Flags(enum(u6) {
     /// discord employee
@@ -74,4 +75,9 @@ pub const NitroType = enum(u8) {
     nitro_classic,
     nitro,
     nitro_basic,
+};
+
+pub const AvatarDecorationData = struct {
+    asset: []const u8,
+    sku_id: model.Snowflake,
 };

@@ -33,3 +33,24 @@ pub const ApplicationCommandType = enum(u8) {
     user = 2,
     message = 3,
 };
+
+pub const GuildApplicationCommandPermissions = struct {
+    id: model.Snowflake,
+    application_id: model.Snowflake,
+    guild_id: model.Snowflake,
+    permissions: []const ApplicationCommandPermissions,
+};
+
+pub const ApplicationCommandPermissions = struct {
+    /// NOTE: id may be set to `guild_id` to represent @everyone in a guild,
+    /// or `guild_id-1`  to represent all channels in a guild
+    id: model.Snowflake,
+    type: Type,
+    permission: bool,
+
+    pub const Type = enum(u8) {
+        role = 1,
+        user = 2,
+        channel = 3,
+    };
+};

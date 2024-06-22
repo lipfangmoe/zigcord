@@ -1,4 +1,4 @@
-const model = @import("../../model.zig");
+const model = @import("../model.zig");
 const Snowflake = model.Snowflake;
 const Omittable = model.deanson.Omittable;
 

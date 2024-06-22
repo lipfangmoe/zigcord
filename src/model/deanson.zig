@@ -229,4 +229,23 @@ pub fn Omittable(comptime T: type) type {
     };
 }
 
-test "json nullable" {}
+/// Combines two types together, such that their fields will be on the same level.
+/// Especially useful for Discord's pesky "Returns T but with the following extra fields" types.
+///
+/// Duplicate fields will throw a compile-time error.
+/// The declarations of the resultant struct will be the same as `Extension` type's declarations.
+pub fn Extend(comptime Base: type, comptime Extension: type) type {
+    const StructField = std.builtin.Type.StructField;
+
+    const a_fields: []const StructField = std.meta.fields(Base);
+    const b_fields: []const StructField = std.meta.fields(Extension);
+
+    const all_fields = a_fields ++ b_fields;
+
+    return @Type(.{ .Struct = std.builtin.Type.Struct{
+        .layout = .auto,
+        .fields = all_fields,
+        .decls = std.meta.declarations(Extension),
+        .is_tuple = false,
+    } });
+}
