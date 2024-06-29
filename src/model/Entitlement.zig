@@ -6,13 +6,13 @@ const Omittable = deanson.Omittable;
 id: model.Snowflake,
 sku_id: model.Snowflake,
 application_id: model.Snowflake,
-user_id: Omittable(model.Snowflake) = .{ .omitted = void{} },
+user_id: Omittable(model.Snowflake) = .omit,
 type: Type,
 deleted: bool,
-starts_at: Omittable([]const u8) = .{ .omitted = void{} },
-ends_at: Omittable([]const u8) = .{ .omitted = void{} },
-guild_id: Omittable(model.Snowflake) = .{ .omitted = void{} },
-consumed: Omittable(bool) = .{ .omitted = void{} },
+starts_at: Omittable([]const u8) = .omit,
+ends_at: Omittable([]const u8) = .omit,
+guild_id: Omittable(model.Snowflake) = .omit,
+consumed: Omittable(bool) = .omit,
 
 pub const jsonStringify = deanson.stringifyWithOmit;
 

@@ -13,22 +13,23 @@ zig fetch --save {TODO: PUT TARBALL URL HERE}
 
 # Basic Usage
 
-super basic example for calling the discord API, untested but it should look something like this:
+untested but it should look something like this:
 
 ```zig
 const std = @import("std");
 const deancord = @import("deancord");
+const rest = deancord.rest;
 
 pub fn main() !void {
     const gpa = std.heap.GeneralPurposeAllocator(.{}) {};
     defer gpa.deinit();
 
-    const ctx = deancord.rest.Client.init(gpa.allocator(), .{ .bot = std.os.getenv("TOKEN") });
+    const ctx = rest.Client.init(gpa.allocator(), .{ .bot = std.os.getenv("TOKEN") });
     defer client.deinit();
 
     // === calling an endpoint which is already in deancord ===
 
-    const command = try deancord.rest.application_commands.createGlobalApplicationCommand(
+    const command = try rest.application_commands.createGlobalApplicationCommand(
         ctx,
         Snowflake.fromU64(APPLICATION_ID),
         .{ .name = "hello-world" },
@@ -37,16 +38,18 @@ pub fn main() !void {
 
     // === calling an endpoint which not in deancord yet ===
 
-    const path = "/some/random/path"
-    const query = "with_localizations=true";
+    const path = "/some/random/path";
 
-    const url = try rest.discordApiCallUri(client.allocator, path, query);
-    defer client.allocator.free(url);
+    const uri_str = try rest.allocDiscordUriStr(client.allocator, "/some/random/path", .{});
+    defer client.allocator.free(uri_str);
+    const uri = try std.Uri.parse(uri_str);
 
     const body: SomeStruct = .{ .foo = 10 };
 
-    const response: ResponseBodyType = client.requestWithValueBody(ResponseBodyType, .GET, url, body, .{});
-    std.debug.print("{}\n", .{response});
+    const response: Result(ResponseBodyType) = try client.requestWithValueBody(ResponseBodyType, .GET, url, body, .{});
+	defer response.deinit();
+
+    std.debug.print("{}\n", .{response.value()});
 }
 ```
 

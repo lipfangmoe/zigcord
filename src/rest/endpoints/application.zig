@@ -1,6 +1,7 @@
 const std = @import("std");
-const model = @import("model");
-const rest = @import("../../rest.zig");
+const root = @import("root");
+const model = root.model;
+const rest = root.rest;
 
 const RestResult = rest.Client.Result;
 const Client = rest.Client;

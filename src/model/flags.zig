@@ -5,8 +5,12 @@ pub fn Flags(comptime FlagEnum: type) type {
         @compileError("FlagEnum must be an enum with at least one entry");
     }
     const type_info = @typeInfo(FlagEnum).Enum;
-    if (std.math.maxInt(type_info.tag_type) > 63) {
+    const enum_tag_type_info = @typeInfo(type_info.tag_type).Int;
+    if (enum_tag_type_info.bits > 6) {
         @compileError("FlagEnum has a maximum tag size of u6, as you cannot bitshift by more than 64 bits. Found " ++ @typeName(type_info.tag_type));
+    }
+    if (enum_tag_type_info.signedness != .unsigned) {
+        @compileError("FlagEnum tag must be unsigned");
     }
     const bitset_size: u16 = std.math.maxInt(type_info.tag_type) + 1;
 

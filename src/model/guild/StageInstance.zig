@@ -7,8 +7,8 @@ guild_id: model.Snowflake,
 channel_id: model.Snowflake,
 topic: []const u8,
 privacy_level: PrivacyLevel,
-/// not actually omittable, but deprecated, so maybe omitted someday
-discoverable_disabled: Omittable(bool) = .{ .omitted = void{} },
+/// not actually omittable, but deprecated, so maybe omit someday
+discoverable_disabled: Omittable(bool) = .omit,
 guild_scheduled_event_id: ?bool,
 
 pub const PrivacyLevel = enum(u2) {

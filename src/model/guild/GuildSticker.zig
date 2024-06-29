@@ -4,18 +4,18 @@ const Snowflake = model.Snowflake;
 const Omittable = model.deanson.Omittable;
 
 id: Snowflake,
-pack_id: Omittable(Snowflake) = .{ .omitted = void{} },
+pack_id: Omittable(Snowflake) = .omit,
 name: []const u8,
 description: ?[]const u8,
 tags: []const u8,
-asset: Omittable([]const u8) = .{ .omitted = void{} },
+asset: Omittable([]const u8) = .omit,
 type: Type,
 format_type: FormatType,
 /// may be false due to loss of server boosts
-available: Omittable(bool) = .{ .omitted = void{} },
-guild_id: Omittable(Snowflake) = .{ .omitted = void{} },
-user: Omittable(User) = .{ .omitted = void{} },
-sort_value: Omittable(i64) = .{ .omitted = void{} },
+available: Omittable(bool) = .omit,
+guild_id: Omittable(Snowflake) = .omit,
+user: Omittable(User) = .omit,
+sort_value: Omittable(i64) = .omit,
 
 pub const jsonStringify = model.deanson.stringifyWithOmit;
 

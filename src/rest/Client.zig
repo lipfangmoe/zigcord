@@ -1,6 +1,6 @@
 const std = @import("std");
 const builtin = @import("builtin");
-const deancord = @import("../root.zig");
+const deancord = @import("root");
 
 const Self = @This();
 
@@ -28,7 +28,14 @@ pub fn initWithConfig(allocator: std.mem.Allocator, auth: Authorization, config:
     };
 }
 
-pub fn beginRequest(self: *Self, comptime ResponseT: type, method: std.http.Method, url: std.Uri, transfer_encoding: std.http.Client.RequestTransfer) !PendingRequest(ResponseT) {
+pub fn beginRequest(
+    self: *Self,
+    comptime ResponseT: type,
+    method: std.http.Method,
+    url: std.Uri,
+    transfer_encoding: std.http.Client.RequestTransfer,
+    extra_headers: []const std.http.Header,
+) !PendingRequest(ResponseT) {
     const authValue = try std.fmt.allocPrint(self.allocator, "{}", .{self.auth});
     defer self.allocator.free(authValue);
 
@@ -36,6 +43,7 @@ pub fn beginRequest(self: *Self, comptime ResponseT: type, method: std.http.Meth
     var req = try self.client.open(method, url, std.http.Client.RequestOptions{
         .server_header_buffer = &server_header_buffer,
         .headers = std.http.Client.Request.Headers{ .authorization = .{ .override = authValue } },
+        .extra_headers = extra_headers,
     });
     errdefer req.deinit();
 
@@ -51,7 +59,15 @@ pub fn beginRequest(self: *Self, comptime ResponseT: type, method: std.http.Meth
 
 /// Sends a request to the Discord REST API with the credentials stored in this context
 pub fn request(self: *Self, comptime ResponseT: type, method: std.http.Method, url: std.Uri) !Result(ResponseT) {
-    var pending = try self.beginRequest(ResponseT, method, url, .{ .none = void{} });
+    var pending = try self.beginRequest(ResponseT, method, url, .{ .none = void{} }, &.{});
+    defer pending.deinit();
+
+    return pending.waitForResponse();
+}
+
+/// Sends a request to the Discord REST API with the credentials stored in this context
+pub fn requestWithExtraHeaders(self: *Self, comptime ResponseT: type, method: std.http.Method, url: std.Uri, extra_headers: []const std.http.Header) !Result(ResponseT) {
+    var pending = try self.beginRequest(ResponseT, method, url, .{ .none = void{} }, extra_headers);
     defer pending.deinit();
 
     return pending.waitForResponse();
@@ -59,7 +75,7 @@ pub fn request(self: *Self, comptime ResponseT: type, method: std.http.Method, u
 
 /// Sends a request (with a body) to the Discord REST API with the credentials stored in this context.
 pub fn requestWithBody(self: *Self, comptime ResponseT: type, method: std.http.Method, url: std.Uri, body: std.io.AnyReader) !Result(ResponseT) {
-    var pending = try self.beginRequest(ResponseT, method, url, .{ .chunked = void{} });
+    var pending = try self.beginRequest(ResponseT, method, url, .{ .chunked = void{} }, &.{});
     defer pending.deinit();
 
     var fifo = std.fifo.LinearFifo([]u8, .{ .Static = 1000 }).init();
@@ -70,7 +86,7 @@ pub fn requestWithBody(self: *Self, comptime ResponseT: type, method: std.http.M
 
 /// Sends a request (with a body) to the Discord REST API with the credentials stored in this context.
 pub fn requestWithStringBody(self: *Self, comptime ResponseT: type, method: std.http.Method, url: std.Uri, body: []const u8) !Result(ResponseT) {
-    var pending = try self.beginRequest(ResponseT, method, url, .{ .content_length = @intCast(body.len) });
+    var pending = try self.beginRequest(ResponseT, method, url, .{ .content_length = @intCast(body.len) }, &.{});
     defer pending.deinit();
 
     try pending.writer().writeAll(body);
@@ -80,7 +96,27 @@ pub fn requestWithStringBody(self: *Self, comptime ResponseT: type, method: std.
 
 /// Sends a request (with a body) to the Discord REST API with the credentials stored in this context.
 pub fn requestWithValueBody(self: *Self, comptime ResponseT: type, method: std.http.Method, url: std.Uri, body: anytype, stringifyOptions: std.json.StringifyOptions) !Result(ResponseT) {
-    var pending = try self.beginRequest(ResponseT, method, url, .chunked);
+    var pending = try self.beginRequest(ResponseT, method, url, .{ .chunked = void{} }, &.{});
+    defer pending.deinit();
+
+    var buffered_body_writer = std.io.bufferedWriter(pending.writer());
+
+    try std.json.stringify(body, stringifyOptions, buffered_body_writer.writer());
+    try buffered_body_writer.flush();
+
+    return try pending.waitForResponse();
+}
+
+pub fn requestWithValueBodyAndExtraHeaders(
+    self: *Self,
+    comptime ResponseT: type,
+    method: std.http.Method,
+    url: std.Uri,
+    body: anytype,
+    stringifyOptions: std.json.StringifyOptions,
+    extra_headers: []const std.http.Header,
+) !Result(ResponseT) {
+    var pending = try self.beginRequest(ResponseT, method, url, .{ .chunked = void{} }, extra_headers);
     defer pending.deinit();
 
     var buffered_body_writer = std.io.bufferedWriter(pending.writer());

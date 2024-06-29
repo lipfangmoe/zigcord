@@ -10,28 +10,28 @@ id: Snowflake,
 name: []const u8,
 icon: ?[]const u8,
 description: []const u8,
-rpc_origins: Omittable([]const []const u8) = .{ .omitted = void{} },
+rpc_origins: Omittable([]const []const u8) = .omit,
 bot_public: bool,
 bot_require_code_grant: bool,
-bot: Omittable(User) = .{ .omitted = void{} }, // TODO: partial user
-terms_of_service_url: Omittable([]const u8) = .{ .omitted = void{} },
-privacy_policy_url: Omittable([]const u8) = .{ .omitted = void{} },
-owner: Omittable(User) = .{ .omitted = void{} }, // TODO: partial user
+bot: Omittable(User) = .omit, // TODO: partial user
+terms_of_service_url: Omittable([]const u8) = .omit,
+privacy_policy_url: Omittable([]const u8) = .omit,
+owner: Omittable(User) = .omit, // TODO: partial user
 verify_key: []const u8,
 team: ?Team,
-guild_id: Omittable([]const u8) = .{ .omitted = void{} },
-guild: Omittable(Guild) = .{ .omitted = void{} }, // TODO: partial guild
-primary_sku_id: Omittable(Snowflake) = .{ .omitted = void{} },
-slug: Omittable([]const u8) = .{ .omitted = void{} },
-cover_image: Omittable([]const u8) = .{ .omitted = void{} },
-flags: Omittable(Flags) = .{ .omitted = void{} },
-approximate_guild_count: Omittable(i64) = .{ .omitted = void{} },
-redirect_uris: Omittable([]const []const u8) = .{ .omitted = void{} },
-interactions_endpoint_url: Omittable([]const u8) = .{ .omitted = void{} },
-role_connections_verification_url: Omittable([]const u8) = .{ .omitted = void{} },
-tags: Omittable([]const []const u8) = .{ .omitted = void{} },
-install_params: Omittable(InstallParams) = .{ .omitted = void{} },
-custom_install_url: Omittable([]const u8) = .{ .omitted = void{} },
+guild_id: Omittable([]const u8) = .omit,
+guild: Omittable(Guild) = .omit, // TODO: partial guild
+primary_sku_id: Omittable(Snowflake) = .omit,
+slug: Omittable([]const u8) = .omit,
+cover_image: Omittable([]const u8) = .omit,
+flags: Omittable(Flags) = .omit,
+approximate_guild_count: Omittable(i64) = .omit,
+redirect_uris: Omittable([]const []const u8) = .omit,
+interactions_endpoint_url: Omittable([]const u8) = .omit,
+role_connections_verification_url: Omittable([]const u8) = .omit,
+tags: Omittable([]const []const u8) = .omit,
+install_params: Omittable(InstallParams) = .omit,
+custom_install_url: Omittable([]const u8) = .omit,
 
 pub const jsonStringify = stringifyWithOmit;
 
@@ -73,4 +73,9 @@ pub const Flags = model.Flags(enum(u6) {
 pub const InstallParams = struct {
     scopes: []const []const u8,
     permissions: []const u8,
+};
+
+pub const IntegrationType = enum {
+    guild_install,
+    user_install,
 };

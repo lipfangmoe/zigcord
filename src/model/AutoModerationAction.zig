@@ -2,7 +2,7 @@ const model = @import("../model.zig");
 const Omittable = model.deanson.Omittable;
 
 type: Type,
-metadata: Omittable(Metadata) = .{ .omitted = void{} },
+metadata: Omittable(Metadata) = .omit,
 
 pub const Type = enum(u8) {
     block_message = 1,
@@ -12,7 +12,7 @@ pub const Type = enum(u8) {
 };
 
 pub const Metadata = struct {
-    channel_id: Omittable(model.Snowflake) = .{ .omitted = void{} },
-    duration_seconds: Omittable(i64) = .{ .omitted = void{} },
-    custom_message: Omittable([]const u8) = .{ .omitted = void{} },
+    channel_id: Omittable(model.Snowflake) = .omit,
+    duration_seconds: Omittable(i64) = .omit,
+    custom_message: Omittable([]const u8) = .omit,
 };

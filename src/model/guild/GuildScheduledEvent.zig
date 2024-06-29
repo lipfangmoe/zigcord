@@ -6,9 +6,9 @@ const Omittable = deanson.Omittable;
 id: model.Snowflake,
 guild_id: model.Snowflake,
 channel_id: ?model.Snowflake,
-creator_id: Omittable(?model.Snowflake) = .{ .omitted = void{} },
+creator_id: Omittable(?model.Snowflake) = .omit,
 name: []const u8,
-description: Omittable(?[]const u8) = .{ .omitted = void{} },
+description: Omittable(?[]const u8) = .omit,
 scheduled_start_time: []const u8,
 scheduled_end_time: ?[]const u8,
 privacy_level: PrivacyLevel,
@@ -16,9 +16,9 @@ status: EventStatus,
 entity_type: EntityType,
 entity_id: ?model.Snowflake,
 entity_metadata: ?EntityMetadata,
-creator: Omittable(model.User) = .{ .omitted = void{} },
+creator: Omittable(model.User) = .omit,
 user_count: i64,
-image: Omittable(?[]const u8) = .{ .omitted = void{} },
+image: Omittable(?[]const u8) = .omit,
 
 pub const jsonStringify = deanson.stringifyWithOmit;
 
@@ -41,7 +41,7 @@ pub const EntityType = enum(u3) {
     external = 3,
 };
 pub const EntityMetadata = struct {
-    location: Omittable([]const u8) = .{ .omitted = void{} },
+    location: Omittable([]const u8) = .omit,
 
     pub const jsonStringify = deanson.stringifyWithOmit;
 };

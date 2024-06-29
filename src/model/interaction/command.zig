@@ -11,18 +11,18 @@ const Permissions = model.Permissions;
 // TODO - translate to use Omittable
 pub const ApplicationCommand = struct {
     id: Snowflake,
-    type: Omittable(ApplicationCommandType) = .{ .omitted = void{} },
+    type: Omittable(ApplicationCommandType) = .omit,
     application_id: Snowflake,
-    guild_id: Omittable(Snowflake) = .{ .omitted = void{} },
+    guild_id: Omittable(Snowflake) = .omit,
     name: []const u8,
-    name_localizations: Omittable(?Localizations) = .{ .omitted = void{} },
+    name_localizations: Omittable(?Localizations) = .omit,
     description: []const u8,
-    description_localizations: Omittable(?Localizations) = .{ .omitted = void{} },
-    options: Omittable([]const ApplicationCommandOption) = .{ .omitted = void{} },
+    description_localizations: Omittable(?Localizations) = .omit,
+    options: Omittable([]const ApplicationCommandOption) = .omit,
     default_member_permissions: ?Permissions,
-    dm_permission: Omittable(bool) = .{ .omitted = void{} },
-    default_permission: Omittable(?bool) = .{ .omitted = void{} },
-    nsfw: Omittable(bool) = .{ .omitted = void{} },
+    dm_permission: Omittable(bool) = .omit,
+    default_permission: Omittable(?bool) = .omit,
+    nsfw: Omittable(bool) = .omit,
     version: Snowflake,
 
     pub const jsonStringify = model.deanson.stringifyWithOmit;

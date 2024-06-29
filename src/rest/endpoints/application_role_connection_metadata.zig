@@ -1,25 +1,24 @@
 const std = @import("std");
-const model = @import("model");
-const rest = @import("../../rest.zig");
+const root = @import("root");
+const model = root.model;
+const rest = root.rest;
 const Snowflake = model.Snowflake;
 const ApplicationRoleConnectionMetadata = model.ApplicationRoleConnectionMetadata;
 const Client = rest.Client;
 const RestResult = Client.Result;
 
-pub fn getApplicationRoleConnectionMetadataRecords(client: *Client, applicationId: Snowflake) !RestResult([]ApplicationRoleConnectionMetadata) {
-    const path = try std.fmt.allocPrint(client.allocator, "/applications/{d}/role-connections/metadata", .{applicationId.asU64()});
-    defer client.allocator.free(path);
+pub fn getApplicationRoleConnectionMetadataRecords(client: *Client, application_id: Snowflake) !RestResult([]ApplicationRoleConnectionMetadata) {
+    const uri_str = try rest.allocDiscordUriStr(client.allocator, "/applications/{d}/role-connections/metadata", .{application_id});
+    defer client.allocator.free(uri_str);
+    const uri = try std.Uri.parse(uri_str);
 
-    const url = try rest.discordApiCallUri(client.allocator, path, null);
-
-    return client.request([]ApplicationRoleConnectionMetadata, .GET, url);
+    return client.request([]ApplicationRoleConnectionMetadata, .GET, uri);
 }
 
-pub fn updateApplicationRoleConnectionMetadataRecords(client: *Client, applicationId: Snowflake, new_records: []const ApplicationRoleConnectionMetadata) !RestResult([]ApplicationRoleConnectionMetadata) {
-    const path = try std.fmt.allocPrint(client.allocator, "/applications/{d}/role-connections/metadata", .{applicationId.asU64()});
-    defer client.allocator.free(path);
+pub fn updateApplicationRoleConnectionMetadataRecords(client: *Client, application_id: Snowflake, new_records: []const ApplicationRoleConnectionMetadata) !RestResult([]ApplicationRoleConnectionMetadata) {
+    const uri_str = try rest.allocDiscordUriStr(client.allocator, "/applications/{d}/role-connections/metadata", .{application_id});
+    defer client.allocator.free(uri_str);
+    const uri = try std.Uri.parse(uri_str);
 
-    const url = try rest.discordApiCallUri(client.allocator, path, null);
-
-    return client.requestWithValueBody([]ApplicationRoleConnectionMetadata, .GET, url, new_records, .{});
+    return client.requestWithValueBody([]ApplicationRoleConnectionMetadata, .GET, uri, new_records, .{});
 }

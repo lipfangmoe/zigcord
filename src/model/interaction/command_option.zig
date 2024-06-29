@@ -27,26 +27,26 @@ pub const ApplicationCommandOption = struct {
 
     type: ApplicationCommandOptionType,
     name: []const u8,
-    name_localizations: Omittable(?Localizations) = .{ .omitted = void{} },
+    name_localizations: Omittable(?Localizations) = .omit,
     description: []const u8,
-    description_localizations: Omittable(?Localizations) = .{ .omitted = void{} },
-    required: Omittable(bool) = .{ .omitted = void{} },
-    choices: Omittable(Choices) = .{ .omitted = void{} },
-    options: Omittable([]ApplicationCommandOption) = .{ .omitted = void{} },
-    channel_types: Omittable([]const channel.Type) = .{ .omitted = void{} },
+    description_localizations: Omittable(?Localizations) = .omit,
+    required: Omittable(bool) = .omit,
+    choices: Omittable(Choices) = .omit,
+    options: Omittable([]ApplicationCommandOption) = .omit,
+    channel_types: Omittable([]const channel.Type) = .omit,
     min_value: Omittable(union(enum) {
         double: f64,
         integer: i64,
         pub const jsonStringify = deanson.stringifyUnionInline;
-    }) = .{ .omitted = void{} },
+    }) = .omit,
     max_value: Omittable(union(enum) {
         double: f64,
         integer: i64,
         pub const jsonStringify = deanson.stringifyUnionInline;
-    }) = .{ .omitted = void{} },
-    min_length: Omittable(i64) = .{ .omitted = void{} },
-    max_length: Omittable(i64) = .{ .omitted = void{} },
-    autocomplete: Omittable(bool) = .{ .omitted = void{} },
+    }) = .omit,
+    min_length: Omittable(i64) = .omit,
+    max_length: Omittable(i64) = .omit,
+    autocomplete: Omittable(bool) = .omit,
 
     pub const Builder = union(ApplicationCommandOptionType) {
         subcommand: SubcommandOptionBuilder,
@@ -82,12 +82,12 @@ pub const ApplicationCommandOption = struct {
 
 pub const SubcommandOptionBuilder = struct {
     name: []const u8,
-    name_localizations: Omittable(?Localizations) = .{ .omitted = void{} },
+    name_localizations: Omittable(?Localizations) = .omit,
     description: []const u8,
-    description_localizations: Omittable(?Localizations) = .{ .omitted = void{} },
-    required: Omittable(bool) = .{ .omitted = void{} },
-    options: Omittable([]ApplicationCommandOption) = .{ .omitted = void{} },
-    channel_types: Omittable([]const channel.Type) = .{ .omitted = void{} },
+    description_localizations: Omittable(?Localizations) = .omit,
+    required: Omittable(bool) = .omit,
+    options: Omittable([]ApplicationCommandOption) = .omit,
+    channel_types: Omittable([]const channel.Type) = .omit,
 
     fn build(self: @This()) ApplicationCommandOption {
         return ApplicationCommandOption{
@@ -97,26 +97,26 @@ pub const SubcommandOptionBuilder = struct {
             .description = self.description,
             .description_localizations = self.description_localizations,
             .required = self.required,
-            .choices = .{ .omitted = void{} },
+            .choices = .omit,
             .options = self.options,
             .channel_types = self.channel_types,
-            .min_value = .{ .omitted = void{} },
-            .max_value = .{ .omitted = void{} },
-            .min_length = .{ .omitted = void{} },
-            .max_length = .{ .omitted = void{} },
-            .autocomplete = .{ .omitted = void{} },
+            .min_value = .omit,
+            .max_value = .omit,
+            .min_length = .omit,
+            .max_length = .omit,
+            .autocomplete = .omit,
         };
     }
 };
 
 pub const SubcommandGroupOptionBuilder = struct {
     name: []const u8,
-    name_localizations: Omittable(?Localizations) = .{ .omitted = void{} },
+    name_localizations: Omittable(?Localizations) = .omit,
     description: []const u8,
-    description_localizations: Omittable(?Localizations) = .{ .omitted = void{} },
-    required: Omittable(bool) = .{ .omitted = void{} },
-    options: Omittable([]ApplicationCommandOption) = .{ .omitted = void{} },
-    channel_types: Omittable([]const channel.Type) = .{ .omitted = void{} },
+    description_localizations: Omittable(?Localizations) = .omit,
+    required: Omittable(bool) = .omit,
+    options: Omittable([]ApplicationCommandOption) = .omit,
+    channel_types: Omittable([]const channel.Type) = .omit,
 
     fn build(self: @This()) ApplicationCommandOption {
         return ApplicationCommandOption{
@@ -126,14 +126,14 @@ pub const SubcommandGroupOptionBuilder = struct {
             .description = self.description,
             .description_localizations = self.description_localizations,
             .required = self.required,
-            .choices = .{ .omitted = void{} },
+            .choices = .omit,
             .options = self.options,
             .channel_types = self.channel_types,
-            .min_value = .{ .omitted = void{} },
-            .max_value = .{ .omitted = void{} },
-            .min_length = .{ .omitted = void{} },
-            .max_length = .{ .omitted = void{} },
-            .autocomplete = .{ .omitted = void{} },
+            .min_value = .omit,
+            .max_value = .omit,
+            .min_length = .omit,
+            .max_length = .omit,
+            .autocomplete = .omit,
         };
     }
 };
@@ -141,15 +141,15 @@ pub const SubcommandGroupOptionBuilder = struct {
 pub const StringOptionBuilder = struct {
     type: ApplicationCommandOptionType,
     name: []const u8,
-    name_localizations: Omittable(?Localizations) = .{ .omitted = void{} },
+    name_localizations: Omittable(?Localizations) = .omit,
     description: []const u8,
-    description_localizations: Omittable(?Localizations) = .{ .omitted = void{} },
-    required: Omittable(bool) = .{ .omitted = void{} },
-    choices: Omittable([]StringChoice) = .{ .omitted = void{} },
-    channel_types: Omittable([]const channel.Type) = .{ .omitted = void{} },
-    min_length: Omittable(i64) = .{ .omitted = void{} },
-    max_length: Omittable(i64) = .{ .omitted = void{} },
-    autocomplete: Omittable(bool) = .{ .omitted = void{} },
+    description_localizations: Omittable(?Localizations) = .omit,
+    required: Omittable(bool) = .omit,
+    choices: Omittable([]StringChoice) = .omit,
+    channel_types: Omittable([]const channel.Type) = .omit,
+    min_length: Omittable(i64) = .omit,
+    max_length: Omittable(i64) = .omit,
+    autocomplete: Omittable(bool) = .omit,
 
     fn build(self: @This()) ApplicationCommandOption {
         return ApplicationCommandOption{
@@ -159,11 +159,11 @@ pub const StringOptionBuilder = struct {
             .description = self.description,
             .description_localizations = self.description_localizations,
             .required = self.required,
-            .choices = if (self.choices == .some) .{ .some = .{ .string = self.choices.some } } else .{ .omitted = void{} },
-            .options = .{ .omitted = void{} },
+            .choices = if (self.choices == .some) .{ .some = .{ .string = self.choices.some } } else .omit,
+            .options = .omit,
             .channel_types = self.channel_types,
-            .min_value = .{ .omitted = void{} },
-            .max_value = .{ .omitted = void{} },
+            .min_value = .omit,
+            .max_value = .omit,
             .min_length = self.min_length,
             .max_length = self.max_length,
             .autocomplete = self.autocomplete,
@@ -174,15 +174,15 @@ pub const StringOptionBuilder = struct {
 pub const IntegerOptionBuilder = struct {
     type: ApplicationCommandOptionType,
     name: []const u8,
-    name_localizations: Omittable(?Localizations) = .{ .omitted = void{} },
+    name_localizations: Omittable(?Localizations) = .omit,
     description: []const u8,
-    description_localizations: Omittable(?Localizations) = .{ .omitted = void{} },
-    required: Omittable(bool) = .{ .omitted = void{} },
-    choices: Omittable([]IntegerChoice) = .{ .omitted = void{} },
-    channel_types: Omittable([]const channel.Type) = .{ .omitted = void{} },
-    min_value: Omittable(i64) = .{ .omitted = void{} },
-    max_value: Omittable(i64) = .{ .omitted = void{} },
-    autocomplete: Omittable(bool) = .{ .omitted = void{} },
+    description_localizations: Omittable(?Localizations) = .omit,
+    required: Omittable(bool) = .omit,
+    choices: Omittable([]IntegerChoice) = .omit,
+    channel_types: Omittable([]const channel.Type) = .omit,
+    min_value: Omittable(i64) = .omit,
+    max_value: Omittable(i64) = .omit,
+    autocomplete: Omittable(bool) = .omit,
 
     fn build(self: @This()) ApplicationCommandOption {
         return ApplicationCommandOption{
@@ -192,13 +192,13 @@ pub const IntegerOptionBuilder = struct {
             .description = self.description,
             .description_localizations = self.description_localizations,
             .required = self.required,
-            .choices = if (self.choices == .some) .{ .some = .{ .integer = self.choices.some } } else .{ .omitted = void{} },
-            .options = .{ .omitted = void{} },
+            .choices = if (self.choices == .some) .{ .some = .{ .integer = self.choices.some } } else .omit,
+            .options = .omit,
             .channel_types = self.channel_types,
-            .min_value = .{ .omitted = void{} },
-            .max_value = .{ .omitted = void{} },
-            .min_length = .{ .omitted = void{} },
-            .max_length = .{ .omitted = void{} },
+            .min_value = .omit,
+            .max_value = .omit,
+            .min_length = .omit,
+            .max_length = .omit,
             .autocomplete = self.autocomplete,
         };
     }
@@ -207,15 +207,15 @@ pub const IntegerOptionBuilder = struct {
 pub const NumberOptionBuilder = struct {
     type: ApplicationCommandOptionType,
     name: []const u8,
-    name_localizations: Omittable(?Localizations) = .{ .omitted = void{} },
+    name_localizations: Omittable(?Localizations) = .omit,
     description: []const u8,
-    description_localizations: Omittable(?Localizations) = .{ .omitted = void{} },
-    required: Omittable(bool) = .{ .omitted = void{} },
-    choices: Omittable([]DoubleChoice) = .{ .omitted = void{} },
-    channel_types: Omittable([]const channel.Type) = .{ .omitted = void{} },
-    min_value: Omittable(f64) = .{ .omitted = void{} },
-    max_value: Omittable(f64) = .{ .omitted = void{} },
-    autocomplete: Omittable(bool) = .{ .omitted = void{} },
+    description_localizations: Omittable(?Localizations) = .omit,
+    required: Omittable(bool) = .omit,
+    choices: Omittable([]DoubleChoice) = .omit,
+    channel_types: Omittable([]const channel.Type) = .omit,
+    min_value: Omittable(f64) = .omit,
+    max_value: Omittable(f64) = .omit,
+    autocomplete: Omittable(bool) = .omit,
 
     fn build(self: @This()) ApplicationCommandOption {
         return ApplicationCommandOption{
@@ -225,13 +225,13 @@ pub const NumberOptionBuilder = struct {
             .description = self.description,
             .description_localizations = self.description_localizations,
             .required = self.required,
-            .choices = if (self.choices == .some) .{ .some = .{ .double = self.choices.some } } else .{ .omitted = void{} },
-            .options = .{ .omitted = void{} },
+            .choices = if (self.choices == .some) .{ .some = .{ .double = self.choices.some } } else .omit,
+            .options = .omit,
             .channel_types = self.channel_types,
-            .min_value = .{ .omitted = void{} },
-            .max_value = .{ .omitted = void{} },
-            .min_length = .{ .omitted = void{} },
-            .max_length = .{ .omitted = void{} },
+            .min_value = .omit,
+            .max_value = .omit,
+            .min_length = .omit,
+            .max_length = .omit,
             .autocomplete = self.autocomplete,
         };
     }
@@ -240,11 +240,11 @@ pub const NumberOptionBuilder = struct {
 pub fn GenericOptionBuilder(optType: ApplicationCommandOptionType) type {
     return struct {
         name: []const u8,
-        name_localizations: Omittable(?Localizations) = .{ .omitted = void{} },
+        name_localizations: Omittable(?Localizations) = .omit,
         description: []const u8,
-        description_localizations: Omittable(?Localizations) = .{ .omitted = void{} },
-        required: Omittable(bool) = .{ .omitted = void{} },
-        channel_types: Omittable([]const channel.Type) = .{ .omitted = void{} },
+        description_localizations: Omittable(?Localizations) = .omit,
+        required: Omittable(bool) = .omit,
+        channel_types: Omittable([]const channel.Type) = .omit,
 
         fn build(self: @This()) ApplicationCommandOption {
             return ApplicationCommandOption{
@@ -254,14 +254,14 @@ pub fn GenericOptionBuilder(optType: ApplicationCommandOptionType) type {
                 .description = self.description,
                 .description_localizations = self.description_localizations,
                 .required = self.required,
-                .choices = .{ .omitted = void{} },
-                .options = .{ .omitted = void{} },
+                .choices = .omit,
+                .options = .omit,
                 .channel_types = self.channel_types,
-                .min_value = .{ .omitted = void{} },
-                .max_value = .{ .omitted = void{} },
-                .min_length = .{ .omitted = void{} },
-                .max_length = .{ .omitted = void{} },
-                .autocomplete = .{ .omitted = void{} },
+                .min_value = .omit,
+                .max_value = .omit,
+                .min_length = .omit,
+                .max_length = .omit,
+                .autocomplete = .omit,
             };
         }
     };
@@ -270,7 +270,7 @@ pub fn GenericOptionBuilder(optType: ApplicationCommandOptionType) type {
 /// A possible choice for an ApplicationCommandOption of type `string`.
 pub const StringChoice = struct {
     name: []const u8,
-    name_localizations: Omittable(?Localizations) = .{ .omitted = void{} },
+    name_localizations: Omittable(?Localizations) = .omit,
     value: []const u8,
 
     pub const jsonStringify = deanson.stringifyWithOmit;
@@ -279,7 +279,7 @@ pub const StringChoice = struct {
 /// A possible choice for an ApplicationCommandOption of type `integer`.
 pub const IntegerChoice = struct {
     name: []const u8,
-    name_localizations: Omittable(?Localizations) = .{ .omitted = void{} },
+    name_localizations: Omittable(?Localizations) = .omit,
     value: i64,
 
     pub const jsonStringify = deanson.stringifyWithOmit;
@@ -288,7 +288,7 @@ pub const IntegerChoice = struct {
 /// A possible choice for an ApplicationCommandOption of type `double`.
 pub const DoubleChoice = struct {
     name: []const u8,
-    name_localizations: Omittable(?Localizations) = .{ .omitted = void{} },
+    name_localizations: Omittable(?Localizations) = .omit,
     value: f64,
 
     pub const jsonStringify = deanson.stringifyWithOmit;

@@ -17,11 +17,11 @@ pub const Interaction = struct {
     id: Snowflake,
     application_id: Snowflake,
     type: InteractionType,
-    data: Omittable(InteractionData) = .{ .omitted = void{} },
-    guild_id: Omittable(Snowflake) = .{ .omitted = void{} },
-    channel: Omittable(PartialChannel) = .{ .omitted = void{} },
-    channel_id: Omittable(Snowflake) = .{ .omitted = void{} },
-    member: Omittable(Member) = .{ .omitted = void{} },
+    data: Omittable(InteractionData) = .omit,
+    guild_id: Omittable(Snowflake) = .omit,
+    channel: Omittable(PartialChannel) = .omit,
+    channel_id: Omittable(Snowflake) = .omit,
+    member: Omittable(Member) = .omit,
 };
 
 // TODO - discord says `channel` is a partial channel, but doesn't say what's included/excluded.
@@ -48,11 +48,14 @@ pub const ApplicationCommandData = struct {
 };
 
 pub const ResolvedData = struct {
-    users: ?std.AutoArrayHashMap(Snowflake, User),
-    members: ?std.AutoArrayHashMap(Snowflake, InteractionMember),
-    roles: ?std.AutoArrayHashMap(Snowflake, Role),
-    channels: ?std.AutoArrayHashMap(Snowflake, InteractionChannel),
-    // TODO - implement jsonparse because these don't use
+    users: Omittable(std.json.ArrayHashMap(User)) = .omit,
+    members: Omittable(std.json.ArrayHashMap(InteractionMember)) = .omit,
+    roles: Omittable(std.json.ArrayHashMap(Role)) = .omit,
+    channels: Omittable(std.json.ArrayHashMap(InteractionChannel)) = .omit,
+    messages: Omittable(std.json.ArrayHashMap(model.Message)) = .omit,
+    attachments: Omittable(std.json.ArrayHashMap(model.Message.Attachment)) = .omit,
+
+    pub const jsonStringify = model.deanson.stringifyWithOmit;
 };
 
 pub const InteractionMember = struct {
@@ -93,7 +96,7 @@ pub const InteractionChannel = struct {
 
 pub const InteractionResponse = struct {
     type: Type,
-    data: Omittable(InteractionCallbackData) = .{ .omitted = void{} },
+    data: Omittable(InteractionCallbackData) = .omit,
 
     pub const Type = enum(u8) {
         pong = 1,

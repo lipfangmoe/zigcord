@@ -5,9 +5,9 @@ const Omittable = model.deanson.Omittable;
 type: Type,
 key: []const u8,
 name: []const u8,
-name_localizations: Omittable(Localizations) = .{ .omitted = void{} },
+name_localizations: Omittable(Localizations) = .omit,
 description: []const u8,
-description_localizations: Omittable(Localizations) = .{ .omitted = void{} },
+description_localizations: Omittable(Localizations) = .omit,
 
 pub const jsonStringify = model.deanson.stringifyWithOmit;
 

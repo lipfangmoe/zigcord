@@ -17,6 +17,9 @@ pub const Entitlement = @import("./model/Entitlement.zig");
 pub const voice = @import("./model/voice.zig");
 pub const Emoji = @import("./model/Emoji.zig");
 pub const Sticker = @import("./model/Sticker.zig");
+pub const Channel = @import("./model/Channel.zig");
+pub const MessageComponent = @import("./model/MessageComponent.zig");
+pub const Invite = @import("./model/Invite.zig");
 
 /// Represents an array of localization entries, ie:
 /// [["en-US", "please enable cookies"], ["en-GB", "please enable biscuits"]]

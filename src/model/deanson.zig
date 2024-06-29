@@ -155,13 +155,13 @@ pub fn stringifyWithOmit(self: anytype, json_writer: anytype) !void {
         }
 
         const field_names = std.meta.fieldNames(field.type);
-        if (field_names.len == 2 and std.mem.eql(u8, field_names[0], "some") and std.mem.eql(u8, field_names[1], "omitted")) {
+        if (field_names.len == 2 and std.mem.eql(u8, field_names[0], "some") and std.mem.eql(u8, field_names[1], "omit")) {
             switch (rawValue) {
                 .some => |some| {
                     try json_writer.objectField(field.name);
                     try json_writer.write(some);
                 },
-                .omitted => {},
+                .omit => {},
             }
         } else {
             try json_writer.objectField(field.name);
@@ -174,9 +174,9 @@ pub fn stringifyWithOmit(self: anytype, json_writer: anytype) !void {
 
 test "stringify with omit" {
     const OmittableTest = struct {
-        omittable_omitted: Omittable(bool) = .{ .omitted = void{} },
+        omittable_omitted: Omittable(bool) = .omit,
         omittable_included: Omittable(bool) = .{ .some = true },
-        nullable_omitted: Omittable(?bool) = .{ .omitted = void{} },
+        nullable_omitted: Omittable(?bool) = .omit,
         nullable_null: Omittable(?bool) = .{ .some = null },
         nullable_nonnull: Omittable(?bool) = .{ .some = true },
 
@@ -194,14 +194,14 @@ test "stringify with omit" {
 ///
 /// In order for this to work properly, you must declare `pub const jsonStringify = stringifyWithOmit`
 ///
-/// To properly represent an omitted field, define the field as `field: Omittable(T) = .{ .omitted = void{} }`.
+/// To properly represent an omitted field, define the field as `field: Omittable(T) = .omit`.
 ///
-/// To properly use this alongside nullable fields, define the field as `field: Omittable(?T) = .{ .omitted = void{} }`,
-/// and a null field would then be represented as the value `Omittable(T){ .some = null }`.
+/// To properly use this alongside nullable fields, define the field as `field: Omittable(?T) = .omit`,
+/// and a null field would then be represented as the value `.{ .some = null }`.
 pub fn Omittable(comptime T: type) type {
     return union(enum) {
         some: T,
-        omitted: void,
+        omit: void,
 
         /// Turns Omittable(T) into a `?T`. If `T` is already an optional, `??T` is collapsed to `?T`.
         pub fn asSome(self: Omittable(T)) ?T {
@@ -215,7 +215,7 @@ pub fn Omittable(comptime T: type) type {
         pub fn isNothing(self: Omittable(T)) bool {
             return switch (self) {
                 .some => |some| if (@typeInfo(T) == .Optional) some == null else false,
-                .omitted => true,
+                .omit => true,
             };
         }
 

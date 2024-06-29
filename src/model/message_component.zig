@@ -31,21 +31,21 @@ pub const ActionRowComponent = struct {
 };
 pub const ButtonComponent = struct {
     style: ButtonStyle,
-    label: Omittable([]const u8) = .{ .omitted = void{} },
-    emoji: Omittable(PartialEmoji) = .{ .omitted = void{} },
-    custom_id: Omittable([]const u8) = .{ .omitted = void{} },
-    url: Omittable([]const u8) = .{ .omitted = void{} },
-    disabled: Omittable(bool) = .{ .omitted = void{} },
+    label: Omittable([]const u8) = .omit,
+    emoji: Omittable(PartialEmoji) = .omit,
+    custom_id: Omittable([]const u8) = .omit,
+    url: Omittable([]const u8) = .omit,
+    disabled: Omittable(bool) = .omit,
 };
 pub const StringSelectComponent = struct {
     custom_id: []const u8,
-    options: Omittable([]const SelectOption) = .{ .omitted = void{} },
-    channel_types: Omittable([]const channel.Type) = .{ .omitted = void{} },
-    placeholder: Omittable([]const u8) = .{ .omitted = void{} },
-    default_values: Omittable([]const DefaultValue) = .{ .omitted = void{} },
-    min_values: Omittable(i64) = .{ .omitted = void{} },
-    max_values: Omittable(i64) = .{ .omitted = void{} },
-    disabled: Omittable(bool) = .{ .omitted = void{} },
+    options: Omittable([]const SelectOption) = .omit,
+    channel_types: Omittable([]const channel.Type) = .omit,
+    placeholder: Omittable([]const u8) = .omit,
+    default_values: Omittable([]const DefaultValue) = .omit,
+    min_values: Omittable(i64) = .omit,
+    max_values: Omittable(i64) = .omit,
+    disabled: Omittable(bool) = .omit,
 };
 
 // TODO
@@ -59,15 +59,15 @@ pub const ButtonStyle = enum {};
 pub const PartialEmoji = struct {
     id: ?Snowflake,
     name: ?[]const u8,
-    animated: Omittable(bool) = .{ .omitted = void{} },
+    animated: Omittable(bool) = .omit,
 };
 
 pub const SelectOption = struct {
     label: []const u8,
     value: []const u8,
-    description: Omittable([]const u8) = .{ .omitted = void{} },
-    emoji: Omittable(PartialEmoji) = .{ .omitted = void{} },
-    default: Omittable(bool) = .{ .omitted = void{} },
+    description: Omittable([]const u8) = .omit,
+    emoji: Omittable(PartialEmoji) = .omit,
+    default: Omittable(bool) = .omit,
 };
 
 pub const DefaultValue = struct {

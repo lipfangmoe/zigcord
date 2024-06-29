@@ -13,29 +13,29 @@ global_name: ?[]const u8,
 /// This user's avatar hash. See https://discord.com/developers/docs/reference#image-formatting
 avatar: ?[]const u8,
 /// true if this user is a bot.
-bot: Omittable(bool) = .{ .omitted = void{} },
+bot: Omittable(bool) = .omit,
 /// true if this user is a system user (ie, part of the urgent message system, whatever that is)
-system: Omittable(bool) = .{ .omitted = void{} },
+system: Omittable(bool) = .omit,
 /// true if this user has MFA enabled
-mfa_enabled: Omittable(bool) = .{ .omitted = void{} },
+mfa_enabled: Omittable(bool) = .omit,
 /// This user's banner hash. See https://discord.com/developers/docs/reference#image-formatting
-banner: Omittable(?[]const u8) = .{ .omitted = void{} },
+banner: Omittable(?[]const u8) = .omit,
 /// This user's banner color encoded as an integer.
-accent_color: Omittable(?i64) = .{ .omitted = void{} },
+accent_color: Omittable(?i64) = .omit,
 /// The user's chosen language. See https://discord.com/developers/docs/reference#locales
-locale: Omittable([]const u8) = .{ .omitted = void{} },
+locale: Omittable([]const u8) = .omit,
 /// true if this user's email is verified.
-verified: Omittable(bool) = .{ .omitted = void{} },
+verified: Omittable(bool) = .omit,
 /// The user's email
-email: Omittable(?[]const u8) = .{ .omitted = void{} },
+email: Omittable(?[]const u8) = .omit,
 /// The user's account flags
-flags: Omittable(Flags) = .{ .omitted = void{} },
+flags: Omittable(Flags) = .omit,
 /// What kind of nitro this user has
-premium_type: Omittable(NitroType) = .{ .omitted = void{} },
+premium_type: Omittable(NitroType) = .omit,
 /// The user's public flags
-public_flags: Omittable(Flags) = .{ .omitted = void{} },
+public_flags: Omittable(Flags) = .omit,
 /// The user's avatar decoration data.
-avatar_decoration_data: Omittable(?AvatarDecorationData) = .{ .omitted = void{} },
+avatar_decoration_data: Omittable(?AvatarDecorationData) = .omit,
 
 pub const Flags = model.Flags(enum(u6) {
     /// discord employee
