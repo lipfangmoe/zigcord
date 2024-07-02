@@ -4,6 +4,7 @@ const deanson = @import("../deanson.zig");
 const Role = @import("./Role.zig");
 const Emoji = @import("../Emoji.zig");
 const GuildSticker = @import("./GuildSticker.zig");
+const Omittable = deanson.Omittable;
 
 // TODO: migrate to Omittable
 
@@ -11,18 +12,18 @@ id: Snowflake,
 name: []const u8,
 icon: ?[]const u8,
 /// used for guild templates
-icon_hash: ?[]const u8,
+icon_hash: Omittable(?[]const u8) = .omit,
 splash: ?[]const u8,
 discovery_splash: ?[]const u8,
 /// true if the authenticated user is the owner of the guild
-owner: ?bool,
+owner: Omittable(bool) = .omit,
 owner_id: Snowflake,
-permissions: ?[]const u8,
-region: ?[]const u8,
+permissions: Omittable([]const u8) = .omit,
+region: Omittable(?[]const u8) = .omit,
 afk_channel_id: ?Snowflake,
 afk_timeout: i64,
-widget_enabled: ?bool,
-widget_channel_id: ?Snowflake,
+widget_enabled: Omittable(bool) = .omit,
+widget_channel_id: Omittable(?Snowflake) = .omit,
 verification_level: VerificationLevel,
 default_message_notifications: MessageNotificationLevel,
 explicit_content_filter: ExplicitContentFilterLevel,
@@ -35,24 +36,26 @@ application_id: ?Snowflake,
 system_channel_id: ?Snowflake,
 system_channel_flags: SystemChannelFlags,
 rules_channel_id: ?Snowflake,
-max_presences: ?i64,
-max_members: ?i64,
+max_presences: Omittable(?i64) = .omit,
+max_members: Omittable(i64) = .omit,
 vanity_url_code: ?[]const u8,
 description: ?[]const u8,
 banner: ?[]const u8,
 premium_tier: PremiumTier,
-premium_subscription_count: i64,
+premium_subscription_count: Omittable(i64) = .omit,
 preferred_locale: []const u8,
 public_updates_channel_id: ?Snowflake,
-max_video_channel_users: ?i64,
-max_stage_video_channel_users: ?i64,
-approximate_member_count: ?i64,
-approximate_presence_count: ?i64,
-welcome_screen: ?WelcomeScreen,
+max_video_channel_users: Omittable(i64) = .omit,
+max_stage_video_channel_users: Omittable(i64) = .omit,
+approximate_member_count: Omittable(i64) = .omit,
+approximate_presence_count: Omittable(i64) = .omit,
+welcome_screen: Omittable(WelcomeScreen) = .omit,
 nsfw_level: NsfwLevel,
-stickers: ?[]GuildSticker,
+stickers: Omittable([]const GuildSticker) = .omit,
 premium_progress_bar_enabled: bool,
 safety_alerts_channel_id: ?Snowflake,
+
+pub const jsonStringify = deanson.stringifyWithOmit;
 
 pub const VerificationLevel = enum {
     /// unrestricted
@@ -123,7 +126,7 @@ pub const WelcomeScreen = struct {
     };
 };
 
-pub const SystemChannelFlags = model.Flags(enum {
+pub const SystemChannelFlags = model.Flags(enum(u4) {
     supress_join_notifications,
     suppress_premium_subscriptions,
     suppress_guild_reminder_notifications,

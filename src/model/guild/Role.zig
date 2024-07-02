@@ -3,6 +3,8 @@ const model = @import("../../model.zig");
 const Snowflake = model.Snowflake;
 const Omittable = model.deanson.Omittable;
 
+// TODO - role should be under `permissions`, not `guild`
+
 /// role id
 id: Snowflake,
 /// role name
