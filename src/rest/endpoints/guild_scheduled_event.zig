@@ -8,8 +8,9 @@ const Omittable = model.deanson.Omittable;
 pub fn listScheduledEventsForGuild(
     client: *rest.Client,
     guild_id: model.Snowflake,
-    query: ListScheduledEventsForGuildQuery,
+    with_user_count: ?bool,
 ) !rest.Client.Result([]model.GuildScheduledEvent) {
+    const query = WithUserCountQuery{ .with_user_count = with_user_count };
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/guilds/{}/scheduled-events?{query}", .{ guild_id, query });
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -30,10 +31,63 @@ pub fn createGuildScheduledEvent(
     return client.requestWithValueBodyAndAuditLogReason(model.GuildScheduledEvent, .POST, uri, body, .{}, audit_log_reason);
 }
 
-pub const ListScheduledEventsForGuildQuery = struct {
+pub fn getGuildScheuledEvent(
+    client: *rest.Client,
+    guild_id: model.Snowflake,
+    guild_scheduled_Event_id: model.Snowflake,
+    with_user_count: ?bool,
+) !rest.Client.Result(model.GuildScheduledEvent) {
+    const query = WithUserCountQuery{ .with_user_count = with_user_count };
+    const uri_str = try rest.allocDiscordUriStr(client.allocator, "/guilds/{}/scheduled-events/{}?{query}", .{ guild_id, guild_scheduled_Event_id, query });
+    defer client.allocator.free(uri_str);
+    const uri = try std.Uri.parse(uri_str);
+
+    return client.request(model.GuildScheduledEvent, .GET, uri);
+}
+
+pub fn modifyGuildScheduledEvent(
+    client: *rest.Client,
+    guild_id: model.Snowflake,
+    guild_scheduled_Event_id: model.Snowflake,
+    body: ModifyGuildScheduledEventBody,
+    audit_log_reason: ?[]const u8,
+) !rest.Client.Result(model.GuildScheduledEvent) {
+    const uri_str = try rest.allocDiscordUriStr(client.allocator, "/guilds/{}/scheduled-events/{}", .{ guild_id, guild_scheduled_Event_id });
+    defer client.allocator.free(uri_str);
+    const uri = try std.Uri.parse(uri_str);
+
+    return client.requestWithValueBodyAndAuditLogReason(model.GuildScheduledEvent, .PATCH, uri, body, .{}, audit_log_reason);
+}
+
+pub fn deleteGuildScheduledEvent(
+    client: *rest.Client,
+    guild_id: model.Snowflake,
+    guild_scheduled_Event_id: model.Snowflake,
+) !rest.Client.Result(model.GuildScheduledEvent) {
+    const uri_str = try rest.allocDiscordUriStr(client.allocator, "/guilds/{}/scheduled-events/{}", .{ guild_id, guild_scheduled_Event_id });
+    defer client.allocator.free(uri_str);
+    const uri = try std.Uri.parse(uri_str);
+
+    return client.request(model.GuildScheduledEvent, .DELETE, uri);
+}
+
+pub fn getGuildScheuledEventUsers(
+    client: *rest.Client,
+    guild_id: model.Snowflake,
+    guild_scheduled_Event_id: model.Snowflake,
+    query: GetGuildScheduledEventUsersQuery,
+) !rest.Client.Result(model.GuildScheduledEvent) {
+    const uri_str = try rest.allocDiscordUriStr(client.allocator, "/guilds/{}/scheduled-events/{}/users?{query}", .{ guild_id, guild_scheduled_Event_id, query });
+    defer client.allocator.free(uri_str);
+    const uri = try std.Uri.parse(uri_str);
+
+    return client.request(model.GuildScheduledEvent, .GET, uri);
+}
+
+pub const WithUserCountQuery = struct {
     with_user_count: ?bool = null,
 
-    usingnamespace rest.QueryStringFormatMixin(@This());
+    pub usingnamespace rest.QueryStringFormatMixin(@This());
 };
 
 pub const CreateGuildScheduledEventBody = struct {
@@ -43,4 +97,30 @@ pub const CreateGuildScheduledEventBody = struct {
     privacy_level: model.GuildScheduledEvent.PrivacyLevel,
     scheduled_start_time: []zigtime.DateTime,
     scheduled_end_time: []zigtime.DateTime,
+
+    pub usingnamespace model.deanson.OmittableJsonMixin(@This());
+};
+
+pub const ModifyGuildScheduledEventBody = struct {
+    channel_id: Omittable(?model.Snowflake) = .omit,
+    entity_metadata: Omittable(?model.GuildScheduledEvent.EntityMetadata) = .omit,
+    name: Omittable([]const u8) = .omit,
+    privacy_level: Omittable(model.GuildScheduledEvent.PrivacyLevel) = .omit,
+    scheduled_start_time: Omittable(zigtime.DateTime) = .omit,
+    scheduled_end_time: Omittable(zigtime.DateTime) = .omit,
+    description: Omittable(?[]const u8) = .omit,
+    entity_type: Omittable(model.GuildScheduledEvent.EntityType) = .omit,
+    status: Omittable(model.GuildScheduledEvent.EventStatus) = .omit,
+    image: Omittable(model.ImageData) = .omit,
+
+    pub usingnamespace model.deanson.OmittableJsonMixin(@This());
+};
+
+pub const GetGuildScheduledEventUsersQuery = struct {
+    limit: ?i64 = null,
+    with_member: ?bool = null,
+    before: ?model.Snowflake = null,
+    after: ?model.Snowflake = null,
+
+    pub usingnamespace rest.QueryStringFormatMixin(@This());
 };

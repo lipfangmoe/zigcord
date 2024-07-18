@@ -125,22 +125,32 @@ test "union inline - inside struct" {
     try std.testing.expectEqualStrings("{\"foo\":\"foo\",\"onion\":\"bar\"}", actual_bar_str);
 }
 
+pub fn OmittableJsonMixin(comptime T: type) type {
+    return struct {
+        pub fn jsonStringify(self: T, json_writer: anytype) @typeInfo(@TypeOf(json_writer)).Pointer.child.Error!void {
+            return stringifyWithOmit(self, json_writer);
+        }
+    };
+}
+
 /// Utility function to enable `Omittable` to work on structs.
 ///
 /// Intended usage: add a declaration in your container as `pub const jsonStringify = stringifyWithOmit`.
 pub fn stringifyWithOmit(self: anytype, json_writer: anytype) @typeInfo(@TypeOf(json_writer)).Pointer.child.Error!void {
-    const struct_info = comptime blk: {
+    const struct_info: std.builtin.Type.Struct = comptime blk: {
         const self_typeinfo = @typeInfo(@TypeOf(self));
-        if (self_typeinfo != .Pointer) {
-            @compileError("stringifyWithOmit may only be called on *const <structT>, found \"" ++ @typeName(@TypeOf(self)) ++ "\"");
+        switch (self_typeinfo) {
+            .Pointer => |ptr| {
+                if (@typeInfo(ptr.child) != .Struct) {
+                    @compileError("stringifyWithOmit may only be called on structs and pointers to structs. Found \"" ++ @typeName(@TypeOf(self)) ++ "\"");
+                }
+                break :blk @typeInfo(ptr.child).Struct;
+            },
+            .Struct => |strct| {
+                break :blk strct;
+            },
+            else => @compileError("stringifyWithOmit may only be called on structs and pointers to structs. Found \"" ++ @typeName(@TypeOf(self)) ++ "\""),
         }
-        if (!self_typeinfo.Pointer.is_const) {
-            @compileError("stringifyWithOmit may only be called on *const <structT>, found \"" ++ @typeName(@TypeOf(self)) ++ "\"");
-        }
-        if (@typeInfo(self_typeinfo.Pointer.child) != .Struct) {
-            @compileError("stringifyWithOmit may only be called on *const <structT>, found \"" ++ @typeName(@TypeOf(self)) ++ "\"");
-        }
-        break :blk @typeInfo(self_typeinfo.Pointer.child).Struct;
     };
 
     try json_writer.beginObject();
@@ -224,7 +234,7 @@ pub fn Omittable(comptime T: type) type {
         }
 
         pub fn jsonStringify(_: Omittable(T), _: anytype) !void {
-            @panic("make sure to use deanson.stringifyWithOmit on any types that use Omittable");
+            @panic("make sure to use deanson.stringifyWithOmit or deanson.OmittableJsonMixin on any types that use Omittable");
         }
     };
 }
