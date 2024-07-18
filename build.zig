@@ -22,7 +22,7 @@ pub fn build(b: *std.Build) !void {
         .optimize = optimize,
     });
 
-    const test_step = b.step("test", "Run unit tests");
+    // zig build test
     const test_runner = b.addTest(.{
         .root_source_file = b.path("./src/root.zig"),
         .target = target,
@@ -31,16 +31,18 @@ pub fn build(b: *std.Build) !void {
     test_runner.root_module.addImport("websocket", websocket_module);
     test_runner.root_module.addImport("zig-time", zigtime_module);
     const test_run_artifact = b.addRunArtifact(test_runner);
+    const test_step = b.step("test", "Run unit tests");
     test_step.dependOn(&test_run_artifact.step);
 
-    const lib_check = b.addStaticLibrary(.{
+    // zig build check
+    const check_tests_compile = b.addTest(.{
         .root_source_file = b.path("./src/root.zig"),
         .name = "deancord",
         .target = target,
         .optimize = optimize,
     });
-    lib_check.root_module.addImport("websocket", websocket_module);
-    lib_check.root_module.addImport("zig-time", zigtime_module);
-    const check = b.step("check", "Run the compiler without building a library");
-    check.dependOn(&lib_check.step);
+    check_tests_compile.root_module.addImport("websocket", websocket_module);
+    check_tests_compile.root_module.addImport("zig-time", zigtime_module);
+    const check_step = b.step("check", "Run the compiler without building");
+    check_step.dependOn(&check_tests_compile.step);
 }

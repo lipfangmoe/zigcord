@@ -3,5 +3,6 @@
 	"zig.buildArgs": [
 		"check"
 	],
-	"zig.zls.enableBuildOnSave": true
+	"zig.zls.enableBuildOnSave": true,
+	"zig.zls.buildOnSaveStep": "check"
 }

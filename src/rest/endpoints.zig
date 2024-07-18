@@ -7,4 +7,5 @@ pub const channel = @import("./endpoints/channel.zig");
 pub const emoji = @import("./endpoints/emoji.zig");
 pub const guild = @import("./endpoints/guild.zig");
 pub const guild_scheduled_event = @import("./endpoints/guild_scheduled_event.zig");
+pub const guild_template = @import("./endpoints/guild_template.zig");
 pub const interactions = @import("./endpoints/interactions.zig");

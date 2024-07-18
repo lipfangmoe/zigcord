@@ -23,6 +23,7 @@ pub const MessageComponent = @import("./model/MessageComponent.zig");
 pub const Invite = @import("./model/Invite.zig");
 pub const ImageData = @import("./model/ImageData.zig");
 pub const GuildScheduledEvent = @import("./model/GuildScheduledEvent.zig");
+pub const GuildTemplate = @import("./model/GuildTemplate.zig");
 
 /// Represents an array of localization entries, ie:
 /// [["en-US", "please enable cookies"], ["en-GB", "please enable biscuits"]]
