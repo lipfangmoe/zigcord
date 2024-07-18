@@ -8,6 +8,7 @@ pub const User = @import("./model/User.zig");
 pub const guild = @import("./model/guild.zig");
 pub const Snowflake = @import("./model/snowflake.zig").Snowflake;
 pub const Flags = @import("./model/flags.zig").Flags;
+pub const PackedFlagsMixin = @import("./model/flags.zig").PackedFlagsMixin;
 pub const deanson = @import("./model/deanson.zig");
 pub const AuditLog = @import("./model/AuditLog.zig");
 pub const Message = @import("./model/Message.zig");
@@ -20,6 +21,8 @@ pub const Sticker = @import("./model/Sticker.zig");
 pub const Channel = @import("./model/Channel.zig");
 pub const MessageComponent = @import("./model/MessageComponent.zig");
 pub const Invite = @import("./model/Invite.zig");
+pub const ImageData = @import("./model/ImageData.zig");
+pub const GuildScheduledEvent = @import("./model/GuildScheduledEvent.zig");
 
 /// Represents an array of localization entries, ie:
 /// [["en-US", "please enable cookies"], ["en-GB", "please enable biscuits"]]
@@ -166,20 +169,20 @@ pub const Intents = packed struct {
     guild_message_polls: bool = false,
     direct_message_polls: bool = false, // 1 << 25
 
-    pub fn fromU64(int: u64) Permissions {
+    pub fn fromU64(int: u64) Intents {
         return @bitCast(@as(u26, @truncate(int)));
     }
 
-    pub fn asU64(self: Permissions) u64 {
+    pub fn asU64(self: Intents) u64 {
         return @intCast(@as(u26, @bitCast(self)));
     }
 
-    pub fn jsonParse(alloc: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !Permissions {
+    pub fn jsonParse(alloc: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !Intents {
         const int = try std.json.innerParse(u26, alloc, source, options);
         return fromU64(int);
     }
 
-    pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, options: std.json.ParseOptions) !Permissions {
+    pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, options: std.json.ParseOptions) !Intents {
         const int = try std.json.innerParseFromValue(u26, alloc, source, options);
         return fromU64(int);
     }

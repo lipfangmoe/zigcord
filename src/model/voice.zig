@@ -1,6 +1,7 @@
-pub const model = @import("../model.zig");
-pub const deanson = model.deanson;
-pub const Omittable = deanson.Omittable;
+const model = @import("../root.zig").model;
+const zigtime = @import("zig-time");
+const deanson = model.deanson;
+const Omittable = deanson.Omittable;
 
 pub const VoiceState = struct {
     guild_id: Omittable(model.Snowflake) = .omit,
@@ -15,7 +16,15 @@ pub const VoiceState = struct {
     self_stream: Omittable(bool) = .omit,
     self_video: bool,
     suppress: bool,
-    request_to_speak_timestamp: ?[]const u8,
+    request_to_speak_timestamp: ?[]zigtime.DateTime,
 
     pub const jsonStringify = deanson.stringifyWithOmit;
+};
+
+pub const Region = struct {
+    id: []const u8,
+    name: []const u8,
+    optimal: bool,
+    deprecated: bool,
+    custom: bool,
 };

@@ -1,4 +1,6 @@
-const model = @import("root").model;
+const deancord = @import("../root.zig");
+const model = deancord.model;
+const zigtime = @import("zig-time");
 const Snowflake = model.Snowflake;
 const User = model.User;
 const Member = model.guild.Member;
@@ -23,7 +25,7 @@ owner_id: Omittable(Snowflake) = .omit,
 application_id: Omittable(Snowflake) = .omit,
 managed: Omittable(bool) = .omit,
 parent_id: Omittable(?Snowflake) = .omit,
-last_pin_timestamp: Omittable(?[]const u8) = .omit,
+last_pin_timestamp: Omittable(?[]zigtime.DateTime) = .omit,
 rtc_region: Omittable(?[]const u8) = .omit,
 video_quality_mode: Omittable(VideoQualityMode) = .omit,
 message_count: Omittable(i64) = .omit,
@@ -38,8 +40,8 @@ available_tags: Omittable([]const Tag) = .omit,
 applied_tags: Omittable([]const Snowflake) = .omit,
 default_reaction_emoji: Omittable(?DefaultReaction) = .omit,
 default_thread_rate_limit_per_user: Omittable(i64) = .omit,
-default_sort_order: Omittable(?i64) = .omit,
-default_forum_layout: Omittable(i64) = .omit,
+default_sort_order: Omittable(?SortOrder) = .omit,
+default_forum_layout: Omittable(ForumLayout) = .omit,
 
 pub const jsonStringify = deanson.stringifyWithOmit;
 
@@ -87,16 +89,16 @@ pub const Flags = model.Flags(enum(u6) {
 pub const ThreadMetadata = struct {
     archived: bool,
     auto_archive_duration: i64,
-    archive_timestamp: []const u8,
+    archive_timestamp: []zigtime.DateTime,
     locked: bool,
     invitable: bool,
-    create_timestamp: ?[]const u8,
+    create_timestamp: ?[]zigtime.DateTime,
 };
 
 pub const ThreadMember = struct {
     id: ?Snowflake,
     user_id: ?Snowflake,
-    join_timestamp: []const u8,
+    join_timestamp: []zigtime.DateTime,
     flags: ThreadMember.Flags,
     member: ?Member,
 
@@ -128,4 +130,15 @@ pub const Tag = struct {
 pub const Followed = struct {
     channel_id: Snowflake,
     webhook_id: Snowflake,
+};
+
+pub const SortOrder = enum(i64) {
+    latest_activity = 0,
+    creation_date = 1,
+};
+
+pub const ForumLayout = enum(i64) {
+    not_set = 0,
+    list_view = 1,
+    gallery_view = 2,
 };

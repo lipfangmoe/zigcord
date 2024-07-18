@@ -1,5 +1,7 @@
 const std = @import("std");
-const model = @import("root").model;
+const zigtime = @import("zig-time");
+const deancord = @import("../root.zig");
+const model = deancord.model;
 const Snowflake = model.Snowflake;
 const Omittable = model.deanson.Omittable;
 
@@ -9,8 +11,8 @@ id: Snowflake,
 channel_id: Snowflake,
 author: MessageAuthor,
 content: []const u8,
-timestamp: []const u8, // ISO8601 string
-edited_timestamp: ?[]const u8, // ISO8601 string
+timestamp: []zigtime.DateTime,
+edited_timestamp: ?[]zigtime.DateTime,
 tts: bool,
 mention_everyone: bool,
 mentions: []const model.User,
@@ -28,9 +30,9 @@ application: Omittable(model.Application) = .omit,
 application_id: Omittable(Snowflake) = .omit,
 message_reference: Omittable(Reference) = .omit,
 flags: Omittable(Flags) = .omit,
-referenced_message: Omittable(?Message) = .omit,
-interaction_metadata: InteractionMetadata = .omit,
-thread: Omittable(model.channel.Channel) = .omit,
+referenced_message: Omittable(?*const Message) = .omit,
+interaction_metadata: InteractionMetadata,
+thread: Omittable(model.Channel) = .omit,
 components: Omittable([]const model.MessageComponent) = .omit,
 sticker_items: Omittable([]const model.Sticker.Item) = .omit,
 stickers: Omittable([]const model.Sticker) = .omit,
@@ -74,7 +76,7 @@ pub const Attachment = struct {
 pub const ChannelMention = struct {
     id: Snowflake,
     guild_id: Snowflake,
-    type: model.guild.channel.Channel.Type,
+    type: model.Channel.Type,
     name: []const u8,
 };
 
@@ -83,7 +85,7 @@ pub const Embed = struct {
     type: Omittable(EmbedType) = .omit,
     description: Omittable([]const u8) = .omit,
     url: Omittable([]const u8) = .omit,
-    timestamp: Omittable([]const u8) = .omit,
+    timestamp: Omittable([]zigtime.DateTime) = .omit,
     color: Omittable(i64) = .omit,
     footer: Omittable(Footer) = .omit,
     image: Omittable(Media) = .omit,
@@ -176,6 +178,7 @@ pub const Nonce = union(enum) {
             .string, .allocated_string => |string| {
                 return .{ .str = string };
             },
+            else => return error.UnexpectedToken,
         }
     }
 
@@ -272,7 +275,7 @@ pub const InteractionMetadata = struct {
     authorizing_integration_owners: std.json.Value, // no clue what shape this is
     original_response_message_id: Omittable(Snowflake) = .omit,
     interacted_message_id: Omittable(Snowflake) = .omit,
-    triggering_interaction_metadata: Omittable(InteractionMetadata) = .omit,
+    triggering_interaction_metadata: Omittable(?*const InteractionMetadata) = .omit,
 
     pub const jsonStringify = model.deanson.stringifyWithOmit;
 };
@@ -320,7 +323,7 @@ pub const Poll = struct {
 
 pub const Call = struct {
     participants: []const Snowflake,
-    ended_timestamp: Omittable(?[]const u8) = .omit,
+    ended_timestamp: Omittable(?[]zigtime.DateTime) = .omit,
 
     pub const jsonStringify = model.deanson.stringifyWithOmit;
 };

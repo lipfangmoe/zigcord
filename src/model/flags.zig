@@ -1,5 +1,27 @@
 const std = @import("std");
 
+pub fn PackedFlagsMixin(comptime FlagStruct: type) type {
+    if (@typeInfo(FlagStruct) != .Struct or @typeInfo(FlagStruct).Struct.backing_integer == null) {
+        @compileError("FlagEnum must be a packed struct");
+    }
+
+    const BackingInteger = comptime @typeInfo(FlagStruct).Struct.backing_integer orelse @compileError("already checked");
+
+    return struct {
+        const Self = @This();
+
+        pub fn jsonStringify(self: Self, jsonWriter: anytype) !void {
+            try jsonWriter.write(self.flags.mask);
+        }
+        pub fn jsonParse(alloc: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !Self {
+            return @bitCast(try std.json.innerParse(BackingInteger, alloc, source, options));
+        }
+        pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, options: std.json.ParseOptions) !Self {
+            return @bitCast(try std.json.innerParseFromValue(BackingInteger, alloc, source, options));
+        }
+    };
+}
+
 pub fn Flags(comptime FlagEnum: type) type {
     if (@typeInfo(FlagEnum) != .Enum or @typeInfo(FlagEnum).Enum.fields.len == 0) {
         @compileError("FlagEnum must be an enum with at least one entry");

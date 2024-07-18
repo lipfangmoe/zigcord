@@ -20,6 +20,10 @@
             .url = "https://github.com/deanveloper/websocket.zig/archive/zig-0.12.tar.gz",
             .hash = "1220e108d8ed58a321a90eab8d558036deb2f786b65b6e99b69f0d06b332f787a3be",
         },
+        .@"zig-time" = .{
+            .url = "https://github.com/Protonull/zig-time/archive/master.tar.gz",
+            .hash = "122002caf0f98d1e411cdb13d5ddc9e462a5841d68d5f0bb27ffc2ccfc2ffe12328d",
+        },
     },
 
     .paths = .{

@@ -1,9 +1,9 @@
 const std = @import("std");
-const channel = @import("../guild/channel.zig");
-const model = @import("../../model.zig");
+const model = @import("../../root.zig").model;
+const Channel = model.Channel;
 const Localizations = model.Localizations;
-const deanson = @import("../deanson.zig");
-const Omittable = model.deanson.Omittable;
+const deanson = model.deanson;
+const Omittable = deanson.Omittable;
 
 pub const ApplicationCommandOptionType = enum(u8) {
     subcommand = 1,
@@ -33,7 +33,7 @@ pub const ApplicationCommandOption = struct {
     required: Omittable(bool) = .omit,
     choices: Omittable(Choices) = .omit,
     options: Omittable([]ApplicationCommandOption) = .omit,
-    channel_types: Omittable([]const channel.Type) = .omit,
+    channel_types: Omittable([]const Channel.Type) = .omit,
     min_value: Omittable(union(enum) {
         double: f64,
         integer: i64,
@@ -87,7 +87,7 @@ pub const SubcommandOptionBuilder = struct {
     description_localizations: Omittable(?Localizations) = .omit,
     required: Omittable(bool) = .omit,
     options: Omittable([]ApplicationCommandOption) = .omit,
-    channel_types: Omittable([]const channel.Type) = .omit,
+    channel_types: Omittable([]const Channel.Type) = .omit,
 
     fn build(self: @This()) ApplicationCommandOption {
         return ApplicationCommandOption{
@@ -116,7 +116,7 @@ pub const SubcommandGroupOptionBuilder = struct {
     description_localizations: Omittable(?Localizations) = .omit,
     required: Omittable(bool) = .omit,
     options: Omittable([]ApplicationCommandOption) = .omit,
-    channel_types: Omittable([]const channel.Type) = .omit,
+    channel_types: Omittable([]const Channel.Type) = .omit,
 
     fn build(self: @This()) ApplicationCommandOption {
         return ApplicationCommandOption{
@@ -146,7 +146,7 @@ pub const StringOptionBuilder = struct {
     description_localizations: Omittable(?Localizations) = .omit,
     required: Omittable(bool) = .omit,
     choices: Omittable([]StringChoice) = .omit,
-    channel_types: Omittable([]const channel.Type) = .omit,
+    channel_types: Omittable([]const Channel.Type) = .omit,
     min_length: Omittable(i64) = .omit,
     max_length: Omittable(i64) = .omit,
     autocomplete: Omittable(bool) = .omit,
@@ -179,7 +179,7 @@ pub const IntegerOptionBuilder = struct {
     description_localizations: Omittable(?Localizations) = .omit,
     required: Omittable(bool) = .omit,
     choices: Omittable([]IntegerChoice) = .omit,
-    channel_types: Omittable([]const channel.Type) = .omit,
+    channel_types: Omittable([]const Channel.Type) = .omit,
     min_value: Omittable(i64) = .omit,
     max_value: Omittable(i64) = .omit,
     autocomplete: Omittable(bool) = .omit,
@@ -212,7 +212,7 @@ pub const NumberOptionBuilder = struct {
     description_localizations: Omittable(?Localizations) = .omit,
     required: Omittable(bool) = .omit,
     choices: Omittable([]DoubleChoice) = .omit,
-    channel_types: Omittable([]const channel.Type) = .omit,
+    channel_types: Omittable([]const Channel.Type) = .omit,
     min_value: Omittable(f64) = .omit,
     max_value: Omittable(f64) = .omit,
     autocomplete: Omittable(bool) = .omit,
@@ -244,7 +244,7 @@ pub fn GenericOptionBuilder(optType: ApplicationCommandOptionType) type {
         description: []const u8,
         description_localizations: Omittable(?Localizations) = .omit,
         required: Omittable(bool) = .omit,
-        channel_types: Omittable([]const channel.Type) = .omit,
+        channel_types: Omittable([]const Channel.Type) = .omit,
 
         fn build(self: @This()) ApplicationCommandOption {
             return ApplicationCommandOption{

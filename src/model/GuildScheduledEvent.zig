@@ -1,5 +1,6 @@
 const std = @import("std");
-const model = @import("../../model.zig");
+const model = @import("../root.zig").model;
+const zigtime = @import("zig-time");
 const deanson = model.deanson;
 const Omittable = deanson.Omittable;
 
@@ -9,8 +10,8 @@ channel_id: ?model.Snowflake,
 creator_id: Omittable(?model.Snowflake) = .omit,
 name: []const u8,
 description: Omittable(?[]const u8) = .omit,
-scheduled_start_time: []const u8,
-scheduled_end_time: ?[]const u8,
+scheduled_start_time: []zigtime.DateTime,
+scheduled_end_time: ?[]zigtime.DateTime,
 privacy_level: PrivacyLevel,
 status: EventStatus,
 entity_type: EntityType,

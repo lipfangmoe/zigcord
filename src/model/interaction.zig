@@ -1,11 +1,13 @@
 const std = @import("std");
-const model = @import("../model.zig");
+const deancord = @import("../root.zig");
+const model = deancord.model;
+const rest = deancord.rest;
+const zigtime = @import("zig-time");
 const Snowflake = model.Snowflake;
 const ApplicationCommandType = model.interaction.command.ApplicationCommandType;
 const User = model.User;
 const Member = model.guild.Member;
 const Role = model.guild.Role;
-const channel = model.guild.channel;
 const Omittable = model.deanson.Omittable;
 
 pub const command = @import("./interaction/command.zig");
@@ -65,18 +67,18 @@ pub const InteractionMember = struct {
     avatar: ?[]const u8 = null,
     /// The role ids that this user has
     roles: []Snowflake,
-    /// when the user joined the guild, ISO8601 timestamp
-    joined_at: []const u8,
-    /// when the user started boosting the guild, ISO8601 timestamp
-    premium_since: ?[]const u8 = null,
+    /// when the user joined the guild
+    joined_at: []zigtime.DateTime,
+    /// when the user started boosting the guild
+    premium_since: ?[]zigtime.DateTime = null,
     /// guild member flags
     flags: Member.Flags,
     /// true if the user has not passed the guild's membership screening requirements
     pending: ?bool = null,
     /// returned inside of interaction objects, permissions of the member in the interacted channel
     permissions: ?[]const u8 = null,
-    /// when the user's timeout will expire. ISO8601 timestamp. may be in the past; if so, the user is not timed out.
-    communication_disabled_until: ?[]const u8,
+    /// when the user's timeout will expire. may be in the past; if so, the user is not timed out.
+    communication_disabled_until: ?[]zigtime.DateTime,
 };
 
 pub const InteractionChannel = struct {
@@ -85,11 +87,11 @@ pub const InteractionChannel = struct {
     /// name of the channel
     name: ?[]const u8,
     /// type of the channel
-    type: channel.Type,
+    type: model.Channel.Type,
     /// permissions the authenticated user has on the channel
     permissions: ?[]const u8,
     /// metadata about the thread
-    thread_metadata: ?channel.ThreadMetadata,
+    thread_metadata: ?model.Channel.ThreadMetadata,
     /// channel id that the thread belongs to
     parent_id: ?Snowflake,
 };

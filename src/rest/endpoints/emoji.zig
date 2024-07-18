@@ -1,6 +1,7 @@
-const model = @import("root").model;
-const rest = @import("root").rest;
 const std = @import("std");
+const deancord = @import("../../root.zig");
+const model = deancord.model;
+const rest = deancord.rest;
 
 pub fn listGuildEmoji(
     client: *rest.Client,
@@ -35,7 +36,7 @@ pub fn createGuildEmoji(
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.requestWithValueBodyAndExtraHeaders(model.Emoji, .POST, uri, body, .{}, rest.auditLogHeaders(audit_log_reason));
+    return client.requestWithValueBodyAndAuditLogReason(model.Emoji, .POST, uri, body, .{}, audit_log_reason);
 }
 
 pub fn modifyGuildEmoji(
@@ -49,7 +50,7 @@ pub fn modifyGuildEmoji(
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.requestWithValueBodyAndExtraHeaders(model.Emoji, .PATCH, uri, body, .{}, rest.auditLogHeaders(audit_log_reason));
+    return client.requestWithValueBodyAndAuditLogReason(model.Emoji, .PATCH, uri, body, .{}, audit_log_reason);
 }
 
 pub fn deleteGuildEmoji(
@@ -62,7 +63,7 @@ pub fn deleteGuildEmoji(
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.requestWithExtraHeaders(model.Emoji, .DELETE, uri, rest.auditLogHeaders(audit_log_reason));
+    return client.requestWithAuditLogReason(void, .DELETE, uri, audit_log_reason);
 }
 
 pub const CreateGuildEmojiBody = struct {

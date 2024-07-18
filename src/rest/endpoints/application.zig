@@ -1,5 +1,5 @@
 const std = @import("std");
-const root = @import("root");
+const root = @import("../../root.zig");
 const model = root.model;
 const rest = root.rest;
 

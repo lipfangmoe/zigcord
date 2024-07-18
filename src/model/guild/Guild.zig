@@ -6,8 +6,6 @@ const Emoji = @import("../Emoji.zig");
 const GuildSticker = @import("./GuildSticker.zig");
 const Omittable = deanson.Omittable;
 
-// TODO: migrate to Omittable
-
 id: Snowflake,
 name: []const u8,
 icon: ?[]const u8,
@@ -30,7 +28,7 @@ explicit_content_filter: ExplicitContentFilterLevel,
 roles: []Role,
 emojis: []Emoji,
 /// https://discord.com/developers/docs/resources/guild#guild-object-guild-features
-features: []const u8,
+features: []const []const u8,
 mfa_level: MfaLevel,
 application_id: ?Snowflake,
 system_channel_id: ?Snowflake,
@@ -134,3 +132,63 @@ pub const SystemChannelFlags = model.Flags(enum(u4) {
     suppress_role_subscription_purchase_notifications,
     suppress_role_subscription_purchase_notification_replies,
 });
+
+pub const Ban = struct {
+    reason: ?[]const u8,
+    user: model.User,
+};
+
+pub const Widget = struct {
+    id: model.Snowflake,
+    name: []const u8,
+    instant_invite: ?[]const u8,
+    channels: []const model.Channel,
+    members: []const model.User,
+    presence_count: i64,
+};
+
+pub const WidgetSettings = struct {
+    enabled: bool,
+    channel_id: ?Snowflake,
+};
+
+pub const Onboarding = struct {
+    guild_id: Snowflake,
+    prompts: []const Prompt,
+    default_channel_ids: []const Snowflake,
+    enabled: bool,
+    mode: Mode,
+
+    pub const Prompt = struct {
+        id: Snowflake,
+        type: PromptType,
+        options: PromptOption,
+        title: []const u8,
+        single_select: bool,
+        required: bool,
+        in_onboarding: bool,
+    };
+
+    pub const PromptType = enum(u1) {
+        multiple_choice = 0,
+        dropdown = 1,
+    };
+
+    /// When creating or updating a prompt option, the `emoji_id`,
+    /// `emoji_name`, and `emoji_animated` fields must be used instead of the emoji object.
+    pub const PromptOption = struct {
+        id: Snowflake,
+        channel_ids: []const Snowflake,
+        role_ids: []const Snowflake,
+        emoji: Omittable(model.Emoji) = .omit,
+        emoji_id: Omittable(Snowflake) = .omit,
+        emoji_animated: Omittable(bool) = .omit,
+        title: []const u8,
+        description: ?[]const u8,
+    };
+
+    pub const Mode = enum(u1) {
+        onboarding_default = 0,
+        onboarding_advanced = 1,
+    };
+};

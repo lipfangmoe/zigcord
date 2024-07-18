@@ -1,15 +1,13 @@
 const std = @import("std");
-const root = @import("root");
-const model = root.model;
-const rest = root.rest;
+const deancord = @import("../../root.zig");
+const model = deancord.model;
+const rest = deancord.rest;
 const Snowflake = model.Snowflake;
 const RestResult = rest.Client.Result;
 const Client = rest.Client;
 const deanson = model.deanson;
 const Omittable = deanson.Omittable;
 const Channel = model.Channel;
-
-const auditLogHeaders = rest.auditLogHeaders;
 
 pub fn getChannel(client: *Client, channel_id: Snowflake) !RestResult(Channel) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/channels/{}", .{channel_id});
@@ -19,23 +17,35 @@ pub fn getChannel(client: *Client, channel_id: Snowflake) !RestResult(Channel) {
     return client.request(Channel, .GET, uri);
 }
 
-pub fn modifyChannel(client: *Client, channel_id: Snowflake, audit_log_reason: ?[]const u8) !RestResult(Channel) {
+pub fn modifyChannel(
+    client: *Client,
+    channel_id: Snowflake,
+    audit_log_reason: ?[]const u8,
+) !RestResult(Channel) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/channels/{}", .{channel_id});
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.requestWithExtraHeaders(Channel, .PATCH, uri, auditLogHeaders(audit_log_reason));
+    return client.requestWithAuditLogReason(Channel, .PATCH, uri, audit_log_reason);
 }
 
-pub fn deleteChannel(client: *Client, channel_id: Snowflake, audit_log_reason: ?[]const u8) !RestResult(Channel) {
+pub fn deleteChannel(
+    client: *Client,
+    channel_id: Snowflake,
+    audit_log_reason: ?[]const u8,
+) !RestResult(Channel) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/channels/{}", .{channel_id});
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.requestWithExtraHeaders(Channel, .DELETE, uri, auditLogHeaders(audit_log_reason));
+    return client.requestWithAuditLogReason(Channel, .DELETE, uri, audit_log_reason);
 }
 
-pub fn getChannelMessages(client: *Client, channel_id: Snowflake, query: GetChannelMessagesQuery) !RestResult([]const model.Message) {
+pub fn getChannelMessages(
+    client: *Client,
+    channel_id: Snowflake,
+    query: GetChannelMessagesQuery,
+) !RestResult([]const model.Message) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/channels/{}?{query}", .{ channel_id, query });
     defer client.allocator.free(uri_str);
 
@@ -44,7 +54,11 @@ pub fn getChannelMessages(client: *Client, channel_id: Snowflake, query: GetChan
     return client.request([]const model.Message, .GET, uri);
 }
 
-pub fn getChannelMessage(client: *Client, channel_id: Snowflake, message_id: Snowflake) !RestResult(model.Message) {
+pub fn getChannelMessage(
+    client: *Client,
+    channel_id: Snowflake,
+    message_id: Snowflake,
+) !RestResult(model.Message) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/channels/{}/messages/{}", .{ channel_id, message_id });
     defer client.allocator.free(uri_str);
 
@@ -54,13 +68,17 @@ pub fn getChannelMessage(client: *Client, channel_id: Snowflake, message_id: Sno
 }
 
 /// Note - the CreateMessageParams type has several helpers for creating messages easily
-pub fn createMessage(client: *Client, channel_id: Snowflake, body: CreateMessage) !RestResult(model.Message) {
+pub fn createMessage(
+    client: *Client,
+    channel_id: Snowflake,
+    body: CreateMessage,
+) !RestResult(model.Message) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/channels/{}/messages", .{channel_id});
     defer client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
 
-    var pending_request = client.beginRequest(model.Message, .POST, uri, .chunked, .{});
+    var pending_request = try client.beginRequest(model.Message, .POST, uri, .chunked, &.{});
     defer pending_request.deinit();
 
     try std.fmt.format(pending_request.writer(), "{form}", .{body});
@@ -68,7 +86,11 @@ pub fn createMessage(client: *Client, channel_id: Snowflake, body: CreateMessage
     return pending_request.waitForResponse();
 }
 
-pub fn crosspostMessage(client: *Client, channel_id: Snowflake, message_id: Snowflake) !RestResult(model.Message) {
+pub fn crosspostMessage(
+    client: *Client,
+    channel_id: Snowflake,
+    message_id: Snowflake,
+) !RestResult(model.Message) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/channels/{}/messages/{}/crosspost", .{ channel_id, message_id });
     defer client.allocator.free(uri_str);
 
@@ -77,7 +99,12 @@ pub fn crosspostMessage(client: *Client, channel_id: Snowflake, message_id: Snow
     return client.request(model.Message, .POST, uri);
 }
 
-pub fn createReaction(client: *Client, channel_id: Snowflake, message_id: Snowflake, emoji: ReactionEmoji) !RestResult(model.Message) {
+pub fn createReaction(
+    client: *Client,
+    channel_id: Snowflake,
+    message_id: Snowflake,
+    emoji: ReactionEmoji,
+) !RestResult(model.Message) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/channels/{}/messages/{}/reactions/{}/@me", .{ channel_id, message_id, emoji });
     defer client.allocator.free(uri_str);
 
@@ -86,7 +113,12 @@ pub fn createReaction(client: *Client, channel_id: Snowflake, message_id: Snowfl
     return client.request(model.Message, .PUT, uri);
 }
 
-pub fn deleteOwnReaction(client: *Client, channel_id: Snowflake, message_id: Snowflake, emoji: ReactionEmoji) !RestResult(void) {
+pub fn deleteOwnReaction(
+    client: *Client,
+    channel_id: Snowflake,
+    message_id: Snowflake,
+    emoji: ReactionEmoji,
+) !RestResult(void) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/channels/{}/messages/{}/reactions/{}/@me", .{ channel_id, message_id, emoji });
     defer client.allocator.free(uri_str);
 
@@ -95,7 +127,13 @@ pub fn deleteOwnReaction(client: *Client, channel_id: Snowflake, message_id: Sno
     return client.request(void, .DELETE, uri);
 }
 
-pub fn deleteUserReaction(client: *Client, channel_id: Snowflake, message_id: Snowflake, emoji: ReactionEmoji, user_id: Snowflake) !RestResult(void) {
+pub fn deleteUserReaction(
+    client: *Client,
+    channel_id: Snowflake,
+    message_id: Snowflake,
+    emoji: ReactionEmoji,
+    user_id: Snowflake,
+) !RestResult(void) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/channels/{}/messages/{}/reactions/{}/{}", .{ channel_id, message_id, emoji, user_id });
     defer client.allocator.free(uri_str);
 
@@ -104,7 +142,13 @@ pub fn deleteUserReaction(client: *Client, channel_id: Snowflake, message_id: Sn
     return client.request(void, .DELETE, uri);
 }
 
-pub fn getReactions(client: *Client, channel_id: Snowflake, message_id: Snowflake, emoji: ReactionEmoji, query: GetEmojiQuery) !RestResult([]const model.User) {
+pub fn getReactions(
+    client: *Client,
+    channel_id: Snowflake,
+    message_id: Snowflake,
+    emoji: ReactionEmoji,
+    query: GetEmojiQuery,
+) !RestResult([]const model.User) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/channels/{}/messages/{}/reactions/{}?{query}", .{ channel_id, message_id, emoji, query });
     defer client.allocator.free(uri_str);
 
@@ -113,7 +157,11 @@ pub fn getReactions(client: *Client, channel_id: Snowflake, message_id: Snowflak
     return client.request([]const model.User, .GET, uri);
 }
 
-pub fn deleteAllReactions(client: *Client, channel_id: Snowflake, message_id: Snowflake) !RestResult(void) {
+pub fn deleteAllReactions(
+    client: *Client,
+    channel_id: Snowflake,
+    message_id: Snowflake,
+) !RestResult(void) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/channels/{}/messages/{}/reactions", .{ channel_id, message_id });
     defer client.allocator.free(uri_str);
 
@@ -122,7 +170,12 @@ pub fn deleteAllReactions(client: *Client, channel_id: Snowflake, message_id: Sn
     return client.request(void, .DELETE, uri);
 }
 
-pub fn deleteAllReactionsForEmoji(client: *Client, channel_id: Snowflake, message_id: Snowflake, emoji: ReactionEmoji) !RestResult(void) {
+pub fn deleteAllReactionsForEmoji(
+    client: *Client,
+    channel_id: Snowflake,
+    message_id: Snowflake,
+    emoji: ReactionEmoji,
+) !RestResult(void) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/channels/{}/messages/{}/reactions/{}", .{ channel_id, message_id, emoji });
     defer client.allocator.free(uri_str);
 
@@ -131,13 +184,18 @@ pub fn deleteAllReactionsForEmoji(client: *Client, channel_id: Snowflake, messag
     return client.request(void, .DELETE, uri);
 }
 
-pub fn editMessage(client: *Client, channel_id: Snowflake, message_id: Snowflake, body: EditMessage) !RestResult(model.Message) {
+pub fn editMessage(
+    client: *Client,
+    channel_id: Snowflake,
+    message_id: Snowflake,
+    body: EditMessage,
+) !RestResult(model.Message) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/channels/{}/messages/{}", .{ channel_id, message_id });
     defer client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
 
-    var pending_request = client.beginRequest(model.Message, .PATCH, uri, .chunked, .{});
+    var pending_request = try client.beginRequest(model.Message, .PATCH, uri, .chunked, &.{});
     defer pending_request.deinit();
 
     try std.fmt.format(pending_request.writer(), "{form}", .{body});
@@ -145,31 +203,47 @@ pub fn editMessage(client: *Client, channel_id: Snowflake, message_id: Snowflake
     return pending_request.waitForResponse();
 }
 
-pub fn deleteMessage(client: *Client, channel_id: Snowflake, message_id: Snowflake, audit_log_reason: ?[]const u8) !RestResult(void) {
+pub fn deleteMessage(
+    client: *Client,
+    channel_id: Snowflake,
+    message_id: Snowflake,
+    audit_log_reason: ?[]const u8,
+) !RestResult(void) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/channels/{}/messages/{}", .{ channel_id, message_id });
     defer client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
 
-    return client.requestWithExtraHeaders(void, .DELETE, uri, auditLogHeaders(audit_log_reason));
+    return client.requestWithAuditLogReason(void, .DELETE, uri, audit_log_reason);
 }
 
-pub fn bulkDeleteMessages(client: *Client, channel_id: Snowflake, message_ids: []const Snowflake, audit_log_reason: ?[]const u8) !RestResult(void) {
+pub fn bulkDeleteMessages(
+    client: *Client,
+    channel_id: Snowflake,
+    message_ids: []const Snowflake,
+    audit_log_reason: ?[]const u8,
+) !RestResult(void) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/channels/{}/messages/bulk-delete", .{channel_id});
     defer client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
 
-    return client.requestWithValueBodyAndExtraHeaders(void, .POST, uri, message_ids, .{}, auditLogHeaders(audit_log_reason));
+    return client.requestWithValueBodyAndAuditLogReason(void, .POST, uri, message_ids, .{}, audit_log_reason);
 }
 
-pub fn editChannelPermissions(client: *Client, channel_id: Snowflake, overwrite_id: Snowflake, body: EditChannelPermissions, audit_log_reason: ?[]const u8) !RestResult(void) {
+pub fn editChannelPermissions(
+    client: *Client,
+    channel_id: Snowflake,
+    overwrite_id: Snowflake,
+    body: EditChannelPermissions,
+    audit_log_reason: ?[]const u8,
+) !RestResult(void) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/channels/{}/permissions/{}", .{ channel_id, overwrite_id });
     defer client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
 
-    return client.requestWithValueBodyAndExtraHeaders(void, .PUT, uri, body, .{}, auditLogHeaders(audit_log_reason));
+    return client.requestWithValueBodyAndAuditLogReason(void, .PUT, uri, body, .{}, audit_log_reason);
 }
 
 pub fn getChannelInvites(client: *Client, channel_id: Snowflake) !RestResult([]const model.Invite.WithMetadata) {
@@ -181,25 +255,40 @@ pub fn getChannelInvites(client: *Client, channel_id: Snowflake) !RestResult([]c
     return client.request([]const model.Invite.WithMetadata, .PUT, uri);
 }
 
-pub fn createChannelInvite(client: *Client, channel_id: Snowflake, body: CreateChannelInvite, audit_log_reason: ?[]const u8) !RestResult(model.Invite) {
+pub fn createChannelInvite(
+    client: *Client,
+    channel_id: Snowflake,
+    body: CreateChannelInvite,
+    audit_log_reason: ?[]const u8,
+) !RestResult(model.Invite) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/channels/{}/invites", .{channel_id});
     defer client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
 
-    return client.requestWithValueBodyAndExtraHeaders(model.Invite, .PUT, uri, body, .{ .emit_null_optional_fields = false }, auditLogHeaders(audit_log_reason));
+    return client.requestWithValueBodyAndAuditLogReason(model.Invite, .PUT, uri, body, .{ .emit_null_optional_fields = false }, audit_log_reason);
 }
 
-pub fn deleteChannelPermission(client: *Client, channel_id: Snowflake, overwrite_id: Snowflake, audit_log_reason: ?[]const u8) !RestResult(void) {
+pub fn deleteChannelPermission(
+    client: *Client,
+    channel_id: Snowflake,
+    overwrite_id: Snowflake,
+    audit_log_reason: ?[]const u8,
+) !RestResult(void) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/channels/{}/permissions/{}", .{ channel_id, overwrite_id });
     defer client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
 
-    return client.requestWithExtraHeaders(void, .DELETE, uri, auditLogHeaders(audit_log_reason));
+    return client.requestWithAuditLogReason(void, .DELETE, uri, audit_log_reason);
 }
 
-pub fn followAnnouncementChannel(client: *Client, channel_to_follow_id: Snowflake, target_channel_id: Snowflake, audit_log_reason: ?[]const u8) !RestResult(Channel.Followed) {
+pub fn followAnnouncementChannel(
+    client: *Client,
+    channel_to_follow_id: Snowflake,
+    target_channel_id: Snowflake,
+    audit_log_reason: ?[]const u8,
+) !RestResult(Channel.Followed) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/channels/{}/followers", .{channel_to_follow_id});
     defer client.allocator.free(uri_str);
 
@@ -208,10 +297,13 @@ pub fn followAnnouncementChannel(client: *Client, channel_to_follow_id: Snowflak
     const Body = struct { webhook_channel_id: Snowflake };
     const body = Body{ .webhook_channel_id = target_channel_id };
 
-    return client.requestWithValueBodyAndExtraHeaders(void, .POST, uri, body, .{}, auditLogHeaders(audit_log_reason));
+    return client.requestWithValueBodyAndAuditLogReason(Channel.Followed, .POST, uri, body, .{}, audit_log_reason);
 }
 
-pub fn triggerTypingIndicator(client: *Client, channel_id: Snowflake) !RestResult(void) {
+pub fn triggerTypingIndicator(
+    client: *Client,
+    channel_id: Snowflake,
+) !RestResult(void) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/channels/{}/typing", .{channel_id});
     defer client.allocator.free(uri_str);
 
@@ -220,7 +312,10 @@ pub fn triggerTypingIndicator(client: *Client, channel_id: Snowflake) !RestResul
     return client.request(void, .POST, uri);
 }
 
-pub fn getPinnedMessages(client: *Client, channel_id: Snowflake) !RestResult([]const model.Message) {
+pub fn getPinnedMessages(
+    client: *Client,
+    channel_id: Snowflake,
+) !RestResult([]const model.Message) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/channels/{}/pins", .{channel_id});
     defer client.allocator.free(uri_str);
 
@@ -229,28 +324,42 @@ pub fn getPinnedMessages(client: *Client, channel_id: Snowflake) !RestResult([]c
     return client.request([]const model.Message, .GET, uri);
 }
 
-pub fn pinMessage(client: *Client, channel_id: Snowflake, message_id: Snowflake, audit_log_reason: ?[]const u8) !RestResult(void) {
+pub fn pinMessage(
+    client: *Client,
+    channel_id: Snowflake,
+    message_id: Snowflake,
+    audit_log_reason: ?[]const u8,
+) !RestResult(void) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/channels/{}/pins/{}", .{ channel_id, message_id });
     defer client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
 
-    return client.requestWithExtraHeaders(void, .PUT, uri, auditLogHeaders(audit_log_reason));
+    return client.requestWithAuditLogReason(void, .PUT, uri, audit_log_reason);
 }
 
-pub fn unpinMessage(client: *Client, channel_id: Snowflake, message_id: Snowflake, audit_log_reason: ?[]const u8) !RestResult(void) {
+pub fn unpinMessage(
+    client: *Client,
+    channel_id: Snowflake,
+    message_id: Snowflake,
+    audit_log_reason: ?[]const u8,
+) !RestResult(void) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/channels/{}/pins/{}", .{ channel_id, message_id });
     defer client.allocator.free(uri_str);
-
     const uri = try std.Uri.parse(uri_str);
 
-    return client.requestWithExtraHeaders(void, .DELETE, uri, auditLogHeaders(audit_log_reason));
+    return client.requestWithAuditLogReason(void, .DELETE, uri, audit_log_reason);
 }
 
-pub fn groupDmAddRecipient(client: *Client, channel_id: Snowflake, user_id: Snowflake, access_token: []const u8, nick: []const u8) !RestResult(void) {
+pub fn groupDmAddRecipient(
+    client: *Client,
+    channel_id: Snowflake,
+    user_id: Snowflake,
+    access_token: []const u8,
+    nick: []const u8,
+) !RestResult(void) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/channels/{}/recipients/{}", .{ channel_id, user_id });
     defer client.allocator.free(uri_str);
-
     const uri = try std.Uri.parse(uri_str);
 
     const Body = struct { access_token: []const u8, nick: []const u8 };
@@ -259,7 +368,11 @@ pub fn groupDmAddRecipient(client: *Client, channel_id: Snowflake, user_id: Snow
     return client.requestWithValueBody(void, .PUT, uri, body, .{});
 }
 
-pub fn groupDmRemoveRecipient(client: *Client, channel_id: Snowflake, user_id: Snowflake) !RestResult(void) {
+pub fn groupDmRemoveRecipient(
+    client: *Client,
+    channel_id: Snowflake,
+    user_id: Snowflake,
+) !RestResult(void) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/channels/{}/recipients/{}", .{ channel_id, user_id });
     defer client.allocator.free(uri_str);
 
@@ -268,31 +381,51 @@ pub fn groupDmRemoveRecipient(client: *Client, channel_id: Snowflake, user_id: S
     return client.request(void, .DELETE, uri);
 }
 
-pub fn startThreadFromMessage(client: *Client, channel_id: Snowflake, message_id: Snowflake, body: StartThreadFromMessage, audit_log_reason: ?[]const u8) !RestResult(Channel) {
+pub fn startThreadFromMessage(
+    client: *Client,
+    channel_id: Snowflake,
+    message_id: Snowflake,
+    body: StartThreadFromMessage,
+    audit_log_reason: ?[]const u8,
+) !RestResult(Channel) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/channels/{}/messages/{}/threads", .{ channel_id, message_id });
     defer client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
 
-    return client.requestWithValueBodyAndExtraHeaders(Channel, .POST, uri, body, .{}, auditLogHeaders(audit_log_reason));
+    return client.requestWithValueBodyAndAuditLogReason(Channel, .POST, uri, body, .{}, audit_log_reason);
 }
 
-pub fn startThreadWithoutMessage(client: *Client, channel_id: Snowflake, body: StartThreadWithoutMessage, audit_log_reason: ?[]const u8) !RestResult(Channel) {
+pub fn startThreadWithoutMessage(
+    client: *Client,
+    channel_id: Snowflake,
+    body: StartThreadWithoutMessage,
+    audit_log_reason: ?[]const u8,
+) !RestResult(Channel) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/channels/{}/threads", .{channel_id});
     defer client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
 
-    return client.requestWithValueBodyAndExtraHeaders(Channel, .POST, uri, body, .{}, auditLogHeaders(audit_log_reason));
+    return client.requestWithValueBodyAndAuditLogReason(Channel, .POST, uri, body, .{}, audit_log_reason);
 }
 
-pub fn startTreadInForumOrMediaChannel(client: *Client, channel_id: Snowflake, body: StartThreadInForumOrMediaChannel, audit_log_reason: ?[]const u8) !RestResult(Channel) {
+pub fn startTreadInForumOrMediaChannel(
+    client: *Client,
+    channel_id: Snowflake,
+    body: StartThreadInForumOrMediaChannel,
+    audit_log_reason: ?[]const u8,
+) !RestResult(Channel) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/channels/{}/threads", .{channel_id});
     defer client.allocator.free(uri_str);
-
     const uri = try std.Uri.parse(uri_str);
 
-    var pending_request = client.beginRequest(Channel, .PATCH, uri, .chunked, auditLogHeaders(audit_log_reason));
+    const headers: []const std.http.Header = if (audit_log_reason) |reason|
+        &.{std.http.Header{ .name = "X-Audit-Log-Reason", .value = reason }}
+    else
+        &.{};
+
+    var pending_request = try client.beginRequest(Channel, .PATCH, uri, .chunked, headers);
     defer pending_request.deinit();
 
     try std.fmt.format(pending_request.writer(), "{form}", .{body});
@@ -340,7 +473,7 @@ pub fn getThreadMember(client: *Client, channel_id: Snowflake, user_id: Snowflak
     const Query = struct {
         with_member: ?bool = null,
 
-        pub const format = rest.formatAsQueryString;
+        pub usingnamespace rest.QueryStringFormatMixin(@This());
     };
 
     const query = Query{ .with_member = with_member };
@@ -444,7 +577,7 @@ pub const GetChannelMessagesQuery = struct {
     } = null,
     limit: ?i64 = null,
 
-    pub const format = rest.formatAsQueryString;
+    pub usingnamespace rest.QueryStringFormatMixin(GetChannelMessagesQuery);
 };
 
 // note to maintainers: top-level properties are encoded as form parameters, although the
@@ -458,12 +591,14 @@ pub const CreateMessage = struct {
     message_reference: ?model.Message.Reference = null,
     components: ?[]const model.MessageComponent = null,
     sticker_ids: ?[]const Snowflake = null,
-    files: ?std.AutoArrayHashMap(i64, std.io.AnyReader) = null,
+    files: ?[]const std.io.AnyReader = null,
     payload_json: ?[]const u8 = null,
     attachments: ?[]const model.Message.Attachment = null,
     flags: ?model.Message.Flags = null,
     enforce_nonce: ?bool = null,
     poll: ?model.Message.Poll = null,
+
+    pub usingnamespace rest.MultipartFormDataMixin(@This());
 
     /// Creates a text-only message
     pub fn initTextOnly(message: []const u8) CreateMessage {
@@ -499,8 +634,6 @@ pub const CreateMessage = struct {
     const boundary = "f89767726a7827c6f785b40aee1ca2ade74d951d6a2d50e27cc0f0e5072a12b2";
     const HttpBodyWriter = std.http.Client.Connection.Writer;
 
-    pub const format = rest.formatAsMultipartFormData;
-
     pub const AllowedMentions = struct {
         parse: []const AllowedMentionsType,
         roles: []const Snowflake,
@@ -526,7 +659,9 @@ pub const ReactionEmoji = union(enum) {
                     try std.fmt.format(writer, "%{x:0>2}", .{byte});
                 }
             },
-            .custom => |emoji| try std.fmt.format(writer, "{s}:{d}", .{ emoji.name, emoji.id }),
+            .custom => |emoji| {
+                try writer.print("{?s}:{?d}", .{ emoji.name, emoji.id });
+            },
         }
     }
 };
@@ -536,7 +671,7 @@ pub const GetEmojiQuery = struct {
     after: ?Snowflake = null,
     limit: ?i64 = null,
 
-    pub const format = rest.formatAsQueryString;
+    pub usingnamespace rest.QueryStringFormatMixin(@This());
 
     pub const GetEmojiQueryType = enum(u1) {
         normal = 0,
@@ -554,10 +689,7 @@ pub const EditMessage = struct {
     /// must also include already-uploaded files
     attachments: ?[]const model.Message.Attachment = null,
 
-    const boundary = "f89767726a7827c6f785b40aee1ca2ade74d951d6a2d50e27cc0f0e5072a12b2";
-    const HttpBodyWriter = std.http.Client.Connection.Writer;
-
-    pub const format = rest.formatAsMultipartFormData;
+    pub usingnamespace rest.MultipartFormDataMixin(@This());
 };
 
 pub const EditChannelPermissions = struct {
@@ -611,6 +743,8 @@ pub const StartThreadInForumOrMediaChannel = struct {
     applied_tags: ?[]const Snowflake = null,
     files: ?[]const std.io.AnyReader = null,
 
+    pub usingnamespace rest.MultipartFormDataMixin(@This());
+
     pub const ForumAndMediaThreadMessage = struct {
         content: Omittable([]const u8) = .omit,
         embeds: Omittable([]const model.Message.Embed) = .omit,
@@ -619,6 +753,8 @@ pub const StartThreadInForumOrMediaChannel = struct {
         sticker_ids: Omittable([]const Snowflake) = .omit,
         attachments: Omittable([]const model.Message.Attachment) = .omit,
         flags: Omittable(model.Message.Flags) = .omit,
+
+        pub const jsonStringify = deanson.stringifyWithOmit;
     };
 };
 
@@ -627,14 +763,14 @@ pub const ListThreadMembersQuery = struct {
     after: ?Snowflake = null,
     limit: ?i64 = null,
 
-    pub const format = rest.formatAsQueryString;
+    pub usingnamespace rest.QueryStringFormatMixin(@This());
 };
 
 pub const ListThreadsQuery = struct {
     before: ?[]const u8 = null,
     limit: ?i64 = null,
 
-    pub const format = rest.formatAsQueryString;
+    pub usingnamespace rest.QueryStringFormatMixin(@This());
 };
 
 pub const ListThreadsResponse = struct {

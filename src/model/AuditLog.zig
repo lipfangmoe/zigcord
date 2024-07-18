@@ -1,12 +1,12 @@
-const model = @import("../model.zig");
+const model = @import("../root.zig").model;
 const ApplicationCommand = model.interaction.command.ApplicationCommand;
-const Channel = model.guild.channel.Channel;
+const Channel = model.Channel;
 const User = model.User;
 
 application_commands: []const ApplicationCommand,
 audit_log_entries: []const Entry,
 auto_moderation_rules: []const AutoModerationRule,
-guild_scheduled_events: []const GuildScheduledEvents,
+guild_scheduled_events: []const model.GuildScheduledEvent,
 integrations: []const PartialIntegration,
 threads: []const Channel,
 users: []const User,
@@ -16,9 +16,6 @@ pub const Entry = struct {};
 
 // TODO - move to separate file
 pub const AutoModerationRule = struct {};
-
-// TODO - move to separate file
-pub const GuildScheduledEvents = struct {};
 
 pub const PartialIntegration = struct {};
 

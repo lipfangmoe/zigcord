@@ -1,4 +1,4 @@
-const model = @import("model");
+const model = @import("../root.zig").model;
 const deanson = model.deanson;
 const Snowflake = model.Snowflake;
 

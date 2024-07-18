@@ -1,4 +1,4 @@
-const model = @import("root").model;
+const model = @import("../root.zig").model;
 const deanson = model.deanson;
 const Omittable = deanson.Omittable;
 
@@ -22,7 +22,7 @@ pub const Type = enum(u8) {
 };
 
 pub const TypedProps = union(Type) {
-    action_row: void,
+    action_row: struct {}, // normally i would use void here, but void cannot be stringified
     button: Button,
     string_select: StringSelect,
     text_input: TextInput,
@@ -73,7 +73,7 @@ pub const TypedProps = union(Type) {
 
     pub const ChannelSelect = struct {
         custom_id: []const u8,
-        channel_types: []const model.channel.Channel.Type = .omit,
+        channel_types: Omittable([]const model.Channel.Type) = .omit,
         placeholder: Omittable([]const u8) = .omit,
         default_values: Omittable(DefaultValue) = .omit,
         min_values: Omittable(i64) = .omit,
@@ -91,7 +91,6 @@ pub const TypedProps = union(Type) {
     pub const StringSelect = struct {
         custom_id: []const u8,
         options: Option,
-        channel_types: []const model.channel.Channel.Type = .omit,
         placeholder: Omittable([]const u8) = .omit,
         min_values: Omittable(i64) = .omit,
         max_values: Omittable(i64) = .omit,

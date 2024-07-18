@@ -1,12 +1,14 @@
 const std = @import("std");
-const model = @import("root").model;
+const model = @import("../root.zig").model;
 const deanson = model.deanson;
 const Omittable = deanson.Omittable;
+
+// partial version of this object is included in `rest/endpoints/guild.zig` (GetGuildVanityUrlResponse), changes here should be reflected in changes there.
 
 type: Type,
 code: []const u8,
 guild: Omittable(model.guild.Guild) = .omit,
-channel: ?model.channel.Channel,
+channel: ?model.Channel,
 inviter: Omittable(model.User) = .omit,
 target_type: Omittable(i64) = .omit,
 target_user: Omittable(model.User) = .omit,
@@ -15,7 +17,7 @@ approximate_presence_count: Omittable(i64) = .omit,
 approximate_member_count: Omittable(i64) = .omit,
 expires_at: Omittable(?[]const u8) = .omit,
 stage_instance: Omittable(InviteStageInstance) = .omit, // deprecated
-guild_scheduled_event: Omittable(model.guild.GuildScheduledEvent) = .omit,
+guild_scheduled_event: Omittable(model.GuildScheduledEvent) = .omit,
 
 pub const jsonStringify = deanson.stringifyWithOmit;
 
@@ -38,7 +40,7 @@ pub const WithMetadata = struct {
     type: Type,
     code: []const u8,
     guild: Omittable(model.guild.Guild) = .omit,
-    channel: ?model.channel.Channel,
+    channel: ?model.Channel,
     inviter: Omittable(model.User) = .omit,
     target_type: Omittable(i64) = .omit,
     target_user: Omittable(model.User) = .omit,
@@ -47,7 +49,7 @@ pub const WithMetadata = struct {
     approximate_member_count: Omittable(i64) = .omit,
     expires_at: Omittable(?[]const u8) = .omit,
     stage_instance: Omittable(InviteStageInstance) = .omit, // deprecated
-    guild_scheduled_event: Omittable(model.guild.GuildScheduledEvent) = .omit,
+    guild_scheduled_event: Omittable(model.GuildScheduledEvent) = .omit,
 
     // extra metadata fields provided by some endpoints
     uses: i64,

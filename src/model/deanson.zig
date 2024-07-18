@@ -128,7 +128,7 @@ test "union inline - inside struct" {
 /// Utility function to enable `Omittable` to work on structs.
 ///
 /// Intended usage: add a declaration in your container as `pub const jsonStringify = stringifyWithOmit`.
-pub fn stringifyWithOmit(self: anytype, json_writer: anytype) !void {
+pub fn stringifyWithOmit(self: anytype, json_writer: anytype) @typeInfo(@TypeOf(json_writer)).Pointer.child.Error!void {
     const struct_info = comptime blk: {
         const self_typeinfo = @typeInfo(@TypeOf(self));
         if (self_typeinfo != .Pointer) {

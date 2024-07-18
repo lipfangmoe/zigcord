@@ -1,6 +1,6 @@
 const std = @import("std");
 const builtin = @import("builtin");
-const deancord = @import("root");
+const deancord = @import("../root.zig");
 
 const Self = @This();
 
@@ -49,7 +49,7 @@ pub fn beginRequest(
 
     req.transfer_encoding = transfer_encoding;
 
-    try req.send(.{});
+    try req.send();
     return PendingRequest(ResponseT){
         .allocator = self.allocator,
         .req = req,
@@ -66,7 +66,12 @@ pub fn request(self: *Self, comptime ResponseT: type, method: std.http.Method, u
 }
 
 /// Sends a request to the Discord REST API with the credentials stored in this context
-pub fn requestWithExtraHeaders(self: *Self, comptime ResponseT: type, method: std.http.Method, url: std.Uri, extra_headers: []const std.http.Header) !Result(ResponseT) {
+pub fn requestWithAuditLogReason(self: *Self, comptime ResponseT: type, method: std.http.Method, url: std.Uri, audit_log_reason: ?[]const u8) !Result(ResponseT) {
+    const extra_headers: []const std.http.Header = if (audit_log_reason) |reason|
+        &.{std.http.Header{ .name = "X-Audit-Log-Reason", .value = reason }}
+    else
+        &.{};
+
     var pending = try self.beginRequest(ResponseT, method, url, .{ .none = void{} }, extra_headers);
     defer pending.deinit();
 
@@ -85,16 +90,6 @@ pub fn requestWithBody(self: *Self, comptime ResponseT: type, method: std.http.M
 }
 
 /// Sends a request (with a body) to the Discord REST API with the credentials stored in this context.
-pub fn requestWithStringBody(self: *Self, comptime ResponseT: type, method: std.http.Method, url: std.Uri, body: []const u8) !Result(ResponseT) {
-    var pending = try self.beginRequest(ResponseT, method, url, .{ .content_length = @intCast(body.len) }, &.{});
-    defer pending.deinit();
-
-    try pending.writer().writeAll(body);
-
-    return try pending.waitForResponse();
-}
-
-/// Sends a request (with a body) to the Discord REST API with the credentials stored in this context.
 pub fn requestWithValueBody(self: *Self, comptime ResponseT: type, method: std.http.Method, url: std.Uri, body: anytype, stringifyOptions: std.json.StringifyOptions) !Result(ResponseT) {
     var pending = try self.beginRequest(ResponseT, method, url, .{ .chunked = void{} }, &.{});
     defer pending.deinit();
@@ -107,15 +102,20 @@ pub fn requestWithValueBody(self: *Self, comptime ResponseT: type, method: std.h
     return try pending.waitForResponse();
 }
 
-pub fn requestWithValueBodyAndExtraHeaders(
+pub fn requestWithValueBodyAndAuditLogReason(
     self: *Self,
     comptime ResponseT: type,
     method: std.http.Method,
     url: std.Uri,
     body: anytype,
     stringifyOptions: std.json.StringifyOptions,
-    extra_headers: []const std.http.Header,
+    audit_log_reason: ?[]const u8,
 ) !Result(ResponseT) {
+    const extra_headers: []const std.http.Header = if (audit_log_reason) |reason|
+        &.{std.http.Header{ .name = "X-Audit-Log-Reason", .value = reason }}
+    else
+        &.{};
+
     var pending = try self.beginRequest(ResponseT, method, url, .{ .chunked = void{} }, extra_headers);
     defer pending.deinit();
 
@@ -274,6 +274,8 @@ const Tests = struct {
                 try std.testing.expectEqual(.GET, req.head.method);
                 try std.testing.expectEqualStrings("/api/v10/lol", req.head.target);
                 try std.testing.expectEqualStrings("", body);
+
+                try std.testing.expect(false);
 
                 return TestResponse{
                     .status = std.http.Status.ok,

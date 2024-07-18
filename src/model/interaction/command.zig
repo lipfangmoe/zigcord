@@ -1,5 +1,5 @@
 const std = @import("std");
-const model = @import("../../model.zig");
+const model = @import("../../root.zig").model;
 const Snowflake = model.Snowflake;
 const ApplicationCommandOption = model.interaction.command_option.ApplicationCommandOption;
 const Localizations = model.Localizations;

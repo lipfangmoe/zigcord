@@ -1,7 +1,7 @@
 const std = @import("std");
-const root = @import("root");
-const model = root.model;
-const rest = root.rest;
+const deancord = @import("../../root.zig");
+const model = deancord.model;
+const rest = deancord.rest;
 const Omittable = model.deanson.Omittable;
 const stringifyWithOmit = model.deanson.stringifyWithOmit;
 const RestResult = rest.Client.Result;
@@ -117,13 +117,11 @@ pub fn deleteGuildApplicationCommand(
     guild_id: Snowflake,
     command_id: Snowflake,
 ) !RestResult(ApplicationCommand) {
-    const path = try std.fmt.allocPrint(client.allocator, "/applications/{d}/guilds/{d}/commands/{d}", .{ application_id, guild_id, command_id });
-    defer client.allocator.free(path);
+    const uri_str = try rest.allocDiscordUriStr(client.allocator, "/applications/{d}/guilds/{d}/commands/{d}", .{ application_id, guild_id, command_id });
+    defer client.allocator.free(uri_str);
+    const uri = try std.Uri.parse(uri_str);
 
-    const url = try rest.DiscordUri.init(client.allocator, path, null);
-    defer url.deinit();
-
-    return client.request(ApplicationCommand, .DELETE, url);
+    return client.request(ApplicationCommand, .DELETE, uri);
 }
 
 pub fn bulkOverwriteGuildApplicationCommands(
@@ -160,13 +158,11 @@ pub fn getApplicationCommandPermissions(client: *Client, application_id: Snowfla
 }
 
 pub fn editApplicationCommandPermissions(client: *Client, application_id: Snowflake, guild_id: Snowflake, command_id: Snowflake, body: []const ApplicationCommandPermission) !RestResult(GuildApplicationCommandPermissions) {
-    const path = try std.fmt.allocPrint(client.allocator, "/applications/{d}/guilds/{d}/commands/{d}/permissions", .{ application_id, guild_id, command_id });
-    defer client.allocator.free(path);
+    const uri_str = try rest.allocDiscordUriStr(client.allocator, "/applications/{d}/guilds/{d}/commands/{d}/permissions", .{ application_id, guild_id, command_id });
+    defer client.allocator.free(uri_str);
+    const uri = try std.Uri.parse(uri_str);
 
-    const url = try rest.DiscordUri.init(client.allocator, path, null);
-    defer url.deinit();
-
-    return client.requestWithValueBody(GuildApplicationCommandPermissions, .PUT, url, body, .{});
+    return client.requestWithValueBody(GuildApplicationCommandPermissions, .PUT, uri, body, .{});
 }
 
 pub const CreateGlobalApplicationCommandBody = struct {
@@ -241,5 +237,5 @@ pub const ApplicationCommandPermission = struct {
 const WithLocalizationsQuery = struct {
     with_localizations: ?bool = null,
 
-    pub const format = rest.formatAsQueryString;
+    pub usingnamespace rest.QueryStringFormatMixin(WithLocalizationsQuery);
 };
