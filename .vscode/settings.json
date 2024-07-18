@@ -1,8 +1,0 @@
-{
-	"zig.buildOnSave": true,
-	"zig.buildArgs": [
-		"check"
-	],
-	"zig.zls.enableBuildOnSave": true,
-	"zig.zls.buildOnSaveStep": "check"
-}
