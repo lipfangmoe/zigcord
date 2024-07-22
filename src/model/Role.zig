@@ -1,12 +1,9 @@
 const std = @import("std");
-const model = @import("../../model.zig");
-const Snowflake = model.Snowflake;
+const model = @import("../root.zig").model;
 const Omittable = model.deanson.Omittable;
 
-// TODO - role should be under `permissions`, not `guild`
-
 /// role id
-id: Snowflake,
+id: model.Snowflake,
 /// role name
 name: []const u8,
 /// integer representing hex color code
@@ -33,10 +30,10 @@ flags: Flags,
 pub const jsonStringify = model.deanson.stringifyWithOmit;
 
 pub const Tags = struct {
-    bot_id: Omittable(Snowflake) = .omit,
-    integration_id: Omittable(Snowflake) = .omit,
+    bot_id: Omittable(model.Snowflake) = .omit,
+    integration_id: Omittable(model.Snowflake) = .omit,
     premium_subscriber: Omittable(?enum {}) = .omit,
-    subscription_listing_id: Omittable(Snowflake) = .omit,
+    subscription_listing_id: Omittable(model.Snowflake) = .omit,
     available_for_purchase: Omittable(?enum {}) = .omit,
     guild_connections: Omittable(?enum {}) = .omit,
 

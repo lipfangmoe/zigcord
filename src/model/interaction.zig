@@ -7,7 +7,7 @@ const Snowflake = model.Snowflake;
 const ApplicationCommandType = model.interaction.command.ApplicationCommandType;
 const User = model.User;
 const Member = model.guild.Member;
-const Role = model.guild.Role;
+const Role = model.Role;
 const Omittable = model.deanson.Omittable;
 
 pub const command = @import("./interaction/command.zig");

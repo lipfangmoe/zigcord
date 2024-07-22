@@ -36,12 +36,12 @@ pub fn getGuild(
 pub fn getGuildPreview(
     client: *rest.Client,
     guild_id: model.Snowflake,
-) !rest.Client.Result(model.guild.GuildPreview) {
+) !rest.Client.Result(model.guild.Preview) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/guilds/{}/preview", .{guild_id});
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.request(model.guild.GuildPreview, .GET, uri);
+    return client.request(model.guild.Preview, .GET, uri);
 }
 
 pub fn modifyGuild(
@@ -237,24 +237,24 @@ pub fn getGuildBans(
     client: *rest.Client,
     guild_id: model.Snowflake,
     query: GetGuildBansQuery,
-) !rest.Client.Result([]Guild.Ban) {
+) !rest.Client.Result([]model.guild.Ban) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/guilds/{}/bans?{query}", .{ guild_id, query });
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.request([]Guild.Ban, .GET, uri);
+    return client.request([]model.guild.Ban, .GET, uri);
 }
 
 pub fn getGuildBan(
     client: *rest.Client,
     guild_id: model.Snowflake,
     user_id: model.Snowflake,
-) !rest.Client.Result(Guild.Ban) {
+) !rest.Client.Result(model.guild.Ban) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/guilds/{}/bans/{}", .{ guild_id, user_id });
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.request(Guild.Ban, .GET, uri);
+    return client.request(model.guild.Ban, .GET, uri);
 }
 
 pub fn createGuildBan(
@@ -299,12 +299,12 @@ pub fn bulkGuildBan(
 pub fn getGuildRoles(
     client: *rest.Client,
     guild_id: model.Snowflake,
-) !rest.Client.Result([]model.guild.Role) {
+) !rest.Client.Result([]model.Role) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/guilds/{}/roles", .{guild_id});
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.request([]model.guild.Role, .GET, uri);
+    return client.request([]model.Role, .GET, uri);
 }
 
 pub fn createGuildRole(
@@ -312,12 +312,12 @@ pub fn createGuildRole(
     guild_id: model.Snowflake,
     body: CreateGuildRoleBody,
     audit_log_reason: ?[]const u8,
-) !rest.Client.Result([]model.guild.Role) {
+) !rest.Client.Result([]model.Role) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/guilds/{}/roles", .{guild_id});
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.requestWithValueBodyAndAuditLogReason([]model.guild.Role, .POST, uri, body, .{}, audit_log_reason);
+    return client.requestWithValueBodyAndAuditLogReason([]model.Role, .POST, uri, body, .{}, audit_log_reason);
 }
 
 pub fn modifyGuildRolePositions(
@@ -325,12 +325,12 @@ pub fn modifyGuildRolePositions(
     guild_id: model.Snowflake,
     body: []const ModifyGuildRolePositionsBodyEntry,
     audit_log_reason: ?[]const u8,
-) !rest.Client.Result([]model.guild.Role) {
+) !rest.Client.Result([]model.Role) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/guilds/{}/roles", .{guild_id});
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.requestWithValueBodyAndAuditLogReason([]model.guild.Role, .PATCH, uri, body, .{}, audit_log_reason);
+    return client.requestWithValueBodyAndAuditLogReason([]model.Role, .PATCH, uri, body, .{}, audit_log_reason);
 }
 
 pub fn modifyGuildRole(
@@ -339,12 +339,12 @@ pub fn modifyGuildRole(
     role_id: model.Snowflake,
     body: ModifyGuildRoleBody,
     audit_log_reason: ?[]const u8,
-) !rest.Client.Result(model.guild.Role) {
+) !rest.Client.Result(model.Role) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/guilds/{}/roles/{}", .{ guild_id, role_id });
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.requestWithValueBodyAndAuditLogReason(model.guild.Role, .PATCH, uri, body, .{}, audit_log_reason);
+    return client.requestWithValueBodyAndAuditLogReason(model.Role, .PATCH, uri, body, .{}, audit_log_reason);
 }
 
 pub fn modifyGuildMfaLevel(
@@ -352,12 +352,12 @@ pub fn modifyGuildMfaLevel(
     guild_id: model.Snowflake,
     body: ModifyGuildMfaLevelBody,
     audit_log_reason: ?[]const u8,
-) !rest.Client.Result(Guild.MfaLevel) {
+) !rest.Client.Result(model.guild.MfaLevel) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/guilds/{}/mfa", .{guild_id});
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.requestWithValueBodyAndAuditLogReason(Guild.MfaLevel, .POST, uri, body, .{}, audit_log_reason);
+    return client.requestWithValueBodyAndAuditLogReason(model.guild.MfaLevel, .POST, uri, body, .{}, audit_log_reason);
 }
 
 pub fn deleteGuildRole(
@@ -366,12 +366,12 @@ pub fn deleteGuildRole(
     role_id: model.Snowflake,
     body: ModifyGuildMfaLevelBody,
     audit_log_reason: ?[]const u8,
-) !rest.Client.Result(Guild.MfaLevel) {
+) !rest.Client.Result(model.guild.MfaLevel) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/guilds/{}/roles/{}", .{ guild_id, role_id });
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.requestWithValueBodyAndAuditLogReason(Guild.MfaLevel, .DELETE, uri, body, .{}, audit_log_reason);
+    return client.requestWithValueBodyAndAuditLogReason(model.guild.MfaLevel, .DELETE, uri, body, .{}, audit_log_reason);
 }
 
 pub fn getGuildPruneCount(
@@ -448,12 +448,12 @@ pub fn deleteGuildIntegration(
 pub fn getGuildWidgetSettings(
     client: *rest.Client,
     guild_id: model.Snowflake,
-) !rest.Client.Result(Guild.WidgetSettings) {
+) !rest.Client.Result(model.guild.WidgetSettings) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/guilds/{}/widget", .{guild_id});
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.request(Guild.WidgetSettings, .GET, uri);
+    return client.request(model.guild.WidgetSettings, .GET, uri);
 }
 
 pub fn modifyGuildWidget(
@@ -461,23 +461,23 @@ pub fn modifyGuildWidget(
     guild_id: model.Snowflake,
     body: ModifyGuildWidgetBody,
     audit_log_reason: ?[]const u8,
-) !rest.Client.Result(Guild.WidgetSettings) {
+) !rest.Client.Result(model.guild.WidgetSettings) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/guilds/{}/widget", .{guild_id});
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.requestWithValueBodyAndAuditLogReason(Guild.WidgetSettings, .PATCH, uri, body, .{}, audit_log_reason);
+    return client.requestWithValueBodyAndAuditLogReason(model.guild.WidgetSettings, .PATCH, uri, body, .{}, audit_log_reason);
 }
 
 pub fn getGuildWidget(
     client: *rest.Client,
     guild_id: model.Snowflake,
-) !rest.Client.Result(Guild.WidgetSettings) {
+) !rest.Client.Result(model.guild.WidgetSettings) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/guilds/{}/widget.json", .{guild_id});
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.request(Guild.WidgetSettings, .GET, uri);
+    return client.request(model.guild.WidgetSettings, .GET, uri);
 }
 
 pub fn getGuildVanityUrl(
@@ -516,12 +516,12 @@ pub fn getGuildWidgetImage(
 pub fn getGuildWelcomeScreen(
     client: *rest.Client,
     guild_id: model.Snowflake,
-) !rest.Client.Result(Guild.WelcomeScreen) {
+) !rest.Client.Result(model.guild.WelcomeScreen) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/guilds/{}/welcome-screen", .{guild_id});
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.request(Guild.WelcomeScreen, .GET, uri);
+    return client.request(model.guild.WelcomeScreen, .GET, uri);
 }
 
 pub fn modifyGuildWelcomeScreen(
@@ -529,23 +529,23 @@ pub fn modifyGuildWelcomeScreen(
     guild_id: model.Snowflake,
     body: ModifyGuildWelcomeScreenBody,
     audit_log_reason: ?[]const u8,
-) !rest.Client.Result(Guild.WelcomeScreen) {
+) !rest.Client.Result(model.guild.WelcomeScreen) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/guilds/{}/welcome-screen", .{guild_id});
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.requestWithValueBodyAndAuditLogReason(Guild.WelcomeScreen, .PATCH, uri, body, .{}, audit_log_reason);
+    return client.requestWithValueBodyAndAuditLogReason(model.guild.WelcomeScreen, .PATCH, uri, body, .{}, audit_log_reason);
 }
 
 pub fn getGuildOnboarding(
     client: *rest.Client,
     guild_id: model.Snowflake,
-) !rest.Client.Result(Guild.Onboarding) {
+) !rest.Client.Result(model.guild.Onboarding) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/guilds/{}/onboarding", .{guild_id});
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.request(Guild.Onboarding, .GET, uri);
+    return client.request(model.guild.Onboarding, .GET, uri);
 }
 
 pub fn modifyGuildOnboarding(
@@ -553,12 +553,12 @@ pub fn modifyGuildOnboarding(
     guild_id: model.Snowflake,
     body: ModifyGuildOnboardingBody,
     audit_log_reason: ?[]const u8,
-) !rest.Client.Result(Guild.Onboarding) {
+) !rest.Client.Result(model.guild.Onboarding) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/guilds/{}/onboarding", .{guild_id});
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.requestWithValueBodyAndAuditLogReason(Guild.Onboarding, .PUT, uri, body, .{}, audit_log_reason);
+    return client.requestWithValueBodyAndAuditLogReason(model.guild.Onboarding, .PUT, uri, body, .{}, audit_log_reason);
 }
 
 pub fn modifyCurrentUserVoiceState(
@@ -594,15 +594,15 @@ pub const CreateGuildBody = struct {
     name: []const u8,
     region: model.deanson.Omittable(?[]const u8) = .omit,
     icon: Omittable(?model.ImageData) = .omit,
-    verification_level: Omittable(Guild.VerificationLevel) = .omit,
-    default_message_notifications: Omittable(Guild.MessageNotificationLevel) = .omit,
-    explicit_content_Filter: Omittable(Guild.ExplicitContentFilterLevel) = .omit,
-    roles: Omittable([]const model.guild.Role) = .omit,
+    verification_level: Omittable(model.guild.VerificationLevel) = .omit,
+    default_message_notifications: Omittable(model.guild.MessageNotificationLevel) = .omit,
+    explicit_content_Filter: Omittable(model.guild.ExplicitContentFilterLevel) = .omit,
+    roles: Omittable([]const model.Role) = .omit,
     channels: Omittable([]const model.Channel) = .omit,
     afk_channel_id: Omittable(model.Snowflake) = .omit,
     afk_timeout: Omittable(model.Snowflake) = .omit,
     system_channel_id: Omittable(model.Snowflake) = .omit,
-    system_channel_flags: Omittable(Guild.SystemChannelFlags) = .omit,
+    system_channel_flags: Omittable(model.guild.SystemChannelFlags) = .omit,
 
     pub const jsonStringify = model.deanson.stringifyWithOmit;
 };
@@ -610,9 +610,9 @@ pub const CreateGuildBody = struct {
 pub const ModifyGuildBody = struct {
     name: Omittable([]const u8) = .omit,
     region: Omittable(?[]const u8) = .omit,
-    verification_level: Omittable(?Guild.VerificationLevel) = .omit,
-    default_message_notifications: Omittable(?Guild.MessageNotificationLevel) = .omit,
-    explicit_content_filter: Omittable(?Guild.ExplicitContentFilterLevel) = .omit,
+    verification_level: Omittable(?model.guild.VerificationLevel) = .omit,
+    default_message_notifications: Omittable(?model.guild.MessageNotificationLevel) = .omit,
+    explicit_content_filter: Omittable(?model.guild.ExplicitContentFilterLevel) = .omit,
     afk_channel_id: Omittable(model.Snowflake) = .omit,
     afk_timeout: Omittable(model.Snowflake) = .omit,
     icon: Omittable(?model.ImageData) = .omit,
@@ -621,7 +621,7 @@ pub const ModifyGuildBody = struct {
     discovery_splash: Omittable(?model.ImageData) = .omit,
     banner: Omittable(?model.ImageData) = .omit,
     system_channel_id: Omittable(model.Snowflake) = .omit,
-    system_channel_flags: Omittable(Guild.SystemChannelFlags) = .omit,
+    system_channel_flags: Omittable(model.guild.SystemChannelFlags) = .omit,
     rules_channel_id: Omittable(?model.Snowflake) = .omit,
     public_updates_channel_id: Omittable(?model.Snowflake) = .omit,
     /// https://discord.com/developers/docs/reference#locales
@@ -760,7 +760,7 @@ pub const ModifyGuildRoleBody = struct {
 };
 
 pub const ModifyGuildMfaLevelBody = struct {
-    level: Guild.MfaLevel,
+    level: model.guild.MfaLevel,
 };
 
 pub const GetGuildPruneCountQuery = struct {
@@ -860,17 +860,17 @@ pub const GetGuildWidgetImageQuery = struct {
 
 pub const ModifyGuildWelcomeScreenBody = struct {
     enabled: Omittable(?bool) = .omit,
-    welcome_channels: Omittable(?[]const Guild.WelcomeScreen.WelcomeChannel) = .omit,
+    welcome_channels: Omittable(?[]const model.guild.WelcomeScreen.WelcomeChannel) = .omit,
     description: Omittable(?[]const u8) = .omit,
 
     pub const jsonStringify = model.deanson.stringifyWithOmit;
 };
 
 pub const ModifyGuildOnboardingBody = struct {
-    prompts: []const Guild.Onboarding.Prompt,
+    prompts: []const model.guild.Onboarding.Prompt,
     default_channel_ids: []const model.Snowflake,
     enabled: bool,
-    mode: Guild.Onboarding.Mode,
+    mode: model.guild.Onboarding.Mode,
 };
 
 pub const ModifyCurrentUserVoiceStateBody = struct {
