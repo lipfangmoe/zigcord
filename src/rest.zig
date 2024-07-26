@@ -7,6 +7,10 @@ pub const base_url = "https://discord.com/api/v10";
 pub const endpoints = @import("./rest/endpoints.zig");
 pub const Client = @import("./rest/Client.zig");
 
+const multipart = @import("./rest/multipart.zig");
+
+pub const multipart_boundary = multipart.boundary;
+
 pub fn allocDiscordUriStr(alloc: std.mem.Allocator, comptime fmt: []const u8, args: anytype) ![]const u8 {
     return try std.fmt.allocPrint(alloc, base_url ++ fmt, args);
 }
@@ -26,52 +30,7 @@ pub fn discordApiCallUri(allocator: std.mem.Allocator, path: []const u8, query: 
     return uri;
 }
 
-pub fn MultipartFormDataMixin(comptime T: type) type {
-    return struct {
-        pub fn format(self: T, comptime fmt: []const u8, _: std.fmt.FormatOptions, writer: anytype) @TypeOf(writer).Error!void {
-            std.debug.assert(std.mem.eql(u8, fmt, "form"));
-
-            var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-            const allocator = arena.allocator();
-            defer arena.deinit();
-
-            const boundary = "f89767726a7827c6f785b40aee1ca2ade74d951d6a2d50e27cc0f0e5072a12b2";
-
-            inline for (std.meta.fields(@TypeOf(self))) |field| {
-                const value_raw = @field(self, field.name);
-                const value_opt = switch (@typeInfo(field.type)) {
-                    .Optional => value_raw,
-                    else => @as(?field.type, value_raw),
-                };
-                if (value_opt) |value| {
-                    try writer.writeAll("--" ++ boundary ++ "\r\n");
-
-                    if (comptime std.mem.eql(u8, field.name, "files")) {
-                        for (0.., value) |idx, raw_file_reader| {
-                            const file_reader_nullable = switch (@typeInfo(@TypeOf(raw_file_reader))) {
-                                .Optional => raw_file_reader,
-                                else => @as(?@TypeOf(raw_file_reader), raw_file_reader),
-                            };
-                            if (file_reader_nullable) |file_reader| {
-                                try std.fmt.format(writer, "Content-Disposition: form-data; name=\"files[{d}]\"\r\n\r\n", .{idx});
-
-                                var fifo = std.fifo.LinearFifo(u8, .{ .Static = 10_000 }).init();
-                                fifo.pump(file_reader, writer) catch return error.UnexpectedWriteFailure;
-                            }
-                        }
-                    } else {
-                        const value_json = std.json.stringifyAlloc(allocator, value, .{}) catch return error.UnexpectedWriteFailure;
-                        try writer.writeAll("Content-Disposition: form-data; name=\"" ++ field.name ++ "\"\r\n\r\n");
-                        try writer.writeAll(value_json);
-                        try writer.writeAll("\r\n");
-                    }
-                }
-            } // end field loop
-
-            try writer.writeAll("--" ++ boundary ++ "--");
-        }
-    };
-}
+pub const writeMultipartFormDataBody = multipart.writeMultipartFormDataBody;
 
 pub fn QueryStringFormatMixin(comptime T: type) type {
     return struct {

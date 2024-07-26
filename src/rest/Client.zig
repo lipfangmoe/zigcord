@@ -28,22 +28,49 @@ pub fn initWithConfig(allocator: std.mem.Allocator, auth: Authorization, config:
     };
 }
 
+pub fn beginMultipartRequest(
+    self: *Self,
+    comptime ResponseT: type,
+    method: std.http.Method,
+    url: std.Uri,
+    transfer_encoding: std.http.Client.RequestTransfer,
+    boundary: []const u8,
+    extra_headers: ?[]const std.http.Header,
+) !PendingRequest(ResponseT) {
+    var buf: [1028]u8 = undefined;
+    var alloc = std.heap.FixedBufferAllocator.init(&buf);
+    const content_type = try std.mem.concat(alloc.allocator(), u8, &.{ "multipart/form-data; boundary=", boundary });
+    return try beginRequest(
+        self,
+        ResponseT,
+        method,
+        url,
+        transfer_encoding,
+        std.http.Client.Request.Headers{ .content_type = .{ .override = content_type } },
+        extra_headers,
+    );
+}
+
 pub fn beginRequest(
     self: *Self,
     comptime ResponseT: type,
     method: std.http.Method,
     url: std.Uri,
     transfer_encoding: std.http.Client.RequestTransfer,
-    extra_headers: []const std.http.Header,
+    headers: ?std.http.Client.Request.Headers,
+    extra_headers: ?[]const std.http.Header,
 ) !PendingRequest(ResponseT) {
     const authValue = try std.fmt.allocPrint(self.allocator, "{}", .{self.auth});
     defer self.allocator.free(authValue);
 
+    var defaulted_headers = headers orelse std.http.Client.Request.Headers{};
+    defaulted_headers.authorization = .{ .override = authValue };
+
     var server_header_buffer: [2048]u8 = undefined;
     var req = try self.client.open(method, url, std.http.Client.RequestOptions{
         .server_header_buffer = &server_header_buffer,
-        .headers = std.http.Client.Request.Headers{ .authorization = .{ .override = authValue } },
-        .extra_headers = extra_headers,
+        .headers = defaulted_headers,
+        .extra_headers = extra_headers orelse &.{},
     });
     errdefer req.deinit();
 
@@ -59,7 +86,7 @@ pub fn beginRequest(
 
 /// Sends a request to the Discord REST API with the credentials stored in this context
 pub fn request(self: *Self, comptime ResponseT: type, method: std.http.Method, url: std.Uri) !Result(ResponseT) {
-    var pending = try self.beginRequest(ResponseT, method, url, .{ .none = void{} }, &.{});
+    var pending = try self.beginRequest(ResponseT, method, url, .{ .none = void{} }, null, null);
     defer pending.deinit();
 
     return pending.waitForResponse();
@@ -72,7 +99,7 @@ pub fn requestWithAuditLogReason(self: *Self, comptime ResponseT: type, method: 
     else
         &.{};
 
-    var pending = try self.beginRequest(ResponseT, method, url, .{ .none = void{} }, extra_headers);
+    var pending = try self.beginRequest(ResponseT, method, url, .{ .none = void{} }, null, extra_headers);
     defer pending.deinit();
 
     return pending.waitForResponse();
@@ -80,7 +107,7 @@ pub fn requestWithAuditLogReason(self: *Self, comptime ResponseT: type, method: 
 
 /// Sends a request (with a body) to the Discord REST API with the credentials stored in this context.
 pub fn requestWithBody(self: *Self, comptime ResponseT: type, method: std.http.Method, url: std.Uri, body: std.io.AnyReader) !Result(ResponseT) {
-    var pending = try self.beginRequest(ResponseT, method, url, .{ .chunked = void{} }, &.{});
+    var pending = try self.beginRequest(ResponseT, method, url, .{ .chunked = void{} }, null, null);
     defer pending.deinit();
 
     var fifo = std.fifo.LinearFifo([]u8, .{ .Static = 1000 }).init();
@@ -91,7 +118,7 @@ pub fn requestWithBody(self: *Self, comptime ResponseT: type, method: std.http.M
 
 /// Sends a request (with a body) to the Discord REST API with the credentials stored in this context.
 pub fn requestWithValueBody(self: *Self, comptime ResponseT: type, method: std.http.Method, url: std.Uri, body: anytype, stringifyOptions: std.json.StringifyOptions) !Result(ResponseT) {
-    var pending = try self.beginRequest(ResponseT, method, url, .{ .chunked = void{} }, &.{});
+    var pending = try self.beginRequest(ResponseT, method, url, .{ .chunked = void{} }, null, null);
     defer pending.deinit();
 
     var buffered_body_writer = std.io.bufferedWriter(pending.writer());
@@ -116,7 +143,7 @@ pub fn requestWithValueBodyAndAuditLogReason(
     else
         &.{};
 
-    var pending = try self.beginRequest(ResponseT, method, url, .{ .chunked = void{} }, extra_headers);
+    var pending = try self.beginRequest(ResponseT, method, url, .{ .chunked = void{} }, null, extra_headers);
     defer pending.deinit();
 
     var buffered_body_writer = std.io.bufferedWriter(pending.writer());

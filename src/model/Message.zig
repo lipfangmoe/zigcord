@@ -3,7 +3,7 @@ const zigtime = @import("zig-time");
 const deancord = @import("../root.zig");
 const model = deancord.model;
 const Snowflake = model.Snowflake;
-const Omittable = model.deanson.Omittable;
+const deanson = model.deanson;
 
 const Message = @This();
 
@@ -17,30 +17,30 @@ tts: bool,
 mention_everyone: bool,
 mentions: []const model.User,
 mention_roles: []const model.Role,
-mention_channels: Omittable([]const ChannelMention) = .omit,
+mention_channels: deanson.Omittable([]const ChannelMention) = .omit,
 attachments: []const Attachment,
 embeds: []const Embed,
-reactions: Omittable([]const Reaction) = .omit,
-nonce: Omittable(Nonce) = .omit,
+reactions: deanson.Omittable([]const Reaction) = .omit,
+nonce: deanson.Omittable(Nonce) = .omit,
 pinned: bool,
-webhook_id: Omittable(Snowflake) = .omit,
+webhook_id: deanson.Omittable(Snowflake) = .omit,
 type: Type,
-activity: Omittable(Activity) = .omit,
-application: Omittable(model.Application) = .omit,
-application_id: Omittable(Snowflake) = .omit,
-message_reference: Omittable(Reference) = .omit,
-flags: Omittable(Flags) = .omit,
-referenced_message: Omittable(?*const Message) = .omit,
+activity: deanson.Omittable(Activity) = .omit,
+application: deanson.Omittable(deanson.Partial(model.Application)) = .omit,
+application_id: deanson.Omittable(Snowflake) = .omit,
+message_reference: deanson.Omittable(Reference) = .omit,
+flags: deanson.Omittable(Flags) = .omit,
+referenced_message: deanson.Omittable(?*const Message) = .omit,
 interaction_metadata: InteractionMetadata,
-thread: Omittable(model.Channel) = .omit,
-components: Omittable([]const model.MessageComponent) = .omit,
-sticker_items: Omittable([]const model.Sticker.Item) = .omit,
-stickers: Omittable([]const model.Sticker) = .omit,
-position: Omittable(i64) = .omit,
-role_subscription_data: Omittable(RoleSubscriptionData) = .omit,
-resolved: Omittable(model.interaction.ResolvedData) = .omit,
-poll: Omittable(Poll) = .omit,
-call: Omittable(Call) = .omit,
+thread: deanson.Omittable(model.Channel) = .omit,
+components: deanson.Omittable([]const model.MessageComponent) = .omit,
+sticker_items: deanson.Omittable([]const model.Sticker.Item) = .omit,
+stickers: deanson.Omittable([]const model.Sticker) = .omit,
+position: deanson.Omittable(i64) = .omit,
+role_subscription_data: deanson.Omittable(RoleSubscriptionData) = .omit,
+resolved: deanson.Omittable(model.interaction.ResolvedData) = .omit,
+poll: deanson.Omittable(model.Poll) = .omit,
+call: deanson.Omittable(Call) = .omit,
 
 pub const jsonStringify = model.deanson.stringifyWithOmit;
 
@@ -58,16 +58,16 @@ pub const MessageAuthor = union(enum) {
 pub const Attachment = struct {
     id: Snowflake,
     filename: []const u8,
-    description: Omittable([]const u8) = .omit,
-    content_type: Omittable([]const u8) = .omit,
+    description: deanson.Omittable([]const u8) = .omit,
+    content_type: deanson.Omittable([]const u8) = .omit,
     size: u64,
     url: []const u8,
     proxy_url: []const u8,
-    height: Omittable(?[]const u8) = .omit,
-    width: Omittable(?[]const u8) = .omit,
-    ephemeral: Omittable(bool) = .omit,
-    duration_secs: Omittable(f64) = .omit,
-    waveform: Omittable([]const u8) = .omit,
+    height: deanson.Omittable(?[]const u8) = .omit,
+    width: deanson.Omittable(?[]const u8) = .omit,
+    ephemeral: deanson.Omittable(bool) = .omit,
+    duration_secs: deanson.Omittable(f64) = .omit,
+    waveform: deanson.Omittable([]const u8) = .omit,
     flags: Flags,
 
     pub const jsonStringify = model.deanson.stringifyWithOmit;
@@ -81,19 +81,19 @@ pub const ChannelMention = struct {
 };
 
 pub const Embed = struct {
-    title: Omittable([]const u8) = .omit,
-    type: Omittable(EmbedType) = .omit,
-    description: Omittable([]const u8) = .omit,
-    url: Omittable([]const u8) = .omit,
-    timestamp: Omittable([]zigtime.DateTime) = .omit,
-    color: Omittable(i64) = .omit,
-    footer: Omittable(Footer) = .omit,
-    image: Omittable(Media) = .omit,
-    thumbnail: Omittable(Media) = .omit,
-    video: Omittable(Media) = .omit,
-    provider: Omittable(Provider) = .omit,
-    author: Omittable(Author) = .omit,
-    fields: Omittable([]const Field) = .omit,
+    title: deanson.Omittable([]const u8) = .omit,
+    type: deanson.Omittable(EmbedType) = .omit,
+    description: deanson.Omittable([]const u8) = .omit,
+    url: deanson.Omittable([]const u8) = .omit,
+    timestamp: deanson.Omittable([]zigtime.DateTime) = .omit,
+    color: deanson.Omittable(i64) = .omit,
+    footer: deanson.Omittable(Footer) = .omit,
+    image: deanson.Omittable(Media) = .omit,
+    thumbnail: deanson.Omittable(Media) = .omit,
+    video: deanson.Omittable(Media) = .omit,
+    provider: deanson.Omittable(Provider) = .omit,
+    author: deanson.Omittable(Author) = .omit,
+    fields: deanson.Omittable([]const Field) = .omit,
 
     pub const jsonStringify = model.deanson.stringifyWithOmit;
 
@@ -110,33 +110,33 @@ pub const Embed = struct {
 
     pub const Footer = struct {
         text: []const u8,
-        icon_url: Omittable([]const u8) = .omit,
-        proxy_icon_url: Omittable([]const u8) = .omit,
+        icon_url: deanson.Omittable([]const u8) = .omit,
+        proxy_icon_url: deanson.Omittable([]const u8) = .omit,
 
         pub const jsonStringify = model.deanson.stringifyWithOmit;
     };
 
     pub const Media = struct {
-        url: Omittable([]const u8) = .omit,
-        proxy_url: Omittable([]const u8) = .omit,
-        height: Omittable(i64) = .omit,
-        width: Omittable(i64) = .omit,
+        url: deanson.Omittable([]const u8) = .omit,
+        proxy_url: deanson.Omittable([]const u8) = .omit,
+        height: deanson.Omittable(i64) = .omit,
+        width: deanson.Omittable(i64) = .omit,
 
         pub const jsonStringify = model.deanson.stringifyWithOmit;
     };
 
     pub const Provider = struct {
-        name: Omittable([]const u8) = .omit,
-        url: Omittable([]const u8) = .omit,
+        name: deanson.Omittable([]const u8) = .omit,
+        url: deanson.Omittable([]const u8) = .omit,
 
         pub const jsonStringify = model.deanson.stringifyWithOmit;
     };
 
     pub const Author = struct {
         name: []const u8,
-        url: Omittable([]const u8) = .omit,
-        icon_url: Omittable([]const u8) = .omit,
-        proxy_icon_url: Omittable([]const u8) = .omit,
+        url: deanson.Omittable([]const u8) = .omit,
+        icon_url: deanson.Omittable([]const u8) = .omit,
+        proxy_icon_url: deanson.Omittable([]const u8) = .omit,
 
         pub const jsonStringify = model.deanson.stringifyWithOmit;
     };
@@ -144,7 +144,7 @@ pub const Embed = struct {
     pub const Field = struct {
         name: []const u8,
         value: []const u8,
-        @"inline": Omittable(bool) = .omit,
+        @"inline": deanson.Omittable(bool) = .omit,
     };
 };
 
@@ -153,7 +153,7 @@ pub const Reaction = struct {
     count_details: CountDetails,
     me: bool,
     me_burst: bool,
-    emoji: model.Emoji,
+    emoji: deanson.Partial(model.Emoji),
     burst_colors: []const i64,
 
     pub const CountDetails = struct {
@@ -235,7 +235,7 @@ pub const Type = enum(u8) {
 
 pub const Activity = struct {
     type: ActivityType,
-    party_id: Omittable([]const u8) = .omit,
+    party_id: deanson.Omittable([]const u8) = .omit,
 
     pub const ActivityType = enum(u3) {
         join = 1,
@@ -248,10 +248,10 @@ pub const Activity = struct {
 };
 
 pub const Reference = struct {
-    message_id: Omittable(Snowflake) = .omit,
-    channel_id: Omittable(Snowflake) = .omit,
-    guild_id: Omittable(Snowflake) = .omit,
-    fail_if_not_exists: Omittable(bool) = .omit,
+    message_id: deanson.Omittable(Snowflake) = .omit,
+    channel_id: deanson.Omittable(Snowflake) = .omit,
+    guild_id: deanson.Omittable(Snowflake) = .omit,
+    fail_if_not_exists: deanson.Omittable(bool) = .omit,
 };
 
 pub const Flags = model.Flags(enum {
@@ -273,9 +273,9 @@ pub const InteractionMetadata = struct {
     type: model.interaction.InteractionType,
     user: model.User,
     authorizing_integration_owners: std.json.Value, // no clue what shape this is
-    original_response_message_id: Omittable(Snowflake) = .omit,
-    interacted_message_id: Omittable(Snowflake) = .omit,
-    triggering_interaction_metadata: Omittable(?*const InteractionMetadata) = .omit,
+    original_response_message_id: deanson.Omittable(Snowflake) = .omit,
+    interacted_message_id: deanson.Omittable(Snowflake) = .omit,
+    triggering_interaction_metadata: deanson.Omittable(?*const InteractionMetadata) = .omit,
 
     pub const jsonStringify = model.deanson.stringifyWithOmit;
 };
@@ -287,43 +287,9 @@ pub const RoleSubscriptionData = struct {
     is_renwal: bool,
 };
 
-pub const Poll = struct {
-    question: Media,
-    answers: Answer,
-    expiry: ?[]const u8,
-    allow_multiselect: bool,
-    layout_type: i64,
-    results: Omittable(Results) = .omit,
-
-    pub const Media = struct {
-        text: Omittable([]const u8) = .omit,
-        emoji: Omittable(model.Emoji) = .omit,
-
-        pub const jsonStringify = model.deanson.stringifyWithOmit;
-    };
-
-    pub const Answer = struct {
-        answer_id: Omittable(i64) = .omit,
-        poll_media: Media,
-    };
-
-    pub const Results = struct {
-        is_finalized: bool,
-        answer_counts: []AnswerCount,
-
-        pub const AnswerCount = struct {
-            id: i64,
-            count: i64,
-            me_voted: bool,
-        };
-    };
-
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
-};
-
 pub const Call = struct {
     participants: []const Snowflake,
-    ended_timestamp: Omittable(?[]zigtime.DateTime) = .omit,
+    ended_timestamp: deanson.Omittable(?[]zigtime.DateTime) = .omit,
 
     pub const jsonStringify = model.deanson.stringifyWithOmit;
 };

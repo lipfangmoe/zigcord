@@ -10,14 +10,14 @@ description: []const u8,
 rpc_origins: deanson.Omittable([]const []const u8) = .omit,
 bot_public: bool,
 bot_require_code_grant: bool,
-bot: deanson.Omittable(model.User) = .omit, // TODO: partial user
+bot: deanson.Omittable(deanson.Partial(model.User)) = .omit,
 terms_of_service_url: deanson.Omittable([]const u8) = .omit,
 privacy_policy_url: deanson.Omittable([]const u8) = .omit,
-owner: deanson.Omittable(model.User) = .omit, // TODO: partial user
+owner: deanson.Omittable(deanson.Partial(model.User)) = .omit,
 verify_key: []const u8,
 team: ?Team,
 guild_id: deanson.Omittable([]const u8) = .omit,
-guild: deanson.Omittable(model.guild.Guild) = .omit, // TODO: partial guild
+guild: deanson.Omittable(model.guild.PartialGuild) = .omit,
 primary_sku_id: deanson.Omittable(model.Snowflake) = .omit,
 slug: deanson.Omittable([]const u8) = .omit,
 cover_image: deanson.Omittable([]const u8) = .omit,

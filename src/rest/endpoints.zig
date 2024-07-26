@@ -9,3 +9,7 @@ pub const guild = @import("./endpoints/guild.zig");
 pub const guild_scheduled_event = @import("./endpoints/guild_scheduled_event.zig");
 pub const guild_template = @import("./endpoints/guild_template.zig");
 pub const interactions = @import("./endpoints/interactions.zig");
+pub const invite = @import("./endpoints/invite.zig");
+pub const poll = @import("./endpoints/poll.zig");
+pub const stage_instance = @import("./endpoints/stage_instance.zig");
+pub const sticker = @import("./endpoints/sticker.zig");

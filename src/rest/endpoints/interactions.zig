@@ -20,7 +20,7 @@ pub fn createInteractionResponseMultipart(client: *Client, interaction_id: Snowf
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.beginRequest(void, .POST, uri, transfer_encoding, &.{});
+    return client.beginMultipartRequest(void, .POST, uri, transfer_encoding, rest.multipart_boundary, null);
 }
 
 pub fn getOriginalInteractionResponse(client: *Client, application_id: Snowflake, interaction_token: []const u8) !Result(model.Message) {

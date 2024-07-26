@@ -2,7 +2,7 @@ const std = @import("std");
 const model = @import("../root.zig").model;
 const zigtime = @import("zig-time");
 const Snowflake = model.Snowflake;
-const Omittable = model.deanson.Omittable;
+const deanson = model.deanson;
 
 pub const Guild = union(enum) {
     available: AvailableGuild,
@@ -36,23 +36,55 @@ pub const Guild = union(enum) {
     }
 };
 
+pub const PartialGuild = union(enum) {
+    available: deanson.Partial(AvailableGuild),
+    unavailable: deanson.Partial(UnavailableGuild),
+
+    pub const jsonStringify = model.deanson.stringifyUnionInline;
+
+    pub fn jsonParse(alloc: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !PartialGuild {
+        const value = try std.json.innerParse(std.json.Value, alloc, source, options);
+
+        return try jsonParseFromValue(alloc, value, options);
+    }
+
+    pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, options: std.json.ParseOptions) !PartialGuild {
+        const obj: std.json.ObjectMap = switch (source) {
+            .object => |object| object,
+            else => return error.UnexpectedToken,
+        };
+
+        if (obj.get("unavailable")) |unavailable_value| {
+            const unavailable = switch (unavailable_value) {
+                .bool => |boolean| boolean,
+                else => return error.UnexpectedToken,
+            };
+            if (unavailable) {
+                return .{ .unavailable = try std.json.innerParseFromValue(deanson.Partial(UnavailableGuild), alloc, source, options) };
+            }
+        }
+
+        return .{ .available = try std.json.innerParseFromValue(deanson.Partial(AvailableGuild), alloc, source, options) };
+    }
+};
+
 pub const AvailableGuild = struct {
     id: Snowflake,
     name: []const u8,
     icon: ?[]const u8,
     /// used for guild templates
-    icon_hash: Omittable(?[]const u8) = .omit,
+    icon_hash: deanson.Omittable(?[]const u8) = .omit,
     splash: ?[]const u8,
     discovery_splash: ?[]const u8,
     /// true if the authenticated user is the owner of the guild
-    owner: Omittable(bool) = .omit,
+    owner: deanson.Omittable(bool) = .omit,
     owner_id: Snowflake,
-    permissions: Omittable([]const u8) = .omit,
-    region: Omittable(?[]const u8) = .omit,
+    permissions: deanson.Omittable([]const u8) = .omit,
+    region: deanson.Omittable(?[]const u8) = .omit,
     afk_channel_id: ?Snowflake,
     afk_timeout: i64,
-    widget_enabled: Omittable(bool) = .omit,
-    widget_channel_id: Omittable(?Snowflake) = .omit,
+    widget_enabled: deanson.Omittable(bool) = .omit,
+    widget_channel_id: deanson.Omittable(?Snowflake) = .omit,
     verification_level: VerificationLevel,
     default_message_notifications: MessageNotificationLevel,
     explicit_content_filter: ExplicitContentFilterLevel,
@@ -65,22 +97,22 @@ pub const AvailableGuild = struct {
     system_channel_id: ?Snowflake,
     system_channel_flags: SystemChannelFlags,
     rules_channel_id: ?Snowflake,
-    max_presences: Omittable(?i64) = .omit,
-    max_members: Omittable(i64) = .omit,
+    max_presences: deanson.Omittable(?i64) = .omit,
+    max_members: deanson.Omittable(i64) = .omit,
     vanity_url_code: ?[]const u8,
     description: ?[]const u8,
     banner: ?[]const u8,
     premium_tier: PremiumTier,
-    premium_subscription_count: Omittable(i64) = .omit,
+    premium_subscription_count: deanson.Omittable(i64) = .omit,
     preferred_locale: []const u8,
     public_updates_channel_id: ?Snowflake,
-    max_video_channel_users: Omittable(i64) = .omit,
-    max_stage_video_channel_users: Omittable(i64) = .omit,
-    approximate_member_count: Omittable(i64) = .omit,
-    approximate_presence_count: Omittable(i64) = .omit,
-    welcome_screen: Omittable(WelcomeScreen) = .omit,
+    max_video_channel_users: deanson.Omittable(i64) = .omit,
+    max_stage_video_channel_users: deanson.Omittable(i64) = .omit,
+    approximate_member_count: deanson.Omittable(i64) = .omit,
+    approximate_presence_count: deanson.Omittable(i64) = .omit,
+    welcome_screen: deanson.Omittable(WelcomeScreen) = .omit,
     nsfw_level: NsfwLevel,
-    stickers: Omittable([]const model.Sticker) = .omit,
+    stickers: deanson.Omittable([]const model.Sticker) = .omit,
     premium_progress_bar_enabled: bool,
     safety_alerts_channel_id: ?Snowflake,
 
@@ -88,8 +120,8 @@ pub const AvailableGuild = struct {
 };
 
 pub const UnavailableGuild = struct {
-    id: Omittable(model.Snowflake) = .omit,
-    unavailable: Omittable(bool) = .omit,
+    id: deanson.Omittable(model.Snowflake) = .omit,
+    unavailable: deanson.Omittable(bool) = .omit,
 
     pub const jsonStringify = model.deanson.stringifyWithOmit;
 };
@@ -181,8 +213,8 @@ pub const Widget = struct {
     id: model.Snowflake,
     name: []const u8,
     instant_invite: ?[]const u8,
-    channels: []const model.Channel,
-    members: []const model.User,
+    channels: []const deanson.Partial(model.Channel),
+    members: []const deanson.Partial(model.User),
     presence_count: i64,
 };
 
@@ -219,9 +251,9 @@ pub const Onboarding = struct {
         id: Snowflake,
         channel_ids: []const Snowflake,
         role_ids: []const Snowflake,
-        emoji: Omittable(model.Emoji) = .omit,
-        emoji_id: Omittable(Snowflake) = .omit,
-        emoji_animated: Omittable(bool) = .omit,
+        emoji: deanson.Omittable(model.Emoji) = .omit,
+        emoji_id: deanson.Omittable(Snowflake) = .omit,
+        emoji_animated: deanson.Omittable(bool) = .omit,
         title: []const u8,
         description: ?[]const u8,
 
@@ -255,18 +287,18 @@ pub const Integration = struct {
     name: []const u8,
     type: []const u8,
     enabled: bool,
-    syncing: Omittable(bool) = .omit,
-    role_id: Omittable(model.Snowflake) = .omit,
-    enable_emoticons: Omittable(bool) = .omit,
-    expire_behavior: Omittable(ExpireBehavior) = .omit,
-    expire_grace_period: Omittable(i64) = .omit,
-    user: Omittable(model.User) = .omit,
-    account: Omittable(Account) = .omit,
-    synced_at: Omittable([]const u8) = .omit,
-    subscriber_count: Omittable(i64) = .omit,
-    revoked: Omittable(bool) = .omit,
-    application: Omittable(model.Application) = .omit,
-    scopes: Omittable([]const []const u8) = .omit,
+    syncing: deanson.Omittable(bool) = .omit,
+    role_id: deanson.Omittable(model.Snowflake) = .omit,
+    enable_emoticons: deanson.Omittable(bool) = .omit,
+    expire_behavior: deanson.Omittable(ExpireBehavior) = .omit,
+    expire_grace_period: deanson.Omittable(i64) = .omit,
+    user: deanson.Omittable(model.User) = .omit,
+    account: deanson.Omittable(Account) = .omit,
+    synced_at: deanson.Omittable([]const u8) = .omit,
+    subscriber_count: deanson.Omittable(i64) = .omit,
+    revoked: deanson.Omittable(bool) = .omit,
+    application: deanson.Omittable(model.Application) = .omit,
+    scopes: deanson.Omittable([]const []const u8) = .omit,
 
     pub const ExpireBehavior = enum(u1) {
         remove_role = 0,
@@ -281,17 +313,17 @@ pub const Integration = struct {
 
 pub const Member = struct {
     /// The User object for this guild member
-    user: Omittable(model.User) = .omit,
+    user: deanson.Omittable(model.User) = .omit,
     /// The nickname this user uses in this guild
-    nick: Omittable(?[]const u8) = .omit,
+    nick: deanson.Omittable(?[]const u8) = .omit,
     /// A guild-specific avatar hash
-    avatar: Omittable(?[]const u8) = .omit,
+    avatar: deanson.Omittable(?[]const u8) = .omit,
     /// The role ids that this user has
     roles: []Snowflake,
     /// when the user joined the guild
     joined_at: zigtime.DateTime,
     /// when the user started boosting the guild
-    premium_since: Omittable(?[]zigtime.DateTime) = .omit,
+    premium_since: deanson.Omittable(?[]zigtime.DateTime) = .omit,
     /// true if this user is deafened in voice channels
     deaf: bool,
     /// true if this user is muted in voice channels
@@ -299,11 +331,11 @@ pub const Member = struct {
     /// guild member flags
     flags: Flags,
     /// true if the user has not passed the guild's membership screening requirements
-    pending: Omittable(bool) = .omit,
+    pending: deanson.Omittable(bool) = .omit,
     /// returned inside of interaction objects, permissions of the member in the interacted channel
-    permissions: Omittable([]const u8) = .omit,
+    permissions: deanson.Omittable([]const u8) = .omit,
     /// when the user's timeout will expire. may be in the past; if so, the user is not timed out.
-    communication_disabled_until: Omittable(?[]zigtime.DateTime) = .omit,
+    communication_disabled_until: deanson.Omittable(?[]zigtime.DateTime) = .omit,
 
     pub const jsonStringify = model.deanson.stringifyWithOmit;
 

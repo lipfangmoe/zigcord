@@ -2,6 +2,8 @@ const model = @import("../model.zig");
 const Snowflake = model.Snowflake;
 const Omittable = model.deanson.Omittable;
 
+const Sticker = @This();
+
 id: Snowflake,
 pack_id: Omittable(Snowflake) = .omit,
 name: []const u8,
@@ -37,4 +39,16 @@ pub const Item = struct {
     id: Snowflake,
     name: []const u8,
     format_type: Format,
+};
+
+pub const Pack = struct {
+    id: model.Snowflake,
+    stickers: []const Sticker,
+    name: []const u8,
+    sku_id: model.Snowflake,
+    cover_sticker_id: Omittable(model.Snowflake) = .omit,
+    description: []const u8,
+    banner_asset_id: Omittable(model.Snowflake) = .omit,
+
+    pub usingnamespace model.deanson.OmittableJsonMixin(@This());
 };

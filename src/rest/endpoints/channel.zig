@@ -20,13 +20,14 @@ pub fn getChannel(client: *Client, channel_id: Snowflake) !RestResult(Channel) {
 pub fn modifyChannel(
     client: *Client,
     channel_id: Snowflake,
+    body: ModifyChannelBody,
     audit_log_reason: ?[]const u8,
 ) !RestResult(Channel) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/channels/{}", .{channel_id});
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.requestWithAuditLogReason(Channel, .PATCH, uri, audit_log_reason);
+    return client.requestWithValueBodyAndAuditLogReason(Channel, .PATCH, uri, body, .{}, audit_log_reason);
 }
 
 pub fn deleteChannel(
@@ -71,14 +72,14 @@ pub fn getChannelMessage(
 pub fn createMessage(
     client: *Client,
     channel_id: Snowflake,
-    body: CreateMessage,
+    body: CreateMessageFormBody,
 ) !RestResult(model.Message) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/channels/{}/messages", .{channel_id});
     defer client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
 
-    var pending_request = try client.beginRequest(model.Message, .POST, uri, .chunked, &.{});
+    var pending_request = try client.beginMultipartRequest(model.Message, .PATCH, uri, .chunked, rest.multipart_boundary, null);
     defer pending_request.deinit();
 
     try std.fmt.format(pending_request.writer(), "{form}", .{body});
@@ -188,14 +189,14 @@ pub fn editMessage(
     client: *Client,
     channel_id: Snowflake,
     message_id: Snowflake,
-    body: EditMessage,
+    body: EditMessageFormBody,
 ) !RestResult(model.Message) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/channels/{}/messages/{}", .{ channel_id, message_id });
     defer client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
 
-    var pending_request = try client.beginRequest(model.Message, .PATCH, uri, .chunked, &.{});
+    var pending_request = try client.beginMultipartRequest(model.Message, .PATCH, uri, .chunked, rest.multipart_boundary, null);
     defer pending_request.deinit();
 
     try std.fmt.format(pending_request.writer(), "{form}", .{body});
@@ -413,7 +414,7 @@ pub fn startThreadWithoutMessage(
 pub fn startTreadInForumOrMediaChannel(
     client: *Client,
     channel_id: Snowflake,
-    body: StartThreadInForumOrMediaChannel,
+    body: StartThreadInForumOrMediaChannelFormBody,
     audit_log_reason: ?[]const u8,
 ) !RestResult(Channel) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/channels/{}/threads", .{channel_id});
@@ -425,7 +426,7 @@ pub fn startTreadInForumOrMediaChannel(
     else
         &.{};
 
-    var pending_request = try client.beginRequest(Channel, .PATCH, uri, .chunked, headers);
+    var pending_request = try client.beginMultipartRequest(Channel, .PATCH, uri, .chunked, rest.multipart_boundary, headers);
     defer pending_request.deinit();
 
     try std.fmt.format(pending_request.writer(), "{form}", .{body});
@@ -523,7 +524,7 @@ pub fn listJoinedPrivateArchivedThreads(client: *Client, channel_id: Snowflake, 
 
 // ==== ENDPOINT-SPECIFIC TYPES ====
 
-pub const ModifyChannelParams = union(enum) {
+pub const ModifyChannelBody = union(enum) {
     group_dm: struct {
         name: Omittable([]const u8) = .omit,
         icon: Omittable([]const u8) = .omit,
@@ -539,7 +540,7 @@ pub const ModifyChannelParams = union(enum) {
         rate_limit_per_user: Omittable(?i64) = .omit,
         bitrate: Omittable(?i64) = .omit,
         user_limit: Omittable(?i64) = .omit,
-        permission_overwrites: Omittable(?[]const Channel.PermissionOverwrite) = .omit,
+        permission_overwrites: Omittable(?[]const deanson.Partial(Channel.PermissionOverwrite)) = .omit,
         parent_id: Omittable(?Snowflake) = .omit,
         rtc_region: Omittable(?[]const u8) = .omit,
         video_quality_mode: Omittable(?Channel.VideoQualityMode) = .omit,
@@ -582,7 +583,7 @@ pub const GetChannelMessagesQuery = struct {
 
 // note to maintainers: top-level properties are encoded as form parameters, although the
 // properties themselves (except files) will be encoded as JSON
-pub const CreateMessage = struct {
+pub const CreateMessageFormBody = struct {
     content: ?[]const u8 = null,
     nonce: ?union(enum) { int: i64, str: []const u8 } = null,
     tts: ?bool = null,
@@ -592,43 +593,48 @@ pub const CreateMessage = struct {
     components: ?[]const model.MessageComponent = null,
     sticker_ids: ?[]const Snowflake = null,
     files: ?[]const std.io.AnyReader = null,
-    payload_json: ?[]const u8 = null,
-    attachments: ?[]const model.Message.Attachment = null,
+    attachments: ?[]const deanson.Partial(model.Message.Attachment) = null,
     flags: ?model.Message.Flags = null,
     enforce_nonce: ?bool = null,
-    poll: ?model.Message.Poll = null,
+    poll: ?model.Poll = null,
 
-    pub usingnamespace rest.MultipartFormDataMixin(@This());
+    pub fn format(self: CreateMessageFormBody, comptime fmt: []const u8, _: std.fmt.FormatOptions, writer: anytype) !void {
+        if (comptime !std.mem.eql(u8, fmt, "form")) {
+            @compileError("CreateMessageFormBody.format should only be called with fmt string {form}");
+        }
+
+        try rest.writeMultipartFormDataBody(self, "files", writer);
+    }
 
     /// Creates a text-only message
-    pub fn initTextOnly(message: []const u8) CreateMessage {
-        return CreateMessage{ .content = message };
+    pub fn initTextOnly(message: []const u8) CreateMessageFormBody {
+        return CreateMessageFormBody{ .content = message };
     }
 
     /// Creates a text message with a file upload. The length of `files` and `attachments` must be equal.
     pub fn initMessageWithFiles(
         message: ?[]const u8,
         files: []const std.io.AnyReader,
-        attachments: []const model.Message.Attachment,
-    ) CreateMessage {
+        attachments: []const deanson.Partial(model.Message.Attachment),
+    ) CreateMessageFormBody {
         std.debug.assert(files.len == attachments.len);
-        return CreateMessage{ .content = message, .files = files, .attachments = attachments };
+        return CreateMessageFormBody{ .content = message, .files = files, .attachments = attachments };
     }
 
-    pub fn initMessageWithEmbeds(message: ?[]const u8, embeds: []const model.Message.Embed) CreateMessage {
-        return CreateMessage{ .content = message, .embeds = embeds };
+    pub fn initMessageWithEmbeds(message: ?[]const u8, embeds: []const model.Message.Embed) CreateMessageFormBody {
+        return CreateMessageFormBody{ .content = message, .embeds = embeds };
     }
 
-    pub fn initMessageWithStickers(message: ?[]const u8, sticker_ids: []const Snowflake) CreateMessage {
-        return CreateMessage{ .content = message, .sticker_ids = sticker_ids };
+    pub fn initMessageWithStickers(message: ?[]const u8, sticker_ids: []const Snowflake) CreateMessageFormBody {
+        return CreateMessageFormBody{ .content = message, .sticker_ids = sticker_ids };
     }
 
-    pub fn initMessageWithComponents(message: ?[]const u8, components: []const model.MessageComponent) CreateMessage {
-        return CreateMessage{ .content = message, .components = components };
+    pub fn initMessageWithComponents(message: ?[]const u8, components: []const model.MessageComponent) CreateMessageFormBody {
+        return CreateMessageFormBody{ .content = message, .components = components };
     }
 
-    pub fn initMessageWithPoll(message: ?[]const u8, poll: model.Message.Poll) CreateMessage {
-        return CreateMessage{ .content = message, .poll = poll };
+    pub fn initMessageWithPoll(message: ?[]const u8, poll: model.Poll) CreateMessageFormBody {
+        return CreateMessageFormBody{ .content = message, .poll = poll };
     }
 
     const boundary = "f89767726a7827c6f785b40aee1ca2ade74d951d6a2d50e27cc0f0e5072a12b2";
@@ -679,17 +685,23 @@ pub const GetEmojiQuery = struct {
     };
 };
 
-pub const EditMessage = struct {
+pub const EditMessageFormBody = struct {
     content: ?[]const u8 = null,
     embeds: ?[]const model.Message.Embed = null,
     flags: ?[]model.Message.Flags = null,
-    allowed_mentions: ?CreateMessage.AllowedMentions = null,
+    allowed_mentions: ?CreateMessageFormBody.AllowedMentions = null,
     /// set a file to `null` to not affect it
     files: ?[]const ?std.io.AnyReader = null,
     /// must also include already-uploaded files
     attachments: ?[]const model.Message.Attachment = null,
 
-    pub usingnamespace rest.MultipartFormDataMixin(@This());
+    pub fn format(self: EditMessageFormBody, comptime fmt: []const u8, _: std.fmt.FormatOptions, writer: anytype) !void {
+        if (comptime !std.mem.eql(u8, fmt, "form")) {
+            @compileError("EditMessageFormBody.format should only be called with fmt string {form}");
+        }
+
+        try rest.writeMultipartFormDataBody(self, "files", writer);
+    }
 };
 
 pub const EditChannelPermissions = struct {
@@ -735,7 +747,7 @@ pub const StartThreadWithoutMessage = struct {
     pub const jsonStringify = deanson.stringifyWithOmit;
 };
 
-pub const StartThreadInForumOrMediaChannel = struct {
+pub const StartThreadInForumOrMediaChannelFormBody = struct {
     name: []const u8,
     auto_archive_duration: ?i64 = null,
     rate_limit_per_user: ?i64 = null,
@@ -743,15 +755,21 @@ pub const StartThreadInForumOrMediaChannel = struct {
     applied_tags: ?[]const Snowflake = null,
     files: ?[]const std.io.AnyReader = null,
 
-    pub usingnamespace rest.MultipartFormDataMixin(@This());
+    pub fn format(self: StartThreadInForumOrMediaChannelFormBody, comptime fmt: []const u8, _: std.fmt.FormatOptions, writer: anytype) !void {
+        if (comptime !std.mem.eql(u8, fmt, "form")) {
+            @compileError("StartThreadInForumOrMediaChannelFormBody.format should only be called with fmt string {form}");
+        }
+
+        try rest.writeMultipartFormDataBody(self, "files", writer);
+    }
 
     pub const ForumAndMediaThreadMessage = struct {
         content: Omittable([]const u8) = .omit,
         embeds: Omittable([]const model.Message.Embed) = .omit,
-        allowed_mentions: Omittable([]const CreateMessage.AllowedMentions) = .omit,
+        allowed_mentions: Omittable([]const CreateMessageFormBody.AllowedMentions) = .omit,
         components: Omittable([]const model.MessageComponent) = .omit,
         sticker_ids: Omittable([]const Snowflake) = .omit,
-        attachments: Omittable([]const model.Message.Attachment) = .omit,
+        attachments: Omittable([]const deanson.Partial(model.Message.Attachment)) = .omit,
         flags: Omittable(model.Message.Flags) = .omit,
 
         pub const jsonStringify = deanson.stringifyWithOmit;

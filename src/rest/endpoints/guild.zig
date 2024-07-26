@@ -1,7 +1,8 @@
 const deancord = @import("../../root.zig");
+const std = @import("std");
 const model = deancord.model;
 const rest = deancord.rest;
-const std = @import("std");
+const deanson = model.deanson;
 const Omittable = model.deanson.Omittable;
 const Guild = model.guild.Guild;
 
@@ -483,12 +484,12 @@ pub fn getGuildWidget(
 pub fn getGuildVanityUrl(
     client: *rest.Client,
     guild_id: model.Snowflake,
-) !rest.Client.Result(GetGuildVanityUrlResponse) {
+) !rest.Client.Result(deanson.Partial(model.Invite)) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/guilds/{}/vanity-url", .{guild_id});
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.request(GetGuildVanityUrlResponse, .GET, uri);
+    return client.request(deanson.Partial(model.Invite), .GET, uri);
 }
 
 /// Because this endpoint is unauthenticated and does not return JSON (it returns a PNG), `std.http.Client.Request` is
@@ -598,7 +599,7 @@ pub const CreateGuildBody = struct {
     default_message_notifications: Omittable(model.guild.MessageNotificationLevel) = .omit,
     explicit_content_Filter: Omittable(model.guild.ExplicitContentFilterLevel) = .omit,
     roles: Omittable([]const model.Role) = .omit,
-    channels: Omittable([]const model.Channel) = .omit,
+    channels: Omittable([]const deanson.Partial(model.Channel)) = .omit,
     afk_channel_id: Omittable(model.Snowflake) = .omit,
     afk_timeout: Omittable(model.Snowflake) = .omit,
     system_channel_id: Omittable(model.Snowflake) = .omit,
@@ -643,7 +644,7 @@ const CreateGuildChannelBody = struct {
     user_limit: Omittable(?i64) = .omit,
     rate_limit_per_user: Omittable(?i64) = .omit,
     position: Omittable(?i64) = .omit,
-    permission_overwrites: Omittable(?[]const model.Channel.PermissionOverwrite) = .omit,
+    permission_overwrites: Omittable(?[]const deanson.Partial(model.Channel.PermissionOverwrite)) = .omit,
     parent_id: Omittable(?model.Snowflake) = .omit,
     nsfw: Omittable(?bool) = .omit,
     rtc_region: Omittable(?[]const u8) = .omit,
@@ -818,24 +819,6 @@ pub const BeginGuildPruneBody = struct {
 pub const ModifyGuildWidgetBody = struct {
     enabled: Omittable(bool) = .omit,
     channel_id: Omittable(?model.Snowflake) = .omit,
-
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
-};
-
-pub const GetGuildVanityUrlResponse = struct {
-    type: Omittable(model.Invite.Type) = .omit,
-    code: Omittable([]const u8) = .omit,
-    guild: Omittable(model.guild.Guild) = .omit,
-    channel: ?model.Channel,
-    inviter: Omittable(model.User) = .omit,
-    target_type: Omittable(i64) = .omit,
-    target_user: Omittable(model.User) = .omit,
-    target_application: Omittable(model.Application) = .omit,
-    approximate_presence_count: Omittable(i64) = .omit,
-    approximate_member_count: Omittable(i64) = .omit,
-    expires_at: Omittable(?[]const u8) = .omit,
-    stage_instance: Omittable(model.Invite.InviteStageInstance) = .omit, // deprecated
-    guild_scheduled_event: Omittable(model.GuildScheduledEvent) = .omit,
 
     pub const jsonStringify = model.deanson.stringifyWithOmit;
 };

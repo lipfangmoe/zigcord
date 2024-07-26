@@ -12,5 +12,5 @@ creator: model.User,
 created_at: zigtime.DateTime,
 updated_at: zigtime.DateTime,
 source_guild_id: model.Snowflake,
-serialized_source_guild: std.json.Value, // partial guild object
+serialized_source_guild: model.guild.PartialGuild,
 is_dirty: ?bool,

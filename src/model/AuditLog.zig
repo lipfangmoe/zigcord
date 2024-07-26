@@ -1,23 +1,18 @@
 const model = @import("../root.zig").model;
-const ApplicationCommand = model.interaction.command.ApplicationCommand;
-const Channel = model.Channel;
-const User = model.User;
+const command = model.interaction.command;
+const deanson = model.deanson;
 
-application_commands: []const ApplicationCommand,
+application_commands: []const model.interaction.command.ApplicationCommand,
 audit_log_entries: []const Entry,
-auto_moderation_rules: []const AutoModerationRule,
+auto_moderation_rules: []const model.AutoModerationRule,
 guild_scheduled_events: []const model.GuildScheduledEvent,
-integrations: []const PartialIntegration,
-threads: []const Channel,
-users: []const User,
+integrations: []const deanson.Partial(model.guild.Integration),
+threads: []const model.Channel,
+users: []const model.User,
 webhooks: []const Webhook,
 
+// TODO
 pub const Entry = struct {};
 
-// TODO - move to separate file
-pub const AutoModerationRule = struct {};
-
-pub const PartialIntegration = struct {};
-
-// TODO - move to separate file
+// TODO - Webhook.zig
 pub const Webhook = struct {};

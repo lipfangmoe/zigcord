@@ -26,6 +26,7 @@ pub const GuildScheduledEvent = @import("./model/GuildScheduledEvent.zig");
 pub const GuildTemplate = @import("./model/GuildTemplate.zig");
 pub const Role = @import("./model/Role.zig");
 pub const StageInstance = @import("./model/StageInstance.zig");
+pub const Poll = @import("./model/Poll.zig");
 
 /// Represents an array of localization entries, ie:
 /// [["en-US", "please enable cookies"], ["en-GB", "please enable biscuits"]]
