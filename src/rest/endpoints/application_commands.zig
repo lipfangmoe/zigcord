@@ -167,9 +167,9 @@ pub fn editApplicationCommandPermissions(client: *Client, application_id: Snowfl
 
 pub const CreateGlobalApplicationCommandBody = struct {
     name: []const u8,
-    name_localizations: Omittable(?model.Localizations) = .omit,
+    name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     description: Omittable([]const u8) = .omit,
-    description_localizations: Omittable(?model.Localizations) = .omit,
+    description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     options: Omittable([]const ApplicationCommandOption) = .omit,
     default_member_permissions: Omittable(?[]const u8) = .omit,
     dm_permission: Omittable(?bool) = .omit,
@@ -182,9 +182,9 @@ pub const CreateGlobalApplicationCommandBody = struct {
 
 pub const EditGlobalApplicationCommandBody = struct {
     name: Omittable([]const u8) = .omit,
-    name_localizations: Omittable(?model.Localizations) = .omit,
+    name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     description: Omittable([]const u8) = .omit,
-    description_localizations: Omittable(?model.Localizations) = .omit,
+    description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     options: Omittable([]const ApplicationCommandOption) = .omit,
     default_member_permissions: Omittable(?[]const u8) = .omit,
     dm_permission: Omittable(?bool) = .omit,
@@ -196,9 +196,9 @@ pub const EditGlobalApplicationCommandBody = struct {
 
 pub const CreateGuildApplicationCommandBody = struct {
     name: []const u8,
-    name_localizations: Omittable(?model.Localizations) = .omit,
+    name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     description: Omittable([]const u8) = .omit,
-    description_localizations: Omittable(?model.Localizations) = .omit,
+    description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     options: Omittable([]const ApplicationCommandOption) = .omit,
     default_member_permissions: Omittable(?[]const u8) = .omit,
     default_permission: Omittable(bool) = .omit,
@@ -210,9 +210,9 @@ pub const CreateGuildApplicationCommandBody = struct {
 
 pub const EditGuildApplicationCommandBody = struct {
     name: Omittable([]const u8) = .omit,
-    name_localizations: Omittable(?model.Localizations) = .omit,
+    name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     description: Omittable([]const u8) = .omit,
-    description_localizations: Omittable(?model.Localizations) = .omit,
+    description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     options: Omittable([]const ApplicationCommandOption) = .omit,
     default_member_permissions: Omittable(?[]const u8) = .omit,
     default_permission: Omittable(bool) = .omit,

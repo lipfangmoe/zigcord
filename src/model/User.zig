@@ -1,6 +1,7 @@
 const std = @import("std");
 const model = @import("../model.zig");
 const Omittable = model.deanson.Omittable;
+const Partial = model.deanson.Partial;
 
 /// This user's snowflake
 id: model.Snowflake,
@@ -80,4 +81,34 @@ pub const NitroType = enum(u8) {
 pub const AvatarDecorationData = struct {
     asset: []const u8,
     sku_id: model.Snowflake,
+};
+
+pub const Connection = struct {
+    id: []const u8,
+    name: []const u8,
+    type: []const u8,
+    revoked: Omittable(bool) = .omit,
+    integrations: Omittable([]const Partial(model.guild.Integration)) = .omit,
+    verified: bool,
+    friend_sync: bool,
+    show_activity: bool,
+    two_way_link: bool,
+    visibility: Visibility,
+
+    pub const jsonStringify = model.deanson.stringifyWithOmit;
+
+    pub const Visibility = enum(u1) {
+        none = 0,
+        everyone = 1,
+
+        pub const jsonStringify = model.deanson.stringifyEnumAsInt;
+    };
+};
+
+pub const ApplicationRoleConnection = struct {
+    platform_name: Omittable([]const u8) = .omit,
+    platform_username: Omittable([]const u8) = .omit,
+    metadata: std.json.ArrayHashMap([]const u8),
+
+    pub const jsonStringify = model.deanson.stringifyWithOmit;
 };

@@ -28,41 +28,6 @@ pub const Role = @import("./model/Role.zig");
 pub const StageInstance = @import("./model/StageInstance.zig");
 pub const Poll = @import("./model/Poll.zig");
 
-/// Represents an array of localization entries, ie:
-/// [["en-US", "please enable cookies"], ["en-GB", "please enable biscuits"]]
-///
-/// See https://discord.com/developers/docs/reference#locales for the locales that discord supports
-pub const Localizations = struct {
-    entries: []const [2][]const u8,
-
-    pub fn init(entries: []const [2][]const u8) Localizations {
-        return Localizations{ .entries = entries };
-    }
-
-    pub fn jsonStringify(self: *const @This(), jsonWriter: anytype) !void {
-        try jsonWriter.beginObject();
-        for (self.entries) |entry| {
-            try jsonWriter.objectField(entry[0]);
-            try jsonWriter.write(entry[1]);
-        }
-        try jsonWriter.endObject();
-    }
-};
-
-test "localizations intended usage" {
-    const localizations = Localizations{ .entries = &.{
-        .{ "en-US", "please enable cookies" },
-        .{ "en-GB", "please enable biscuits" },
-    } };
-
-    const stringified = try std.json.stringifyAlloc(std.testing.allocator, localizations, .{});
-    defer std.testing.allocator.free(stringified);
-
-    try std.testing.expectEqualStrings(
-        \\{"en-US":"please enable cookies","en-GB":"please enable biscuits"}
-    , stringified);
-}
-
 pub const Permissions = packed struct {
     create_instant_invite: bool = false, // 1 << 0
     kick_members: bool = false,

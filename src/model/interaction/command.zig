@@ -2,7 +2,6 @@ const std = @import("std");
 const model = @import("../../root.zig").model;
 const Snowflake = model.Snowflake;
 const ApplicationCommandOption = model.interaction.command_option.ApplicationCommandOption;
-const Localizations = model.Localizations;
 const Omittable = model.deanson.Omittable;
 const Permissions = model.Permissions;
 
@@ -15,9 +14,9 @@ pub const ApplicationCommand = struct {
     application_id: Snowflake,
     guild_id: Omittable(Snowflake) = .omit,
     name: []const u8,
-    name_localizations: Omittable(?Localizations) = .omit,
+    name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     description: []const u8,
-    description_localizations: Omittable(?Localizations) = .omit,
+    description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     options: Omittable([]const ApplicationCommandOption) = .omit,
     default_member_permissions: ?Permissions,
     dm_permission: Omittable(bool) = .omit,

@@ -1,13 +1,13 @@
+const std = @import("std");
 const model = @import("../model.zig");
-const Localizations = model.Localizations;
 const Omittable = model.deanson.Omittable;
 
 type: Type,
 key: []const u8,
 name: []const u8,
-name_localizations: Omittable(Localizations) = .omit,
+name_localizations: Omittable(std.json.ArrayHashMap([]const u8)) = .omit,
 description: []const u8,
-description_localizations: Omittable(Localizations) = .omit,
+description_localizations: Omittable(std.json.ArrayHashMap([]const u8)) = .omit,
 
 pub const jsonStringify = model.deanson.stringifyWithOmit;
 

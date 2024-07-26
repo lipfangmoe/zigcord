@@ -1,7 +1,6 @@
 const std = @import("std");
 const model = @import("../../root.zig").model;
 const Channel = model.Channel;
-const Localizations = model.Localizations;
 const deanson = model.deanson;
 const Omittable = deanson.Omittable;
 
@@ -27,9 +26,9 @@ pub const ApplicationCommandOption = struct {
 
     type: ApplicationCommandOptionType,
     name: []const u8,
-    name_localizations: Omittable(?Localizations) = .omit,
+    name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     description: []const u8,
-    description_localizations: Omittable(?Localizations) = .omit,
+    description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     required: Omittable(bool) = .omit,
     choices: Omittable(Choices) = .omit,
     options: Omittable([]ApplicationCommandOption) = .omit,
@@ -82,9 +81,9 @@ pub const ApplicationCommandOption = struct {
 
 pub const SubcommandOptionBuilder = struct {
     name: []const u8,
-    name_localizations: Omittable(?Localizations) = .omit,
+    name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     description: []const u8,
-    description_localizations: Omittable(?Localizations) = .omit,
+    description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     required: Omittable(bool) = .omit,
     options: Omittable([]ApplicationCommandOption) = .omit,
     channel_types: Omittable([]const Channel.Type) = .omit,
@@ -111,9 +110,9 @@ pub const SubcommandOptionBuilder = struct {
 
 pub const SubcommandGroupOptionBuilder = struct {
     name: []const u8,
-    name_localizations: Omittable(?Localizations) = .omit,
+    name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     description: []const u8,
-    description_localizations: Omittable(?Localizations) = .omit,
+    description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     required: Omittable(bool) = .omit,
     options: Omittable([]ApplicationCommandOption) = .omit,
     channel_types: Omittable([]const Channel.Type) = .omit,
@@ -141,9 +140,9 @@ pub const SubcommandGroupOptionBuilder = struct {
 pub const StringOptionBuilder = struct {
     type: ApplicationCommandOptionType,
     name: []const u8,
-    name_localizations: Omittable(?Localizations) = .omit,
+    name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     description: []const u8,
-    description_localizations: Omittable(?Localizations) = .omit,
+    description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     required: Omittable(bool) = .omit,
     choices: Omittable([]StringChoice) = .omit,
     channel_types: Omittable([]const Channel.Type) = .omit,
@@ -174,9 +173,9 @@ pub const StringOptionBuilder = struct {
 pub const IntegerOptionBuilder = struct {
     type: ApplicationCommandOptionType,
     name: []const u8,
-    name_localizations: Omittable(?Localizations) = .omit,
+    name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     description: []const u8,
-    description_localizations: Omittable(?Localizations) = .omit,
+    description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     required: Omittable(bool) = .omit,
     choices: Omittable([]IntegerChoice) = .omit,
     channel_types: Omittable([]const Channel.Type) = .omit,
@@ -207,9 +206,9 @@ pub const IntegerOptionBuilder = struct {
 pub const NumberOptionBuilder = struct {
     type: ApplicationCommandOptionType,
     name: []const u8,
-    name_localizations: Omittable(?Localizations) = .omit,
+    name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     description: []const u8,
-    description_localizations: Omittable(?Localizations) = .omit,
+    description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     required: Omittable(bool) = .omit,
     choices: Omittable([]DoubleChoice) = .omit,
     channel_types: Omittable([]const Channel.Type) = .omit,
@@ -240,9 +239,9 @@ pub const NumberOptionBuilder = struct {
 pub fn GenericOptionBuilder(optType: ApplicationCommandOptionType) type {
     return struct {
         name: []const u8,
-        name_localizations: Omittable(?Localizations) = .omit,
+        name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
         description: []const u8,
-        description_localizations: Omittable(?Localizations) = .omit,
+        description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
         required: Omittable(bool) = .omit,
         channel_types: Omittable([]const Channel.Type) = .omit,
 
@@ -270,7 +269,7 @@ pub fn GenericOptionBuilder(optType: ApplicationCommandOptionType) type {
 /// A possible choice for an ApplicationCommandOption of type `string`.
 pub const StringChoice = struct {
     name: []const u8,
-    name_localizations: Omittable(?Localizations) = .omit,
+    name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     value: []const u8,
 
     pub const jsonStringify = deanson.stringifyWithOmit;
@@ -279,7 +278,7 @@ pub const StringChoice = struct {
 /// A possible choice for an ApplicationCommandOption of type `integer`.
 pub const IntegerChoice = struct {
     name: []const u8,
-    name_localizations: Omittable(?Localizations) = .omit,
+    name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     value: i64,
 
     pub const jsonStringify = deanson.stringifyWithOmit;
@@ -288,7 +287,7 @@ pub const IntegerChoice = struct {
 /// A possible choice for an ApplicationCommandOption of type `double`.
 pub const DoubleChoice = struct {
     name: []const u8,
-    name_localizations: Omittable(?Localizations) = .omit,
+    name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     value: f64,
 
     pub const jsonStringify = deanson.stringifyWithOmit;
