@@ -62,7 +62,18 @@ fn printPayloadJson(value: anytype, comptime upload_field_name: []const u8, writ
             continue;
         }
         const field_value = @field(value, field.name);
-        try deanson.writePossiblyOmittableFieldToStream(field, field_value, &json_writer);
+        switch (@typeInfo(field.type)) {
+            .Optional => {
+                if (field_value) |nn_value| {
+                    try json_writer.objectField(field.name);
+                    try json_writer.write(nn_value);
+                }
+            },
+            else => {
+                try json_writer.objectField(field.name);
+                try json_writer.write(field_value);
+            },
+        }
     }
     try json_writer.endObject();
 
@@ -78,7 +89,7 @@ test "multipart single upload" {
     const Foo = struct {
         foo: std.io.AnyReader,
         bar: []const u8,
-        baz: deancord.model.deanson.Omittable(i64) = .omit,
+        baz: ?i64 = null,
 
         pub fn format(self: @This(), comptime fmt: []const u8, _: std.fmt.FormatOptions, writer: anytype) !void {
             if (comptime !std.mem.eql(u8, fmt, "form")) {
@@ -114,7 +125,7 @@ test "multipart multi upload" {
     const Foo = struct {
         foo: []const std.io.AnyReader,
         bar: []const u8,
-        baz: deancord.model.deanson.Omittable(i64) = .omit,
+        baz: ?i64 = null,
 
         pub fn format(self: @This(), comptime fmt: []const u8, _: std.fmt.FormatOptions, writer: anytype) !void {
             if (comptime !std.mem.eql(u8, fmt, "form")) {
@@ -157,7 +168,7 @@ test "multipart optional single upload - present" {
     const Foo = struct {
         foo: ?std.io.AnyReader,
         bar: []const u8,
-        baz: deancord.model.deanson.Omittable(i64) = .omit,
+        baz: ?i64 = null,
 
         pub fn format(self: @This(), comptime fmt: []const u8, _: std.fmt.FormatOptions, writer: anytype) !void {
             if (comptime !std.mem.eql(u8, fmt, "form")) {
@@ -193,7 +204,7 @@ test "multipart optional single upload - null" {
     const Foo = struct {
         foo: ?std.io.AnyReader,
         bar: []const u8,
-        baz: deancord.model.deanson.Omittable(i64) = .omit,
+        baz: ?i64 = null,
 
         pub fn format(self: @This(), comptime fmt: []const u8, _: std.fmt.FormatOptions, writer: anytype) !void {
             if (comptime !std.mem.eql(u8, fmt, "form")) {
@@ -222,7 +233,7 @@ test "multipart optional multi upload" {
     const Foo = struct {
         foo: []const ?std.io.AnyReader,
         bar: []const u8,
-        baz: deancord.model.deanson.Omittable(i64) = .omit,
+        baz: ?i64 = null,
 
         pub fn format(self: @This(), comptime fmt: []const u8, _: std.fmt.FormatOptions, writer: anytype) !void {
             if (comptime !std.mem.eql(u8, fmt, "form")) {

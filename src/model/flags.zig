@@ -5,12 +5,15 @@ pub fn PackedFlagsMixin(comptime FlagStruct: type) type {
         @compileError("FlagEnum must be a packed struct");
     }
 
-    const BackingInteger = comptime @typeInfo(FlagStruct).Struct.backing_integer orelse @compileError("already checked");
+    const BackingInteger = comptime @typeInfo(FlagStruct).Struct.backing_integer orelse @compileError("FlagEnum must be a packed struct");
 
     return struct {
         const Self = @This();
 
-        pub fn jsonStringify(self: Self, jsonWriter: anytype) !void {
+        pub fn format(self: FlagStruct, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: anytype) !void {
+            try std.fmt.formatIntValue(@as(BackingInteger, @bitCast(self)), fmt, options, writer);
+        }
+        pub fn jsonStringify(self: FlagStruct, jsonWriter: anytype) !void {
             try jsonWriter.write(self.flags.mask);
         }
         pub fn jsonParse(alloc: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !Self {
@@ -55,8 +58,12 @@ pub fn Flags(comptime FlagEnum: type) type {
             self.flags.unset(@intFromEnum(flag));
         }
 
-        pub fn jsonStringify(self: Self, jsonWriter: anytype) !void {
-            try jsonWriter.write(self.flags.mask);
+        pub fn jsonStringify(self: Self, json_writer: anytype) !void {
+            try json_writer.write(self.flags.mask);
+        }
+
+        pub fn format(self: Self, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: anytype) !void {
+            try std.fmt.formatIntValue(self.flags.mask, fmt, options, writer);
         }
     };
 }

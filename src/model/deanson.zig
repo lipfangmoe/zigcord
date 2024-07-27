@@ -163,7 +163,7 @@ pub fn stringifyWithOmit(self: anytype, json_writer: anytype) @typeInfo(@TypeOf(
     try json_writer.endObject();
 }
 
-pub fn writePossiblyOmittableFieldToStream(field: std.builtin.Type.StructField, value: anytype, json_writer: anytype) !void {
+fn writePossiblyOmittableFieldToStream(field: std.builtin.Type.StructField, value: anytype, json_writer: anytype) !void {
     if (@typeInfo(field.type) != .Union) {
         try json_writer.objectField(field.name);
         try json_writer.write(value);

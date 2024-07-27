@@ -588,7 +588,7 @@ pub const CreateMessageFormBody = struct {
     nonce: ?union(enum) { int: i64, str: []const u8 } = null,
     tts: ?bool = null,
     embeds: ?[]const model.Message.Embed = null,
-    allowed_mentions: ?AllowedMentions = null,
+    allowed_mentions: ?model.Message.AllowedMentions = null,
     message_reference: ?model.Message.Reference = null,
     components: ?[]const model.MessageComponent = null,
     sticker_ids: ?[]const Snowflake = null,
@@ -636,22 +636,6 @@ pub const CreateMessageFormBody = struct {
     pub fn initMessageWithPoll(message: ?[]const u8, poll: model.Poll) CreateMessageFormBody {
         return CreateMessageFormBody{ .content = message, .poll = poll };
     }
-
-    const boundary = "f89767726a7827c6f785b40aee1ca2ade74d951d6a2d50e27cc0f0e5072a12b2";
-    const HttpBodyWriter = std.http.Client.Connection.Writer;
-
-    pub const AllowedMentions = struct {
-        parse: []const AllowedMentionsType,
-        roles: []const Snowflake,
-        users: []const Snowflake,
-        replied_user: bool,
-
-        pub const AllowedMentionsType = enum {
-            roles,
-            users,
-            everyone,
-        };
-    };
 };
 
 pub const ReactionEmoji = union(enum) {
@@ -689,7 +673,7 @@ pub const EditMessageFormBody = struct {
     content: ?[]const u8 = null,
     embeds: ?[]const model.Message.Embed = null,
     flags: ?[]model.Message.Flags = null,
-    allowed_mentions: ?CreateMessageFormBody.AllowedMentions = null,
+    allowed_mentions: ?model.Message.AllowedMentions = null,
     /// set a file to `null` to not affect it
     files: ?[]const ?std.io.AnyReader = null,
     /// must also include already-uploaded files
@@ -766,7 +750,7 @@ pub const StartThreadInForumOrMediaChannelFormBody = struct {
     pub const ForumAndMediaThreadMessage = struct {
         content: Omittable([]const u8) = .omit,
         embeds: Omittable([]const model.Message.Embed) = .omit,
-        allowed_mentions: Omittable([]const CreateMessageFormBody.AllowedMentions) = .omit,
+        allowed_mentions: Omittable([]const model.Message.AllowedMentions) = .omit,
         components: Omittable([]const model.MessageComponent) = .omit,
         sticker_ids: Omittable([]const Snowflake) = .omit,
         attachments: Omittable([]const deanson.Partial(model.Message.Attachment)) = .omit,

@@ -293,3 +293,16 @@ pub const Call = struct {
 
     pub const jsonStringify = model.deanson.stringifyWithOmit;
 };
+
+pub const AllowedMentions = struct {
+    parse: []const AllowedMentionsType,
+    roles: []const Snowflake,
+    users: []const Snowflake,
+    replied_user: bool,
+
+    pub const AllowedMentionsType = enum {
+        roles,
+        users,
+        everyone,
+    };
+};

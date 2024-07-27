@@ -27,6 +27,7 @@ pub const GuildTemplate = @import("./model/GuildTemplate.zig");
 pub const Role = @import("./model/Role.zig");
 pub const StageInstance = @import("./model/StageInstance.zig");
 pub const Poll = @import("./model/Poll.zig");
+pub const Webhook = @import("./model/Webhook.zig");
 
 pub const Permissions = packed struct {
     create_instant_invite: bool = false, // 1 << 0

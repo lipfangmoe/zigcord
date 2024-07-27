@@ -13,3 +13,5 @@ pub const invite = @import("./endpoints/invite.zig");
 pub const poll = @import("./endpoints/poll.zig");
 pub const stage_instance = @import("./endpoints/stage_instance.zig");
 pub const sticker = @import("./endpoints/sticker.zig");
+pub const voice = @import("./endpoints/voice.zig");
+pub const webhook = @import("./endpoints/webhook.zig");
