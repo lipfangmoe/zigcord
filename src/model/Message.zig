@@ -272,7 +272,7 @@ pub const InteractionMetadata = struct {
     id: Snowflake,
     type: model.interaction.InteractionType,
     user: model.User,
-    authorizing_integration_owners: std.json.Value, // no clue what shape this is
+    authorizing_integration_owners: std.json.Value, // TODO: https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-object-authorizing-integration-owners-object
     original_response_message_id: deanson.Omittable(Snowflake) = .omit,
     interacted_message_id: deanson.Omittable(Snowflake) = .omit,
     triggering_interaction_metadata: deanson.Omittable(?*const InteractionMetadata) = .omit,

@@ -1,1 +1,1 @@
-const Client = @import("./interaction_server/Server.zig");
+const Server = @import("./interaction_server/Server.zig");

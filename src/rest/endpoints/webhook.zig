@@ -218,7 +218,7 @@ pub const ModifyWebhookBody = struct {
 };
 
 pub const ExecuteWebhookQuery = struct {
-    thread_id: model.Snowflake,
+    thread_id: ?model.Snowflake = null,
 
     pub usingnamespace rest.QueryStringFormatMixin(@This());
 };

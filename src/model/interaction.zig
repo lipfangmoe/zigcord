@@ -1,33 +1,37 @@
 const std = @import("std");
+const zigtime = @import("zig-time");
 const deancord = @import("../root.zig");
 const model = deancord.model;
 const rest = deancord.rest;
-const zigtime = @import("zig-time");
 const Snowflake = model.Snowflake;
-const ApplicationCommandType = model.interaction.command.ApplicationCommandType;
-const User = model.User;
-const Member = model.guild.Member;
-const Role = model.Role;
-const Omittable = model.deanson.Omittable;
+const deanson = model.deanson;
 
 pub const command = @import("./interaction/command.zig");
 pub const command_option = @import("./interaction/command_option.zig");
-
-// TODO - a lot of this file still doesn't use Omittable
 
 pub const Interaction = struct {
     id: Snowflake,
     application_id: Snowflake,
     type: InteractionType,
-    data: Omittable(InteractionData) = .omit,
-    guild_id: Omittable(Snowflake) = .omit,
-    channel: Omittable(PartialChannel) = .omit,
-    channel_id: Omittable(Snowflake) = .omit,
-    member: Omittable(Member) = .omit,
-};
+    data: deanson.Omittable(InteractionData) = .omit,
+    guild: deanson.Omittable(model.guild.Guild) = .omit,
+    guild_id: deanson.Omittable(Snowflake) = .omit,
+    channel: deanson.Omittable(deanson.Partial(model.Channel)) = .omit,
+    channel_id: deanson.Omittable(Snowflake) = .omit,
+    member: deanson.Omittable(model.guild.Member) = .omit,
+    user: deanson.Omittable(model.User) = .omit,
+    token: []const u8,
+    version: i64,
+    message: deanson.Omittable(model.Message) = .omit,
+    app_permissions: model.Permissions,
+    locale: deanson.Omittable([]const u8) = .omit,
+    guild_locale: deanson.Omittable([]const u8) = .omit,
+    entitlements: []const model.Entitlement,
+    authorizing_integration_owners: std.json.Value, // TODO: https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-object-authorizing-integration-owners-object
+    context: deanson.Omittable(Context) = .omit,
 
-// TODO - discord says `channel` is a partial channel, but doesn't say what's included/excluded.
-pub const PartialChannel = std.json.Value;
+    pub const jsonStringify = deanson.stringifyWithOmit;
+};
 
 pub const InteractionType = enum(u8) {
     ping = 1,
@@ -45,60 +49,38 @@ pub const InteractionData = union(enum) {
 pub const ApplicationCommandData = struct {
     id: Snowflake,
     name: []const u8,
-    type: ApplicationCommandType,
+    type: command.ApplicationCommandType,
     resolved: ResolvedData,
 };
 
 pub const ResolvedData = struct {
-    users: Omittable(std.json.ArrayHashMap(User)) = .omit,
-    members: Omittable(std.json.ArrayHashMap(InteractionMember)) = .omit,
-    roles: Omittable(std.json.ArrayHashMap(Role)) = .omit,
-    channels: Omittable(std.json.ArrayHashMap(InteractionChannel)) = .omit,
-    messages: Omittable(std.json.ArrayHashMap(model.Message)) = .omit,
-    attachments: Omittable(std.json.ArrayHashMap(model.Message.Attachment)) = .omit,
+    users: deanson.Omittable(std.json.ArrayHashMap(model.User)) = .omit,
+    members: deanson.Omittable(std.json.ArrayHashMap(InteractionMember)) = .omit,
+    roles: deanson.Omittable(std.json.ArrayHashMap(model.Role)) = .omit,
+    channels: deanson.Omittable(std.json.ArrayHashMap(deanson.Partial(model.Channel))) = .omit,
+    messages: deanson.Omittable(std.json.ArrayHashMap(model.Message)) = .omit,
+    attachments: deanson.Omittable(std.json.ArrayHashMap(model.Message.Attachment)) = .omit,
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = deanson.stringifyWithOmit;
 };
 
 pub const InteractionMember = struct {
-    /// The nickname this user uses in this guild
-    nick: ?[]const u8 = null,
-    /// A guild-specific avatar hash
-    avatar: ?[]const u8 = null,
-    /// The role ids that this user has
+    nick: deanson.Omittable(?[]const u8) = .omit,
+    avatar: deanson.Omittable(?[]const u8) = .omit,
     roles: []Snowflake,
-    /// when the user joined the guild
-    joined_at: []zigtime.DateTime,
-    /// when the user started boosting the guild
-    premium_since: ?[]zigtime.DateTime = null,
-    /// guild member flags
-    flags: Member.Flags,
-    /// true if the user has not passed the guild's membership screening requirements
-    pending: ?bool = null,
-    /// returned inside of interaction objects, permissions of the member in the interacted channel
-    permissions: ?[]const u8 = null,
-    /// when the user's timeout will expire. may be in the past; if so, the user is not timed out.
-    communication_disabled_until: ?[]zigtime.DateTime,
-};
+    joined_at: zigtime.DateTime,
+    premium_since: deanson.Omittable(?[]zigtime.DateTime) = .omit,
+    flags: model.guild.Member.Flags,
+    pending: deanson.Omittable(bool) = .omit,
+    permissions: deanson.Omittable([]const u8) = .omit,
+    communication_disabled_until: deanson.Omittable(?[]zigtime.DateTime) = .omit,
 
-pub const InteractionChannel = struct {
-    /// id of the channel
-    id: Snowflake,
-    /// name of the channel
-    name: ?[]const u8,
-    /// type of the channel
-    type: model.Channel.Type,
-    /// permissions the authenticated user has on the channel
-    permissions: ?[]const u8,
-    /// metadata about the thread
-    thread_metadata: ?model.Channel.ThreadMetadata,
-    /// channel id that the thread belongs to
-    parent_id: ?Snowflake,
+    pub const jsonStringify = deanson.stringifyWithOmit;
 };
 
 pub const InteractionResponse = struct {
     type: Type,
-    data: Omittable(InteractionCallbackData) = .omit,
+    data: deanson.Omittable(InteractionCallbackData) = .omit,
 
     pub const Type = enum(u8) {
         pong = 1,
@@ -112,5 +94,23 @@ pub const InteractionResponse = struct {
     };
 };
 
-// TODO
-pub const InteractionCallbackData = struct {};
+pub const InteractionCallbackData = struct {
+    tts: deanson.Omittable(bool) = .omit,
+    content: deanson.Omittable([]const u8) = .omit,
+    embeds: deanson.Omittable([]const model.Message.Embed) = .omit,
+    allowed_mentions: deanson.Omittable([]const model.Message.AllowedMentions) = .omit,
+    flags: deanson.Omittable(model.Message.Flags) = .omit,
+    components: deanson.Omittable([]const model.MessageComponent) = .omit,
+    attachments: deanson.Omittable([]const deanson.Partial(model.Message.Attachment)) = .omit,
+    poll: deanson.Omittable(model.Poll) = .omit,
+
+    pub const jsonStringify = deanson.stringifyWithOmit;
+};
+
+pub const Context = enum(u2) {
+    guil = 0,
+    bot_dm = 1,
+    private_channel = 2,
+
+    pub const jsonStringify = deanson.stringifyEnumAsInt;
+};
