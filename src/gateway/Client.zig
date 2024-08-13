@@ -1,1 +1,1 @@
-const websocket = @import("websocket");
+const websocket = @import("weebsocket");

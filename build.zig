@@ -7,15 +7,15 @@ pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const websocket_dependency = b.dependency("websocket", .{});
-    const websocket_module = websocket_dependency.module("websocket");
+    const weebsocket_dependency = b.dependency("weebsocket", .{});
+    const weebsocket_module = weebsocket_dependency.module("weebsocket");
     const zigtime_dependency = b.dependency("zig-time", .{});
     const zigtime_module = zigtime_dependency.module("time");
 
     _ = b.addModule("deancord", .{
         .root_source_file = b.path("./src/root.zig"),
         .imports = &.{
-            .{ .name = "websocket", .module = websocket_module },
+            .{ .name = "weebsocket", .module = weebsocket_module },
             .{ .name = "zig-time", .module = zigtime_module },
         },
         .target = target,
@@ -28,7 +28,7 @@ pub fn build(b: *std.Build) !void {
         .target = target,
         .optimize = optimize,
     });
-    test_runner.root_module.addImport("websocket", websocket_module);
+    test_runner.root_module.addImport("weebsocket", weebsocket_module);
     test_runner.root_module.addImport("zig-time", zigtime_module);
     const test_run_artifact = b.addRunArtifact(test_runner);
     const test_step = b.step("test", "Run unit tests");
@@ -41,7 +41,7 @@ pub fn build(b: *std.Build) !void {
         .target = target,
         .optimize = optimize,
     });
-    check_tests_compile.root_module.addImport("websocket", websocket_module);
+    check_tests_compile.root_module.addImport("weebsocket", weebsocket_module);
     check_tests_compile.root_module.addImport("zig-time", zigtime_module);
     const check_step = b.step("check", "Run the compiler without building");
     check_step.dependOn(&check_tests_compile.step);
