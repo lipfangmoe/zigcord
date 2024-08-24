@@ -15,13 +15,13 @@
     // Once all dependencies are fetched, `zig build` no longer requires
     // Internet connectivity.
     .dependencies = .{
-        .@"zig-time" = .{
-            .url = "https://github.com/Protonull/zig-time/archive/master.tar.gz",
-            .hash = "122002caf0f98d1e411cdb13d5ddc9e462a5841d68d5f0bb27ffc2ccfc2ffe12328d",
-        },
         .weebsocket = .{
-            .url = "https://github.com/deanveloper/weebsocket/archive/refs/tags/v0.1.1.tar.gz",
+            .url = "git+https://github.com/deanveloper/weebsocket?ref=v0.1.1#1687096ee42ca4a1e89b0c21c3c2b9917b687b0a",
             .hash = "122075e8fa32e715511965a284f73a1d0fddd6cb3fb7b6738bffc2d882cdd502e491",
+        },
+        .@"zig-time" = .{
+            .url = "git+https://github.com/deanveloper/zig-time#18011371d1821f148bf0500c46679b11bcf02b13",
+            .hash = "12206f63b5a9fcff47953a5c5ba6eaa8a874b3b38905377e5624c88163faff7e5db0",
         },
     },
 

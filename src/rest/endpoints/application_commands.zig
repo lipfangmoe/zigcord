@@ -141,28 +141,39 @@ pub fn getGuildApplicationCommandPermissions(
     client: *Client,
     application_id: Snowflake,
     guild_id: Snowflake,
-) !RestResult([]const GuildApplicationCommandPermissions) {
+) !RestResult([]const model.interaction.command.GuildApplicationCommandPermissions) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/applications/{d}/guilds/{d}/permissions", .{ application_id, guild_id });
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.request([]const GuildApplicationCommandPermissions, .GET, uri);
+    return client.request([]const model.interaction.command.GuildApplicationCommandPermissions, .GET, uri);
 }
 
-pub fn getApplicationCommandPermissions(client: *Client, application_id: Snowflake, guild_id: Snowflake, command_id: Snowflake) !RestResult(GuildApplicationCommandPermissions) {
+pub fn getApplicationCommandPermissions(
+    client: *Client,
+    application_id: Snowflake,
+    guild_id: Snowflake,
+    command_id: Snowflake,
+) !RestResult(model.interaction.command.ApplicationCommandPermission) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/applications/{d}/guilds/{d}/commands/{d}/permissions", .{ application_id, guild_id, command_id });
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.request(GuildApplicationCommandPermissions, .GET, uri);
+    return client.request(model.interaction.command.ApplicationCommandPermission, .GET, uri);
 }
 
-pub fn editApplicationCommandPermissions(client: *Client, application_id: Snowflake, guild_id: Snowflake, command_id: Snowflake, body: []const ApplicationCommandPermission) !RestResult(GuildApplicationCommandPermissions) {
+pub fn editApplicationCommandPermissions(
+    client: *Client,
+    application_id: Snowflake,
+    guild_id: Snowflake,
+    command_id: Snowflake,
+    body: []const model.interaction.command.ApplicationCommandPermission,
+) !RestResult(model.interaction.command.ApplicationCommandPermission) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/applications/{d}/guilds/{d}/commands/{d}/permissions", .{ application_id, guild_id, command_id });
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.requestWithValueBody(GuildApplicationCommandPermissions, .PUT, uri, body, .{});
+    return client.requestWithValueBody(model.interaction.command.ApplicationCommandPermission, .PUT, uri, body, .{});
 }
 
 pub const CreateGlobalApplicationCommandBody = struct {
@@ -219,19 +230,6 @@ pub const EditGuildApplicationCommandBody = struct {
     nsfw: Omittable(bool) = .omit,
 
     pub const jsonStringify = stringifyWithOmit;
-};
-
-pub const GuildApplicationCommandPermissions = struct {
-    id: Snowflake,
-    application_id: Snowflake,
-    guild_id: Snowflake,
-    permissions: ApplicationCommandPermission,
-};
-
-pub const ApplicationCommandPermission = struct {
-    id: Snowflake,
-    type: enum(u4) { role = 1, user = 2, channel = 3 },
-    permission: bool,
 };
 
 const WithLocalizationsQuery = struct {

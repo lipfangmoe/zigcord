@@ -37,10 +37,10 @@ pub const GuildApplicationCommandPermissions = struct {
     id: model.Snowflake,
     application_id: model.Snowflake,
     guild_id: model.Snowflake,
-    permissions: []const ApplicationCommandPermissions,
+    permissions: []const ApplicationCommandPermission,
 };
 
-pub const ApplicationCommandPermissions = struct {
+pub const ApplicationCommandPermission = struct {
     /// NOTE: id may be set to `guild_id` to represent @everyone in a guild,
     /// or `guild_id-1`  to represent all channels in a guild
     id: model.Snowflake,

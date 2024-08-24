@@ -28,6 +28,7 @@ pub const Role = @import("./model/Role.zig");
 pub const StageInstance = @import("./model/StageInstance.zig");
 pub const Poll = @import("./model/Poll.zig");
 pub const Webhook = @import("./model/Webhook.zig");
+pub const Activity = @import("./model/Activity.zig");
 
 pub const Permissions = packed struct {
     create_instant_invite: bool = false, // 1 << 0
@@ -147,13 +148,17 @@ pub const Intents = packed struct {
         return @intCast(@as(u26, @bitCast(self)));
     }
 
+    pub fn jsonStringify(self: Intents, jw: anytype) !void {
+        try jw.write(@as(u26, @bitCast(self)));
+    }
+
     pub fn jsonParse(alloc: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !Intents {
         const int = try std.json.innerParse(u26, alloc, source, options);
-        return fromU64(int);
+        return @bitCast(int);
     }
 
     pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, options: std.json.ParseOptions) !Intents {
         const int = try std.json.innerParseFromValue(u26, alloc, source, options);
-        return fromU64(int);
+        return @bitCast(int);
     }
 };

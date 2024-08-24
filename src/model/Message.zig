@@ -160,6 +160,11 @@ pub const Reaction = struct {
         burst: i64,
         normal: i64,
     };
+
+    pub const Type = enum(u1) {
+        normal,
+        burst,
+    };
 };
 
 pub const Nonce = union(enum) {
@@ -186,7 +191,7 @@ pub const Nonce = union(enum) {
         return switch (source) {
             .integer => |int| .{ .int = int },
             .string, .number_string => |str| .{ .str = str },
-            else => error.UnexpectedType,
+            else => error.UnexpectedToken,
         };
     }
 };

@@ -15,3 +15,4 @@ pub const stage_instance = @import("./endpoints/stage_instance.zig");
 pub const sticker = @import("./endpoints/sticker.zig");
 pub const voice = @import("./endpoints/voice.zig");
 pub const webhook = @import("./endpoints/webhook.zig");
+pub const gateway = @import("./endpoints/gateway.zig");

@@ -42,6 +42,7 @@ default_reaction_emoji: Omittable(?DefaultReaction) = .omit,
 default_thread_rate_limit_per_user: Omittable(i64) = .omit,
 default_sort_order: Omittable(?SortOrder) = .omit,
 default_forum_layout: Omittable(ForumLayout) = .omit,
+newly_created: Omittable(bool) = .omit,
 
 pub const jsonStringify = deanson.stringifyWithOmit;
 
@@ -91,16 +92,20 @@ pub const ThreadMetadata = struct {
     auto_archive_duration: i64,
     archive_timestamp: []zigtime.DateTime,
     locked: bool,
-    invitable: bool,
-    create_timestamp: ?[]zigtime.DateTime,
+    invitable: Omittable(bool) = .omit,
+    create_timestamp: Omittable([]zigtime.DateTime) = .omit,
+
+    pub const jsonStringify = deanson.stringifyWithOmit;
 };
 
 pub const ThreadMember = struct {
-    id: ?Snowflake,
-    user_id: ?Snowflake,
+    id: Omittable(Snowflake) = .omit,
+    user_id: Omittable(Snowflake) = .omit,
     join_timestamp: []zigtime.DateTime,
     flags: ThreadMember.Flags,
-    member: ?Member,
+    member: Omittable(Member) = .omit,
+
+    pub const jsonStringify = deanson.stringifyWithOmit;
 
     pub const Flags = model.Flags(enum {
         notifications,

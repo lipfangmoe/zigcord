@@ -4,69 +4,42 @@ const zigtime = @import("zig-time");
 const Snowflake = model.Snowflake;
 const deanson = model.deanson;
 
-pub const Guild = union(enum) {
-    available: AvailableGuild,
-    unavailable: UnavailableGuild,
+pub const Guild = MaybeAvailable(AvailableGuild);
+pub const PartialGuild = MaybeAvailable(deanson.Partial(AvailableGuild));
 
-    pub const jsonStringify = model.deanson.stringifyUnionInline;
+pub fn MaybeAvailable(comptime AvailableT: type) type {
+    return union(enum) {
+        available: AvailableT,
+        unavailable: UnavailableGuild,
 
-    pub fn jsonParse(alloc: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !Guild {
-        const value = try std.json.innerParse(std.json.Value, alloc, source, options);
+        pub const jsonStringify = model.deanson.stringifyUnionInline;
 
-        return try jsonParseFromValue(alloc, value, options);
-    }
+        pub fn jsonParse(alloc: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !MaybeAvailable(AvailableT) {
+            const value = try std.json.innerParse(std.json.Value, alloc, source, options);
 
-    pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, options: std.json.ParseOptions) !Guild {
-        const obj: std.json.ObjectMap = switch (source) {
-            .object => |object| object,
-            else => return error.UnexpectedToken,
-        };
-
-        if (obj.get("unavailable")) |unavailable_value| {
-            const unavailable = switch (unavailable_value) {
-                .bool => |boolean| boolean,
-                else => return error.UnexpectedToken,
-            };
-            if (unavailable) {
-                return .{ .unavailable = try std.json.innerParseFromValue(UnavailableGuild, alloc, source, options) };
-            }
+            return try jsonParseFromValue(alloc, value, options);
         }
 
-        return .{ .available = try std.json.innerParseFromValue(AvailableGuild, alloc, source, options) };
-    }
-};
-
-pub const PartialGuild = union(enum) {
-    available: deanson.Partial(AvailableGuild),
-    unavailable: deanson.Partial(UnavailableGuild),
-
-    pub const jsonStringify = model.deanson.stringifyUnionInline;
-
-    pub fn jsonParse(alloc: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !PartialGuild {
-        const value = try std.json.innerParse(std.json.Value, alloc, source, options);
-
-        return try jsonParseFromValue(alloc, value, options);
-    }
-
-    pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, options: std.json.ParseOptions) !PartialGuild {
-        const obj: std.json.ObjectMap = switch (source) {
-            .object => |object| object,
-            else => return error.UnexpectedToken,
-        };
-
-        if (obj.get("unavailable")) |unavailable_value| {
-            const unavailable = switch (unavailable_value) {
-                .bool => |boolean| boolean,
+        pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, options: std.json.ParseOptions) !MaybeAvailable(AvailableT) {
+            const obj: std.json.ObjectMap = switch (source) {
+                .object => |object| object,
                 else => return error.UnexpectedToken,
             };
-            if (unavailable) {
-                return .{ .unavailable = try std.json.innerParseFromValue(deanson.Partial(UnavailableGuild), alloc, source, options) };
-            }
-        }
 
-        return .{ .available = try std.json.innerParseFromValue(deanson.Partial(AvailableGuild), alloc, source, options) };
-    }
-};
+            if (obj.get("unavailable")) |unavailable_value| {
+                const unavailable = switch (unavailable_value) {
+                    .bool => |boolean| boolean,
+                    else => return error.UnexpectedToken,
+                };
+                if (unavailable) {
+                    return .{ .unavailable = try std.json.innerParseFromValue(UnavailableGuild, alloc, source, options) };
+                }
+            }
+
+            return .{ .available = try std.json.innerParseFromValue(AvailableT, alloc, source, options) };
+        }
+    };
+}
 
 pub const AvailableGuild = struct {
     id: Snowflake,

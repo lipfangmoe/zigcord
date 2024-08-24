@@ -1,3 +1,4 @@
+const std = @import("std");
 const model = @import("../root.zig").model;
 const command = model.interaction.command;
 const deanson = model.deanson;
@@ -9,10 +10,103 @@ guild_scheduled_events: []const model.GuildScheduledEvent,
 integrations: []const deanson.Partial(model.guild.Integration),
 threads: []const model.Channel,
 users: []const model.User,
-webhooks: []const Webhook,
+webhooks: []const model.Webhook,
 
-// TODO
-pub const Entry = struct {};
+pub const Entry = struct {
+    target_id: ?[]const u8,
+    changes: deanson.Omittable([]const std.json.Value) = .omit,
+    user_id: ?model.Snowflake,
+    id: model.Snowflake,
+    action_type: Event,
+    options: deanson.Omittable(OptionalInfo) = .omit,
+    reason: deanson.Omittable([]const u8) = .omit,
 
-// TODO - Webhook.zig
-pub const Webhook = struct {};
+    pub const jsonStringify = deanson.stringifyWithOmit;
+
+    pub const OptionalInfo = struct {
+        application_id: deanson.Omittable(model.Snowflake) = .omit,
+        auto_moderation_rule_name: deanson.Omittable([]const u8) = .omit,
+        auto_moderation_rule_trigger_type: deanson.Omittable([]const u8) = .omit,
+        channel_id: deanson.Omittable(model.Snowflake) = .omit,
+        count: deanson.Omittable([]const u8) = .omit,
+        delete_member_days: deanson.Omittable([]const u8) = .omit,
+        id: deanson.Omittable(model.Snowflake) = .omit,
+        members_removed: deanson.Omittable([]const u8) = .omit,
+        message_id: deanson.Omittable(model.Snowflake) = .omit,
+        role_name: deanson.Omittable([]const u8) = .omit,
+        type: deanson.Omittable([]const u8) = .omit,
+        integration_type: deanson.Omittable([]const u8) = .omit,
+
+        pub const jsonStringify = deanson.stringifyWithOmit;
+    };
+};
+
+pub const Event = enum(u64) {
+    guild_update = 1,
+    channel_create = 10,
+    channel_update = 11,
+    channel_delete = 12,
+    channel_overwrite_create = 13,
+    channel_overwrite_update = 14,
+    channel_overwrite_delete = 15,
+    member_kick = 20,
+    member_prune = 21,
+    member_ban_add = 22,
+    member_ban_remove = 23,
+    member_update = 24,
+    member_role_update = 25,
+    member_move = 26,
+    member_disconnect = 27,
+    bot_add = 28,
+    role_create = 30,
+    role_update = 31,
+    role_delete = 32,
+    invite_create = 40,
+    invite_update = 41,
+    invite_delete = 42,
+    webhook_create = 50,
+    webhook_update = 51,
+    webhook_delete = 52,
+    emoji_create = 60,
+    emoji_update = 61,
+    emoji_delete = 62,
+    message_delete = 72,
+    message_bulk_delete = 73,
+    message_pin = 74,
+    message_unpin = 75,
+    integration_create = 80,
+    integration_update = 81,
+    integration_delete = 82,
+    stage_instance_create = 83,
+    stage_instance_update = 84,
+    stage_instance_delete = 85,
+    sticker_create = 90,
+    sticker_update = 91,
+    sticker_delete = 92,
+    guild_scheduled_event_create = 100,
+    guild_scheduled_event_update = 101,
+    guild_scheduled_event_delete = 102,
+    thread_create = 110,
+    thread_update = 111,
+    thread_delete = 112,
+    application_command_permission_update = 121,
+    auto_moderation_rule_create = 140,
+    auto_moderation_rule_update = 141,
+    auto_moderation_rule_delete = 142,
+    auto_moderation_block_message = 143,
+    auto_moderation_flag_to_channel = 144,
+    auto_moderation_user_communication_disabled = 145,
+    creator_monetization_request_created = 150,
+    creator_monetization_terms_accepted = 151,
+    onboarding_prompt_create = 163,
+    onboarding_prompt_update = 164,
+    onboarding_prompt_delete = 165,
+    onboarding_create = 166,
+    onboarding_update = 167,
+    home_settings_create = 190,
+    home_settings_update = 191,
+
+    _,
+
+    pub const jsonStringify = deanson.stringifyEnumAsInt;
+};
