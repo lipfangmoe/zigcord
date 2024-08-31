@@ -1,4 +1,5 @@
 const std = @import("std");
+const deanson = @import("../root.zig").model.deanson;
 
 pub const send_events = @import("./event_data/send_events.zig");
 pub const receive_events = @import("./event_data/receive_events.zig");
@@ -43,6 +44,8 @@ pub const Opcode = enum(u64) {
     hello = 10,
     heartbeat_ack = 11,
     _,
+
+    pub const jsonStringify = deanson.stringifyEnumAsInt;
 };
 
 test "AnyNamespaceDecl" {

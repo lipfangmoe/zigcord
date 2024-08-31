@@ -1,6 +1,5 @@
 const deancord = @import("../root.zig");
 const model = deancord.model;
-const zigtime = @import("zig-time");
 const Snowflake = model.Snowflake;
 const User = model.User;
 const Member = model.guild.Member;
@@ -25,7 +24,7 @@ owner_id: Omittable(Snowflake) = .omit,
 application_id: Omittable(Snowflake) = .omit,
 managed: Omittable(bool) = .omit,
 parent_id: Omittable(?Snowflake) = .omit,
-last_pin_timestamp: Omittable(?[]zigtime.DateTime) = .omit,
+last_pin_timestamp: Omittable(?[]model.IsoTime) = .omit,
 rtc_region: Omittable(?[]const u8) = .omit,
 video_quality_mode: Omittable(VideoQualityMode) = .omit,
 message_count: Omittable(i64) = .omit,
@@ -81,19 +80,32 @@ pub const DefaultReaction = union(enum) {
     emoji_name: []const u8,
 };
 
-pub const Flags = model.Flags(enum(u6) {
-    pinned = 1,
-    require_tag = 4,
-    hide_media_download_options = 15,
-});
+pub const Flags = packed struct {
+    _unused: u1 = 0,
+
+    // 1 << 1
+    pinned: bool = false,
+
+    _unused2: u2 = 0,
+
+    // 1 << 4
+    require_tag: bool = false,
+
+    _unused3: u10 = 0,
+
+    // 1 << 15
+    hide_media_download_options: bool = false,
+
+    pub usingnamespace model.PackedFlagsMixin(@This());
+};
 
 pub const ThreadMetadata = struct {
     archived: bool,
     auto_archive_duration: i64,
-    archive_timestamp: []zigtime.DateTime,
+    archive_timestamp: []model.IsoTime,
     locked: bool,
     invitable: Omittable(bool) = .omit,
-    create_timestamp: Omittable([]zigtime.DateTime) = .omit,
+    create_timestamp: Omittable([]model.IsoTime) = .omit,
 
     pub const jsonStringify = deanson.stringifyWithOmit;
 };
@@ -101,15 +113,17 @@ pub const ThreadMetadata = struct {
 pub const ThreadMember = struct {
     id: Omittable(Snowflake) = .omit,
     user_id: Omittable(Snowflake) = .omit,
-    join_timestamp: []zigtime.DateTime,
+    join_timestamp: []model.IsoTime,
     flags: ThreadMember.Flags,
     member: Omittable(Member) = .omit,
 
     pub const jsonStringify = deanson.stringifyWithOmit;
 
-    pub const Flags = model.Flags(enum {
-        notifications,
-    });
+    pub const Flags = packed struct {
+        notifications: bool = false,
+
+        pub usingnamespace model.PackedFlagsMixin(@This());
+    };
 };
 
 pub const VideoQualityMode = enum(u2) {

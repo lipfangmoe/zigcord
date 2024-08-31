@@ -7,7 +7,6 @@ pub const interaction = @import("./model/interaction.zig");
 pub const User = @import("./model/User.zig");
 pub const guild = @import("./model/guild.zig");
 pub const Snowflake = @import("./model/snowflake.zig").Snowflake;
-pub const Flags = @import("./model/flags.zig").Flags;
 pub const PackedFlagsMixin = @import("./model/flags.zig").PackedFlagsMixin;
 pub const deanson = @import("./model/deanson.zig");
 pub const AuditLog = @import("./model/AuditLog.zig");
@@ -29,6 +28,7 @@ pub const StageInstance = @import("./model/StageInstance.zig");
 pub const Poll = @import("./model/Poll.zig");
 pub const Webhook = @import("./model/Webhook.zig");
 pub const Activity = @import("./model/Activity.zig");
+pub const IsoTime = @import("./model/IsoTime.zig");
 
 pub const Permissions = packed struct {
     create_instant_invite: bool = false, // 1 << 0
@@ -87,8 +87,8 @@ pub const Permissions = packed struct {
         return @intCast(@as(u47, @bitCast(self)));
     }
 
-    pub fn format(self: Permissions, comptime fmt: []const u8, _: std.fmt.FormatOptions, writer: anytype) !void {
-        try writer.print(fmt, .{self.asU64()});
+    pub fn format(self: Permissions, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: anytype) !void {
+        try std.fmt.formatIntValue(self.asU64(), fmt, options, writer);
     }
 
     pub fn jsonStringify(self: Permissions, jsonWriter: anytype) !void {

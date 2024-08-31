@@ -1,5 +1,4 @@
 const model = @import("../root.zig").model;
-const zigtime = @import("zig-time");
 const deanson = model.deanson;
 const Omittable = deanson.Omittable;
 
@@ -16,7 +15,7 @@ pub const VoiceState = struct {
     self_stream: Omittable(bool) = .omit,
     self_video: bool,
     suppress: bool,
-    request_to_speak_timestamp: ?[]zigtime.DateTime,
+    request_to_speak_timestamp: ?[]model.IsoTime,
 
     pub const jsonStringify = deanson.stringifyWithOmit;
 };

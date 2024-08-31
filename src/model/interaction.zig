@@ -1,5 +1,4 @@
 const std = @import("std");
-const zigtime = @import("zig-time");
 const deancord = @import("../root.zig");
 const model = deancord.model;
 const rest = deancord.rest;
@@ -68,12 +67,12 @@ pub const InteractionMember = struct {
     nick: deanson.Omittable(?[]const u8) = .omit,
     avatar: deanson.Omittable(?[]const u8) = .omit,
     roles: []Snowflake,
-    joined_at: zigtime.DateTime,
-    premium_since: deanson.Omittable(?[]zigtime.DateTime) = .omit,
+    joined_at: model.IsoTime,
+    premium_since: deanson.Omittable(?[]model.IsoTime) = .omit,
     flags: model.guild.Member.Flags,
     pending: deanson.Omittable(bool) = .omit,
     permissions: deanson.Omittable([]const u8) = .omit,
-    communication_disabled_until: deanson.Omittable(?[]zigtime.DateTime) = .omit,
+    communication_disabled_until: deanson.Omittable(?[]model.IsoTime) = .omit,
 
     pub const jsonStringify = deanson.stringifyWithOmit;
 };

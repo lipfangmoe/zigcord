@@ -32,14 +32,16 @@ pub const jsonStringify = model.deanson.stringifyWithOmit;
 pub const Tags = struct {
     bot_id: Omittable(model.Snowflake) = .omit,
     integration_id: Omittable(model.Snowflake) = .omit,
-    premium_subscriber: Omittable(?enum {}) = .omit,
+    premium_subscriber: Omittable(?u0) = .omit,
     subscription_listing_id: Omittable(model.Snowflake) = .omit,
-    available_for_purchase: Omittable(?enum {}) = .omit,
-    guild_connections: Omittable(?enum {}) = .omit,
+    available_for_purchase: Omittable(?u0) = .omit,
+    guild_connections: Omittable(?u0) = .omit,
 
     pub const stringifyWithOmit = model.deanson.stringifyWithOmit;
 };
 
-pub const Flags = model.Flags(enum {
-    in_prompt,
-});
+pub const Flags = packed struct {
+    in_prompt: bool = false,
+
+    pub usingnamespace model.PackedFlagsMixin(@This());
+};

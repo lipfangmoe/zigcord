@@ -1,5 +1,4 @@
 const std = @import("std");
-const zigtime = @import("zig-time");
 const deancord = @import("../../root.zig");
 const model = deancord.model;
 const deanson = model.deanson;
@@ -25,11 +24,11 @@ pub const Ready = struct {
     };
 };
 
-pub const Resumed = enum {};
+pub const Resumed = u0;
 
-pub const Reconnect = enum {};
+pub const Reconnect = u0;
 
-pub const HeartbeatACK = enum {};
+pub const HeartbeatACK = u0;
 
 pub const InvalidSession = bool;
 
@@ -66,7 +65,7 @@ pub const ChannelDelete = model.Channel;
 pub const ChannelPinsUpdate = struct {
     guild_id: deanson.Omittable(model.Snowflake) = .omit,
     channel_id: model.Snowflake,
-    last_pin_timestamp: deanson.Omittable(?zigtime.DateTime) = .omit,
+    last_pin_timestamp: deanson.Omittable(?model.IsoTime) = .omit,
 
     pub const jsonStringify = deanson.stringifyWithOmit;
 };
@@ -97,7 +96,7 @@ pub const ThreadMemberUpdate = struct {
     guild_id: model.Snowflake,
     id: deanson.Omittable(model.Snowflake) = .omit,
     user_id: deanson.Omittable(model.Snowflake) = .omit,
-    join_timestamp: []zigtime.DateTime,
+    join_timestamp: []model.IsoTime,
     flags: model.Channel.ThreadMember.Flags,
     member: deanson.Omittable(model.guild.Member) = .omit,
 
@@ -123,7 +122,7 @@ pub const EntitlementDelete = model.Entitlement;
 pub const GuildCreate = model.guild.MaybeAvailable(struct {
     guild: model.guild.AvailableGuild,
 
-    joined_at: zigtime.DateTime,
+    joined_at: model.IsoTime,
     large: bool,
     unavailable: deanson.Omittable(bool) = .omit,
     member_count: i64,
@@ -191,12 +190,12 @@ pub const GuildMemberUpdate = struct {
     user: model.User,
     nick: deanson.Omittable(?[]const u8) = .omit,
     avatar: ?[]const u8,
-    joined_at: ?zigtime.DateTime,
-    premium_since: deanson.Omittable(?zigtime.DateTime) = .omit,
+    joined_at: ?model.IsoTime,
+    premium_since: deanson.Omittable(?model.IsoTime) = .omit,
     deaf: deanson.Omittable(bool) = .omit,
     mute: deanson.Omittable(bool) = .omit,
     pending: deanson.Omittable(bool) = .omit,
-    communications_disabled_until: deanson.Omittable(?zigtime.DateTime) = .omit,
+    communications_disabled_until: deanson.Omittable(?model.IsoTime) = .omit,
     flags: model.guild.Member.Flags,
     avatar_decoration_data: model.User.AvatarDecorationData,
 
@@ -275,7 +274,7 @@ pub const InteractionCreate = model.interaction.Interaction;
 pub const InviteCreate = struct {
     channel_id: model.Snowflake,
     code: []const u8,
-    created_at: zigtime.DateTime,
+    created_at: model.IsoTime,
     guild_id: deanson.Omittable(model.Snowflake) = .omit,
     inviter: deanson.Omittable(model.User) = .omit,
     max_age: i64,

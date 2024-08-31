@@ -1,5 +1,4 @@
 const std = @import("std");
-const zigtime = @import("zig-time");
 const deancord = @import("../root.zig");
 const model = deancord.model;
 const Snowflake = model.Snowflake;
@@ -11,8 +10,8 @@ id: Snowflake,
 channel_id: Snowflake,
 author: MessageAuthor,
 content: []const u8,
-timestamp: []zigtime.DateTime,
-edited_timestamp: ?[]zigtime.DateTime,
+timestamp: []model.IsoTime,
+edited_timestamp: ?[]model.IsoTime,
 tts: bool,
 mention_everyone: bool,
 mentions: []const model.User,
@@ -85,7 +84,7 @@ pub const Embed = struct {
     type: deanson.Omittable(EmbedType) = .omit,
     description: deanson.Omittable([]const u8) = .omit,
     url: deanson.Omittable([]const u8) = .omit,
-    timestamp: deanson.Omittable([]zigtime.DateTime) = .omit,
+    timestamp: deanson.Omittable([]model.IsoTime) = .omit,
     color: deanson.Omittable(i64) = .omit,
     footer: deanson.Omittable(Footer) = .omit,
     image: deanson.Omittable(Media) = .omit,
@@ -259,19 +258,21 @@ pub const Reference = struct {
     fail_if_not_exists: deanson.Omittable(bool) = .omit,
 };
 
-pub const Flags = model.Flags(enum {
-    crossposted,
-    is_crosspost,
-    suppress_embeds,
-    source_message_deleted,
-    urgent,
-    has_thread,
-    ephemeral,
-    loading,
-    failed_to_mention_some_roles_in_thread,
-    suppress_notifications,
-    is_voice_message,
-});
+pub const Flags = packed struct {
+    crossposted: bool = false,
+    is_crosspost: bool = false,
+    suppress_embeds: bool = false,
+    source_message_deleted: bool = false,
+    urgent: bool = false,
+    has_thread: bool = false,
+    ephemeral: bool = false,
+    loading: bool = false,
+    failed_to_mention_some_roles_in_thread: bool = false,
+    suppress_notifications: bool = false,
+    is_voice_message: bool = false,
+
+    pub usingnamespace model.PackedFlagsMixin(@This());
+};
 
 pub const InteractionMetadata = struct {
     id: Snowflake,
@@ -294,7 +295,7 @@ pub const RoleSubscriptionData = struct {
 
 pub const Call = struct {
     participants: []const Snowflake,
-    ended_timestamp: deanson.Omittable(?[]zigtime.DateTime) = .omit,
+    ended_timestamp: deanson.Omittable(?[]model.IsoTime) = .omit,
 
     pub const jsonStringify = model.deanson.stringifyWithOmit;
 };

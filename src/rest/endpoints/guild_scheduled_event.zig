@@ -1,5 +1,4 @@
 const std = @import("std");
-const zigtime = @import("zig-time");
 const deancord = @import("../../root.zig");
 const model = deancord.model;
 const rest = deancord.rest;
@@ -95,8 +94,8 @@ pub const CreateGuildScheduledEventBody = struct {
     entity_metadata: Omittable(model.GuildScheduledEvent.EntityMetadata) = .omit,
     name: []const u8,
     privacy_level: model.GuildScheduledEvent.PrivacyLevel,
-    scheduled_start_time: []zigtime.DateTime,
-    scheduled_end_time: []zigtime.DateTime,
+    scheduled_start_time: []model.IsoTime,
+    scheduled_end_time: []model.IsoTime,
 
     pub usingnamespace model.deanson.OmittableJsonMixin(@This());
 };
@@ -106,8 +105,8 @@ pub const ModifyGuildScheduledEventBody = struct {
     entity_metadata: Omittable(?model.GuildScheduledEvent.EntityMetadata) = .omit,
     name: Omittable([]const u8) = .omit,
     privacy_level: Omittable(model.GuildScheduledEvent.PrivacyLevel) = .omit,
-    scheduled_start_time: Omittable(zigtime.DateTime) = .omit,
-    scheduled_end_time: Omittable(zigtime.DateTime) = .omit,
+    scheduled_start_time: Omittable(model.IsoTime) = .omit,
+    scheduled_end_time: Omittable(model.IsoTime) = .omit,
     description: Omittable(?[]const u8) = .omit,
     entity_type: Omittable(model.GuildScheduledEvent.EntityType) = .omit,
     status: Omittable(model.GuildScheduledEvent.EventStatus) = .omit,

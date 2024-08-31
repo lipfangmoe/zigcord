@@ -63,21 +63,25 @@ test "enum as int - inside struct" {
 
 /// A jsonStringify function which inlines the value in a tagged union
 pub fn stringifyUnionInline(self: anytype, json_writer: anytype) !void {
-    comptime {
-        const self_typeinfo = @typeInfo(@TypeOf(self));
-        if (self_typeinfo != .Pointer) {
-            @compileError("stringifyUnionInline may only be called on *const <unionT>, found \"" ++ @typeName(@TypeOf(self)) ++ "\"");
-        }
-        if (!self_typeinfo.Pointer.is_const) {
-            @compileError("stringifyUnionInline may only be called on *const <unionT>, found \"" ++ @typeName(@TypeOf(self)) ++ "\"");
-        }
-        if (@typeInfo(self_typeinfo.Pointer.child) != .Union) {
-            @compileError("stringifyUnionInline may only be called on *const <unionT>, found \"" ++ @typeName(@TypeOf(self)) ++ "\"");
-        }
-    }
+    const self_typeinfo = @typeInfo(@TypeOf(self));
+    switch (self_typeinfo) {
+        .Pointer => |ptr| {
+            if (@typeInfo(ptr.child) != .Union) {
+                @compileError("stringifyUnionInline may only be called with a union type, or a pointer to a union type. Found '" ++ @typeName(@TypeOf(self)) ++ "'");
+            }
 
-    switch (self.*) {
-        inline else => |value| try json_writer.write(value),
+            switch (self.*) {
+                inline else => |value| try json_writer.write(value),
+            }
+        },
+        .Union => {
+            switch (self) {
+                inline else => |value| try json_writer.write(value),
+            }
+        },
+        else => {
+            @compileError("stringifyUnionInline may only be called with a union type, or a pointer to a union type. Found: '" ++ @typeName(@TypeOf(self)) ++ "'");
+        },
     }
 }
 
@@ -237,7 +241,11 @@ pub fn Omittable(comptime T: type) type {
         }
 
         pub fn jsonParseFromValue(allocator: std.mem.Allocator, source: std.json.Value, options: std.json.ParseOptions) !Omittable(T) {
-            return .{ .some = try std.json.innerParseFromValue(T, allocator, source, options) };
+            const inner_value = std.json.innerParseFromValue(T, allocator, source, options) catch |err| {
+                std.log.err("Error occurred while parsing {s}: {}", .{ @typeName(Omittable(T)), err });
+                return err;
+            };
+            return .{ .some = inner_value };
         }
 
         pub fn jsonStringify(_: Omittable(T), _: anytype) !void {

@@ -2,6 +2,7 @@ const std = @import("std");
 const model = @import("../model.zig");
 const Omittable = model.deanson.Omittable;
 const Partial = model.deanson.Partial;
+const User = @This();
 
 /// This user's snowflake
 id: model.Snowflake,
@@ -38,38 +39,52 @@ public_flags: Omittable(Flags) = .omit,
 /// The user's avatar decoration data.
 avatar_decoration_data: Omittable(?AvatarDecorationData) = .omit,
 
-pub const Flags = model.Flags(enum(u6) {
-    /// discord employee
-    staff,
-    /// partnered server owner
-    partner,
-    /// hypesquad events member
-    hypesquad,
-    /// bug hunter level 1
-    bug_hunter_level_1,
-    /// house of bravery member
-    hypesquad_online_house_1 = 6,
-    /// house of brilliance member
-    hypesquad_online_house_2,
-    /// house of balance member
-    hypesquad_online_house_3,
-    /// early nitro supporter
-    premium_early_supporter,
-    /// user is actually a team. see https://discord.com/developers/docs/topics/teams
-    team_pseudo_user,
-    /// bug hunter level 2
-    bug_hunter_level_2 = 14,
-    /// set if this user is a verified bot
-    verified_bot = 16,
-    /// early verified bot developer
-    verified_developer,
-    /// moderator programs alumnus
-    certified_moderator,
-    /// bot uses only http interactions, and is shown in the online member list
-    bot_http_interactions,
-    /// active developer
-    active_developer = 22,
-});
+pub const Flags = packed struct {
+    /// discord employee, 1 << 0
+    staff: bool = false,
+    /// partnered server owner, 1 << 1
+    partner: bool = false,
+    /// hypesquad events member, 1 << 2
+    hypesquad: bool = false,
+    /// bug hunter level 1, 1 << 3
+    bug_hunter_level_1: bool = false,
+
+    _unused: u2 = 0,
+
+    /// house of bravery member, 1 << 6
+    hypesquad_online_house_1: bool = false,
+    /// house of brilliance member, 1 << 7
+    hypesquad_online_house_2: bool = false,
+    /// house of balance member, 1 << 8
+    hypesquad_online_house_3: bool = false,
+    /// early nitro supporter, 1 << 9
+    premium_early_supporter: bool = false,
+    /// user is actually a team. see https://discord.com/developers/docs/topics/teams, 1 << 10
+    team_pseudo_user: bool = false,
+
+    _unused2: u3 = 0,
+
+    /// bug hunter level 2, 1 << 14
+    bug_hunter_level_2: bool = false,
+
+    _unused3: u1 = 0,
+
+    /// set if this user is a verified bot, 1 << 16
+    verified_bot: bool = false,
+    /// early verified bot developer, 1 << 17
+    verified_developer: bool = false,
+    /// moderator programs alumnus, 1 << 18
+    certified_moderator: bool = false,
+    /// bot uses only http interactions, and is shown in the online member list, 1 << 19
+    bot_http_interactions: bool = false,
+
+    _unused4: u2 = 0,
+
+    /// active developer, 1 << 22
+    active_developer: bool = false,
+
+    pub usingnamespace model.PackedFlagsMixin(@This());
+};
 
 pub const NitroType = enum(u8) {
     none,
@@ -112,3 +127,11 @@ pub const ApplicationRoleConnection = struct {
 
     pub const jsonStringify = model.deanson.stringifyWithOmit;
 };
+
+test "idk some websocket response" {
+    const str =
+        \\{"verified":true,"username":"deancord.zig test bot","mfa_enabled":true,"id":"1277009867730845787","global_name":null,"flags":0,"email":null,"discriminator":"0175","clan":null,"bot":true,"avatar":"be737e5512e505a791c5437f9a3d2c29"}
+    ;
+    const value = try std.json.parseFromSlice(User, std.testing.allocator, str, .{ .ignore_unknown_fields = true });
+    defer value.deinit();
+}

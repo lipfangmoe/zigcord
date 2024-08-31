@@ -6,10 +6,10 @@ const receive_events = deancord.gateway.event_data.receive_events;
 pub const Identify = struct {
     token: []const u8,
     properties: Connection,
-    compress: bool,
+    compress: deanson.Omittable(bool) = .omit,
     large_threshold: deanson.Omittable(i64) = .omit,
     shard: deanson.Omittable([2]i64) = .omit,
-    presence: receive_events.PresenceUpdate,
+    presence: deanson.Omittable(receive_events.PresenceUpdate) = .omit,
     intents: model.Intents,
 
     pub const jsonStringify = deanson.stringifyWithOmit;

@@ -28,18 +28,20 @@ pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, opti
     } else return std.json.ParseFromValueError.MissingField;
 
     const t: ?[]const u8 = if (root.get("t")) |t_value| blk: {
-        switch (t_value) {
-            .string => |str| break :blk str,
+        break :blk switch (t_value) {
+            .string => |str| str,
+            .null => null,
             else => return std.json.ParseFromValueError.UnexpectedToken,
-        }
+        };
     } else null;
 
     const s: ?i64 = if (root.get("s")) |s_value| blk: {
-        switch (s_value) {
-            .integer => |int| break :blk int,
-            .number_string => |str| break :blk try std.fmt.parseInt(i64, str, 10),
+        break :blk switch (s_value) {
+            .integer => |int| int,
+            .number_string => |str| try std.fmt.parseInt(i64, str, 10),
+            .null => null,
             else => return std.json.ParseFromValueError.UnexpectedToken,
-        }
+        };
     } else null;
 
     const d: ?event_data.AnyReceiveEvent = if (root.get("d")) |d_value| blk: {
@@ -64,14 +66,15 @@ pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, opti
 pub fn jsonStringify(self: ReceiveEvent, jw: anytype) !void {
     try jw.beginObject();
 
-    inline for (std.meta.fields(self)) |field| {
-        const field_value = @field(field, field.name);
-        if (std.mem.eql(u8, field.name, "d")) {
+    inline for (std.meta.fields(ReceiveEvent)) |field| {
+        const field_value = @field(self, field.name);
+        if (comptime std.mem.eql(u8, field.name, "d")) {
             try jw.objectField(field.name);
             try deanson.stringifyUnionInline(field_value, jw);
+        } else {
+            try jw.objectField(field.name);
+            try jw.write(field_value);
         }
-        try jw.objectField(field.name);
-        try jw.write(field_value);
     }
 
     try jw.endObject();

@@ -1,5 +1,4 @@
 const std = @import("std");
-const zigtime = @import("zig-time");
 const deancord = @import("../root.zig");
 const model = deancord.model;
 const Snowflake = model.Snowflake;
@@ -7,7 +6,7 @@ const deanson = model.deanson;
 
 question: Media,
 answers: Answer,
-expiry: ?zigtime.DateTime,
+expiry: ?model.IsoTime,
 allow_multiselect: bool,
 layout_type: i64,
 results: deanson.Omittable(Results) = .omit,

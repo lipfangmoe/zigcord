@@ -1,6 +1,5 @@
 const std = @import("std");
 const model = @import("../root.zig").model;
-const zigtime = @import("zig-time");
 const Snowflake = model.Snowflake;
 const deanson = model.deanson;
 
@@ -168,14 +167,16 @@ pub const WelcomeScreen = struct {
     };
 };
 
-pub const SystemChannelFlags = model.Flags(enum(u4) {
-    supress_join_notifications,
-    suppress_premium_subscriptions,
-    suppress_guild_reminder_notifications,
-    suppress_join_notification_replies,
-    suppress_role_subscription_purchase_notifications,
-    suppress_role_subscription_purchase_notification_replies,
-});
+pub const SystemChannelFlags = packed struct {
+    supress_join_notifications: bool = false,
+    suppress_premium_subscriptions: bool = false,
+    suppress_guild_reminder_notifications: bool = false,
+    suppress_join_notification_replies: bool = false,
+    suppress_role_subscription_purchase_notifications: bool = false,
+    suppress_role_subscription_purchase_notification_replies: bool = false,
+
+    pub usingnamespace model.PackedFlagsMixin(@This());
+};
 
 pub const Ban = struct {
     reason: ?[]const u8,
@@ -294,9 +295,9 @@ pub const Member = struct {
     /// The role ids that this user has
     roles: []Snowflake,
     /// when the user joined the guild
-    joined_at: zigtime.DateTime,
+    joined_at: model.IsoTime,
     /// when the user started boosting the guild
-    premium_since: deanson.Omittable(?[]zigtime.DateTime) = .omit,
+    premium_since: deanson.Omittable(?[]model.IsoTime) = .omit,
     /// true if this user is deafened in voice channels
     deaf: bool,
     /// true if this user is muted in voice channels
@@ -308,14 +309,16 @@ pub const Member = struct {
     /// returned inside of interaction objects, permissions of the member in the interacted channel
     permissions: deanson.Omittable([]const u8) = .omit,
     /// when the user's timeout will expire. may be in the past; if so, the user is not timed out.
-    communication_disabled_until: deanson.Omittable(?[]zigtime.DateTime) = .omit,
+    communication_disabled_until: deanson.Omittable(?[]model.IsoTime) = .omit,
 
     pub const jsonStringify = model.deanson.stringifyWithOmit;
 
-    pub const Flags = model.Flags(enum {
-        did_rejoin,
-        completed_onboarding,
-        bypasses_verification,
-        started_onboarding,
-    });
+    pub const Flags = packed struct {
+        did_rejoin: bool = false,
+        completed_onboarding: bool = false,
+        bypasses_verification: bool = false,
+        started_onboarding: bool = false,
+
+        pub usingnamespace model.PackedFlagsMixin(@This());
+    };
 };

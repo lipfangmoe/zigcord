@@ -3,6 +3,7 @@ const ws = @import("weebsocket");
 const deancord = @import("../root.zig");
 const rest = deancord.rest;
 const gateway = deancord.gateway;
+const model = deancord.model;
 const send_events = gateway.event_data.send_events;
 const receive_events = gateway.event_data.receive_events;
 const Client = @This();
@@ -13,6 +14,7 @@ reconnect_uri: std.Uri,
 ws_client: *ws.Client,
 ws_conn: *ws.Connection,
 state: State,
+write_message_mutex: std.Thread.Mutex,
 
 /// Initializes a Gateway Client
 pub fn init(allocator: std.mem.Allocator, auth: rest.Client.Authorization) !Client {
@@ -36,6 +38,8 @@ pub fn initWithRestClient(allocator: std.mem.Allocator, rest_client: *rest.Clien
         },
     };
 
+    std.log.info("attempting connection to {s}", .{url});
+
     return try initWithUri(allocator, rest_client.auth, url);
 }
 
@@ -51,7 +55,13 @@ pub fn initWithUri(allocator: std.mem.Allocator, auth: rest.Client.Authorization
         .reconnect_uri = try std.Uri.parse(dupe_url),
         .ws_client = try allocator.create(ws.Client),
         .ws_conn = try allocator.create(ws.Connection),
+        .write_message_mutex = std.Thread.Mutex{},
     };
+    errdefer {
+        allocator.destroy(client.ws_client);
+        allocator.destroy(client.ws_conn);
+    }
+
     client.ws_client.* = ws.Client.init(allocator);
     errdefer client.ws_client.deinit();
 
@@ -63,29 +73,87 @@ pub fn initWithUri(allocator: std.mem.Allocator, auth: rest.Client.Authorization
     return client;
 }
 
+pub fn deinit(self: *Client) void {
+    self.ws_conn.deinit(null);
+    self.ws_client.deinit();
+    self.allocator.destroy(self.ws_client);
+    self.allocator.destroy(self.ws_conn);
+    self.allocator.free(self.reconnect_uri_str);
+}
+
 pub fn readEvent(self: *Client) !std.json.Parsed(gateway.ReceiveEvent) {
     var message = try self.ws_conn.readMessage();
     const payload = message.payloadReader();
     var json_reader = std.json.reader(self.allocator, payload);
-    const payload_json_parsed = try std.json.parseFromTokenSource(gateway.ReceiveEvent, self.allocator, &json_reader, .{});
+    const payload_json_parsed = try std.json.parseFromTokenSource(gateway.ReceiveEvent, self.allocator, &json_reader, .{ .ignore_unknown_fields = true });
     return payload_json_parsed;
 }
 
 pub fn writeEvent(self: *Client, event: gateway.SendEvent) !void {
+    self.write_message_mutex.lock();
+    defer self.write_message_mutex.unlock();
+
     var payload = std.BoundedArray(u8, 4096){}; // discord only accepts payloads shorter than 4096 bytes
     try std.json.stringify(event, .{}, payload.writer());
-
     try self.ws_conn.writeMessage(.text, payload.constSlice());
 }
 
-pub fn startHeartbeatThread(self: *Client, hello: gateway.event_data.receive_events.Hello) !void {
-    const t = try std.Thread.spawn(.{}, defaultHeartbeatHandler, .{ self, hello.heartbeat_interval });
+pub fn authenticate(self: *Client, token: []const u8, intents: model.Intents) !std.json.Parsed(gateway.ReceiveEvent) {
+    const heartbeat_interval = while (true) {
+        const event = try self.readEvent();
+        defer event.deinit();
+
+        switch (event.value.d orelse continue) {
+            .Hello => |hello| break hello.heartbeat_interval,
+            else => {
+                std.log.warn("unexpected event while waiting for ready: {}", .{event});
+                continue;
+            },
+        }
+
+        break;
+    };
+
+    try self.startHeartbeatThread(heartbeat_interval);
+
+    return self.waitUntilReady(token, intents);
+}
+
+pub fn waitUntilReady(self: *Client, token: []const u8, intents: model.Intents) !std.json.Parsed(gateway.ReceiveEvent) {
+    const identify_event = gateway.SendEvent.identify(gateway.event_data.send_events.Identify{
+        .token = token,
+        .properties = .{ .browser = "deancord.zig", .device = "deancord.zig", .os = @tagName(@import("builtin").os.tag) },
+        .intents = intents,
+    });
+    try self.writeEvent(identify_event);
+
+    while (true) {
+        const event = try self.readEvent();
+        errdefer event.deinit();
+
+        const gateway_url = switch (event.value.d orelse continue) {
+            .Ready => |ready| ready.resume_gateway_url,
+            else => {
+                event.deinit();
+                std.log.warn("unexpected event while waiting for ready: {}", .{event});
+                continue;
+            },
+        };
+        self.reconnect_uri_str = try self.allocator.dupe(u8, gateway_url);
+        self.reconnect_uri = try std.Uri.parse(self.reconnect_uri_str);
+
+        return event;
+    }
+}
+
+pub fn startHeartbeatThread(self: *Client, heartbeat_interval: u64) !void {
+    const t = try std.Thread.spawn(.{}, defaultHeartbeatHandler, .{ self, heartbeat_interval });
     t.detach();
 }
 
 fn defaultHeartbeatHandler(self: *Client, interval: u64) !void {
     var prng = std.Random.DefaultPrng.init(@bitCast(std.time.milliTimestamp()));
-    const interval_with_jitter = prng.random().intRangeAtMostBiased(u64, 0, std.math.cast(u64, interval) orelse return error.Overflow);
+    const interval_with_jitter = prng.random().intRangeAtMostBiased(u64, 0, interval / 5);
 
     std.time.sleep(interval_with_jitter * std.time.ns_per_ms);
 

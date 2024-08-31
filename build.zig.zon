@@ -16,12 +16,8 @@
     // Internet connectivity.
     .dependencies = .{
         .weebsocket = .{
-            .url = "git+https://github.com/deanveloper/weebsocket?ref=v0.1.1#1687096ee42ca4a1e89b0c21c3c2b9917b687b0a",
-            .hash = "122075e8fa32e715511965a284f73a1d0fddd6cb3fb7b6738bffc2d882cdd502e491",
-        },
-        .@"zig-time" = .{
-            .url = "git+https://github.com/deanveloper/zig-time#18011371d1821f148bf0500c46679b11bcf02b13",
-            .hash = "12206f63b5a9fcff47953a5c5ba6eaa8a874b3b38905377e5624c88163faff7e5db0",
+            .url = "git+https://github.com/deanveloper/weebsocket?ref=v0.1.6#fb9853e27c58cb13bfd08f425167b97c49f3832d",
+            .hash = "1220baedb21771f329bad5f3ee8cd822c83ad82594846d867e0aeda651d9d6a50045",
         },
     },
 
