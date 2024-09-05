@@ -85,6 +85,7 @@ pub fn readEvent(self: *Client) !std.json.Parsed(gateway.ReceiveEvent) {
     var message = try self.ws_conn.readMessage();
     const payload = message.payloadReader();
     var json_reader = std.json.reader(self.allocator, payload);
+    defer json_reader.deinit();
     const payload_json_parsed = try std.json.parseFromTokenSource(gateway.ReceiveEvent, self.allocator, &json_reader, .{ .ignore_unknown_fields = true });
     return payload_json_parsed;
 }
@@ -139,6 +140,8 @@ pub fn waitUntilReady(self: *Client, token: []const u8, intents: model.Intents) 
                 continue;
             },
         };
+
+        self.allocator.free(self.reconnect_uri_str);
         self.reconnect_uri_str = try self.allocator.dupe(u8, gateway_url);
         self.reconnect_uri = try std.Uri.parse(self.reconnect_uri_str);
 

@@ -62,3 +62,11 @@ pub const Snowflake = packed struct {
         try jw.write(buf[0..n]);
     }
 };
+
+test "parse" {
+    const snowflake_str = "\"1234567890\"";
+    const snowflake = try std.json.parseFromSlice(Snowflake, std.testing.allocator, snowflake_str, .{});
+    defer snowflake.deinit();
+
+    try std.testing.expectEqual(Snowflake.fromU64(1234567890), snowflake.value);
+}

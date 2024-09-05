@@ -4,7 +4,7 @@ const IsoTime = @This();
 year: u64,
 month: u4,
 day: u5,
-hour: u4,
+hour: u5,
 minute: u8,
 second: u8,
 fractional_second: ?f64 = null,
@@ -59,7 +59,7 @@ pub fn parse(str: []const u8) !IsoTime {
     _ = try reader.readByte(); // 'T'
 
     const hour_str = try reader.readBytesNoEof(2);
-    const hour = try std.fmt.parseInt(u4, &hour_str, 10);
+    const hour = try std.fmt.parseInt(u5, &hour_str, 10);
     _ = try reader.readByte(); // ':'
 
     const minute_str = try reader.readBytesNoEof(2);

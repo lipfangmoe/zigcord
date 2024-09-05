@@ -10,8 +10,8 @@ id: Snowflake,
 channel_id: Snowflake,
 author: MessageAuthor,
 content: []const u8,
-timestamp: []model.IsoTime,
-edited_timestamp: ?[]model.IsoTime,
+timestamp: model.IsoTime,
+edited_timestamp: ?model.IsoTime,
 tts: bool,
 mention_everyone: bool,
 mentions: []const model.User,
@@ -30,7 +30,7 @@ application_id: deanson.Omittable(Snowflake) = .omit,
 message_reference: deanson.Omittable(Reference) = .omit,
 flags: deanson.Omittable(Flags) = .omit,
 referenced_message: deanson.Omittable(?*const Message) = .omit,
-interaction_metadata: InteractionMetadata,
+interaction_metadata: deanson.Omittable(InteractionMetadata) = .omit,
 thread: deanson.Omittable(model.Channel) = .omit,
 components: deanson.Omittable([]const model.MessageComponent) = .omit,
 sticker_items: deanson.Omittable([]const model.Sticker.Item) = .omit,
@@ -43,13 +43,58 @@ call: deanson.Omittable(Call) = .omit,
 
 pub const jsonStringify = model.deanson.stringifyWithOmit;
 
+pub fn jsonParse(alloc: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !Message {
+    return try jsonParseFromValue(
+        alloc,
+        try std.json.innerParse(std.json.Value, alloc, source, options),
+        options,
+    );
+}
+
+pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, options: std.json.ParseOptions) std.json.ParseFromValueError!Message {
+    const object = switch (source) {
+        .object => |obj| obj,
+        else => return error.UnexpectedToken,
+    };
+
+    const author: MessageAuthor = blk: {
+        if (object.get("webhook_id")) |_| {
+            break :blk .{ .webhook = try std.json.innerParseFromValue(MessageAuthor.WebhookAuthor, alloc, object.get("author") orelse return error.MissingField, options) };
+        } else {
+            break :blk .{ .user = try std.json.innerParseFromValue(model.User, alloc, object.get("author") orelse return error.MissingField, options) };
+        }
+    };
+
+    var message: Message = undefined;
+    inline for (std.meta.fields(Message)) |field| {
+        if (comptime std.mem.eql(u8, field.name, "author")) {
+            @field(message, "author") = author;
+        } else {
+            if (object.get(field.name)) |field_value| {
+                @field(message, field.name) = try std.json.innerParseFromValue(field.type, alloc, field_value, options);
+            } else {
+                const default_opt: ?*const field.type = @alignCast(@ptrCast(field.default_value));
+                if (default_opt) |default| {
+                    @field(message, field.name) = default.*;
+                } else {
+                    std.log.err("Missing field: {s}", .{field.name});
+                    return error.MissingField;
+                }
+            }
+        }
+    }
+    return message;
+}
+
 pub const MessageAuthor = union(enum) {
     user: model.User,
-    webhook: struct {
+    webhook: WebhookAuthor,
+
+    pub const WebhookAuthor = struct {
         id: Snowflake,
         username: []const u8,
         avatar: ?[]const u8,
-    },
+    };
 
     pub const jsonStringify = model.deanson.stringifyUnionInline;
 };
@@ -84,7 +129,7 @@ pub const Embed = struct {
     type: deanson.Omittable(EmbedType) = .omit,
     description: deanson.Omittable([]const u8) = .omit,
     url: deanson.Omittable([]const u8) = .omit,
-    timestamp: deanson.Omittable([]model.IsoTime) = .omit,
+    timestamp: deanson.Omittable(model.IsoTime) = .omit,
     color: deanson.Omittable(i64) = .omit,
     footer: deanson.Omittable(Footer) = .omit,
     image: deanson.Omittable(Media) = .omit,
@@ -295,7 +340,7 @@ pub const RoleSubscriptionData = struct {
 
 pub const Call = struct {
     participants: []const Snowflake,
-    ended_timestamp: deanson.Omittable(?[]model.IsoTime) = .omit,
+    ended_timestamp: deanson.Omittable(?model.IsoTime) = .omit,
 
     pub const jsonStringify = model.deanson.stringifyWithOmit;
 };

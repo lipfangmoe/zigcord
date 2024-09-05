@@ -68,11 +68,11 @@ pub const InteractionMember = struct {
     avatar: deanson.Omittable(?[]const u8) = .omit,
     roles: []Snowflake,
     joined_at: model.IsoTime,
-    premium_since: deanson.Omittable(?[]model.IsoTime) = .omit,
+    premium_since: deanson.Omittable(?model.IsoTime) = .omit,
     flags: model.guild.Member.Flags,
     pending: deanson.Omittable(bool) = .omit,
     permissions: deanson.Omittable([]const u8) = .omit,
-    communication_disabled_until: deanson.Omittable(?[]model.IsoTime) = .omit,
+    communication_disabled_until: deanson.Omittable(?model.IsoTime) = .omit,
 
     pub const jsonStringify = deanson.stringifyWithOmit;
 };

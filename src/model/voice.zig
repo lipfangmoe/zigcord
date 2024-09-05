@@ -15,7 +15,7 @@ pub const VoiceState = struct {
     self_stream: Omittable(bool) = .omit,
     self_video: bool,
     suppress: bool,
-    request_to_speak_timestamp: ?[]model.IsoTime,
+    request_to_speak_timestamp: ?model.IsoTime,
 
     pub const jsonStringify = deanson.stringifyWithOmit;
 };

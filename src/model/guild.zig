@@ -297,7 +297,7 @@ pub const Member = struct {
     /// when the user joined the guild
     joined_at: model.IsoTime,
     /// when the user started boosting the guild
-    premium_since: deanson.Omittable(?[]model.IsoTime) = .omit,
+    premium_since: deanson.Omittable(?model.IsoTime) = .omit,
     /// true if this user is deafened in voice channels
     deaf: bool,
     /// true if this user is muted in voice channels
@@ -309,7 +309,7 @@ pub const Member = struct {
     /// returned inside of interaction objects, permissions of the member in the interacted channel
     permissions: deanson.Omittable([]const u8) = .omit,
     /// when the user's timeout will expire. may be in the past; if so, the user is not timed out.
-    communication_disabled_until: deanson.Omittable(?[]model.IsoTime) = .omit,
+    communication_disabled_until: deanson.Omittable(?model.IsoTime) = .omit,
 
     pub const jsonStringify = model.deanson.stringifyWithOmit;
 

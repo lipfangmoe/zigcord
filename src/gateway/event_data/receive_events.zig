@@ -96,7 +96,7 @@ pub const ThreadMemberUpdate = struct {
     guild_id: model.Snowflake,
     id: deanson.Omittable(model.Snowflake) = .omit,
     user_id: deanson.Omittable(model.Snowflake) = .omit,
-    join_timestamp: []model.IsoTime,
+    join_timestamp: model.IsoTime,
     flags: model.Channel.ThreadMember.Flags,
     member: deanson.Omittable(model.guild.Member) = .omit,
 

@@ -69,7 +69,7 @@ pub const Flags = packed struct {
     _unused2: u3 = 0,
     application_command_badge: bool = false, // 1 << 23
 
-    usingnamespace model.PackedFlagsMixin(Flags);
+    pub usingnamespace model.PackedFlagsMixin(Flags);
 
     test "sanity tests" {
         const FlagsBackingT = @typeInfo(Flags).Struct.backing_integer orelse unreachable;

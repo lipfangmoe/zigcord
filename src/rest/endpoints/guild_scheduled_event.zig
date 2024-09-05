@@ -94,8 +94,8 @@ pub const CreateGuildScheduledEventBody = struct {
     entity_metadata: Omittable(model.GuildScheduledEvent.EntityMetadata) = .omit,
     name: []const u8,
     privacy_level: model.GuildScheduledEvent.PrivacyLevel,
-    scheduled_start_time: []model.IsoTime,
-    scheduled_end_time: []model.IsoTime,
+    scheduled_start_time: model.IsoTime,
+    scheduled_end_time: model.IsoTime,
 
     pub usingnamespace model.deanson.OmittableJsonMixin(@This());
 };

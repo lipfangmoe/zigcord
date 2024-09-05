@@ -9,8 +9,11 @@ s: ?i64,
 t: ?[]const u8,
 
 pub fn jsonParse(alloc: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !ReceiveEvent {
-    const json_value = try std.json.innerParse(std.json.Value, alloc, source, options);
-    return jsonParseFromValue(alloc, json_value, options);
+    return try jsonParseFromValue(
+        alloc,
+        try std.json.innerParse(std.json.Value, alloc, source, options),
+        options,
+    );
 }
 
 pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, options: std.json.ParseOptions) std.json.ParseFromValueError!ReceiveEvent {

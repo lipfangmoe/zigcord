@@ -1,8 +1,13 @@
 const std = @import("std");
 const deancord = @import("deancord");
 
+pub const std_options: std.Options = .{ .log_level = switch (@import("builtin").mode) {
+    .Debug, .ReleaseSafe => .info,
+    .ReleaseFast, .ReleaseSmall => .err,
+} };
+
 pub fn main() !void {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    var gpa = std.heap.GeneralPurposeAllocator(.{ .stack_trace_frames = if (std.debug.sys_can_stack_trace) 100 else 0 }){};
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
@@ -21,18 +26,19 @@ pub fn main() !void {
     defer gateway_client.deinit();
 
     {
-        const ready_event = try gateway_client.authenticate(token, deancord.model.Intents{ .message_content = true });
+        const ready_event = try gateway_client.authenticate(token, deancord.model.Intents{ .guild_messages = true, .message_content = true });
         defer ready_event.deinit();
         std.log.info("authenticated as user {}", .{ready_event.value.d.?.Ready.user.id});
     }
 
     while (true) {
-        const event = try gateway_client.readEvent();
-        defer event.deinit();
+        const parsed = try gateway_client.readEvent();
+        defer parsed.deinit();
+        const event = parsed.value;
 
-        switch (event.value.d orelse continue) {
+        switch (event.d orelse continue) {
             .MessageCreate => |msg_event| {
-                std.log.info("message created with content {?s}", .{msg_event.message.content});
+                std.log.info("message created with content \"{?s}\"", .{msg_event.message.content});
                 if (std.mem.eql(u8, msg_event.message.content, "done")) {
                     return;
                 }

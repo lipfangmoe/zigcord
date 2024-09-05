@@ -24,7 +24,7 @@ owner_id: Omittable(Snowflake) = .omit,
 application_id: Omittable(Snowflake) = .omit,
 managed: Omittable(bool) = .omit,
 parent_id: Omittable(?Snowflake) = .omit,
-last_pin_timestamp: Omittable(?[]model.IsoTime) = .omit,
+last_pin_timestamp: Omittable(?model.IsoTime) = .omit,
 rtc_region: Omittable(?[]const u8) = .omit,
 video_quality_mode: Omittable(VideoQualityMode) = .omit,
 message_count: Omittable(i64) = .omit,
@@ -102,10 +102,10 @@ pub const Flags = packed struct {
 pub const ThreadMetadata = struct {
     archived: bool,
     auto_archive_duration: i64,
-    archive_timestamp: []model.IsoTime,
+    archive_timestamp: model.IsoTime,
     locked: bool,
     invitable: Omittable(bool) = .omit,
-    create_timestamp: Omittable([]model.IsoTime) = .omit,
+    create_timestamp: Omittable(model.IsoTime) = .omit,
 
     pub const jsonStringify = deanson.stringifyWithOmit;
 };
@@ -113,7 +113,7 @@ pub const ThreadMetadata = struct {
 pub const ThreadMember = struct {
     id: Omittable(Snowflake) = .omit,
     user_id: Omittable(Snowflake) = .omit,
-    join_timestamp: []model.IsoTime,
+    join_timestamp: model.IsoTime,
     flags: ThreadMember.Flags,
     member: Omittable(Member) = .omit,
 
