@@ -6,6 +6,7 @@ pub const base_url = "https://discord.com/api/v10";
 
 pub const endpoints = @import("./rest/endpoints.zig");
 pub const Client = @import("./rest/Client.zig");
+pub const Server = @import("./interaction_server/Server.zig");
 
 const multipart = @import("./rest/multipart.zig");
 

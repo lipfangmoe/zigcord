@@ -4,11 +4,11 @@
 
 const std = @import("std");
 const deancord = @import("../root.zig");
-const Request = @import("./Request.zig");
+const Server = @This();
+
+pub const Request = @import("./Request.zig");
 
 net_server: std.net.Server,
-
-const Server = @This();
 
 pub fn init(address: std.net.Address) !Server {
     const net_server = try address.listen(.{});
@@ -20,7 +20,7 @@ pub fn deinit(self: *Server) void {
     self.net_server.deinit();
 }
 
-pub fn receiveInteraction(self: Server) !Request {
+pub fn receiveInteraction(self: *Server) !Request {
     var buf: [1000]u8 = undefined;
     const conn = try self.net_server.accept();
     var http_server = std.http.Server.init(conn, &buf);

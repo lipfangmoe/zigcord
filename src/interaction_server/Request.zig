@@ -36,15 +36,15 @@ pub fn followupEditOriginal(
     client: *deancord.rest.Client,
     body: rest.endpoints.webhook.EditWebhookMessageFormBody,
 ) !rest.Client.Result(model.Message) {
-    try rest.endpoints.interaction.editOriginalInteractionResponse(client, self.interaction.application_id, self.interaction.token, body);
+    return try rest.endpoints.interaction.editOriginalInteractionResponse(client, self.interaction.application_id, self.interaction.token, body);
 }
 
 /// send a followup request which deletes the original message
 pub fn followupDeleteOriginal(
     self: Request,
     client: *deancord.rest.Client,
-) !void {
-    try rest.endpoints.interaction.deleteOriginalInteractionResponse(client, self.interaction.application_id, self.interaction.token);
+) !rest.Client.Result(void) {
+    return try rest.endpoints.interaction.deleteOriginalInteractionResponse(client, self.interaction.application_id, self.interaction.token);
 }
 
 /// send a followup request which sends a new message
@@ -52,15 +52,16 @@ pub fn followupNewMessage(
     self: Request,
     client: *deancord.rest.Client,
     body: rest.endpoints.webhook.ExecuteWebhookFormBody,
-) !void {
-    try rest.endpoints.interaction.createFollowupMessage(client, self.interaction.application_id, self.interaction.token, body);
+) !rest.Client.Result(model.Message) {
+    return try rest.endpoints.interaction.createFollowupMessage(client, self.interaction.application_id, self.interaction.token, body);
 }
 
 /// send a followup request which edits a message that was previously sent with followupNewMessage()
 pub fn followupEditNewMessage(
     self: Request,
     client: *deancord.rest.Client,
+    message_id: model.Snowflake,
     body: rest.endpoints.webhook.EditWebhookMessageFormBody,
-) !void {
-    try rest.endpoints.interaction.editFollowupMessage(client, self.interaction.application_id, self.interaction.token, body);
+) !rest.Client.Result(model.Message) {
+    return try rest.endpoints.interaction.editFollowupMessage(client, self.interaction.application_id, self.interaction.token, message_id, body);
 }

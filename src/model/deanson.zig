@@ -167,6 +167,37 @@ pub fn stringifyWithOmit(self: anytype, json_writer: anytype) @typeInfo(@TypeOf(
     try json_writer.endObject();
 }
 
+/// Mixin which means "any of the following". Stringifies by just stringifying the target value. Parses by trying to parse each union field in declared order.
+pub fn InlineUnionJsonMixin(comptime T: type) type {
+    switch (@typeInfo(T)) {
+        .Union => {},
+        else => @compileError("InlineUnionJsonMixin may only be used on a union type. Found: '" ++ @typeName(T) ++ "'"),
+    }
+
+    return struct {
+        pub fn jsonStringify(self: T, jw: anytype) !void {
+            switch (self) {
+                inline else => |value| try jw.write(value),
+            }
+        }
+
+        pub fn jsonParse(allocator: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !T {
+            const json_value = try std.json.innerParse(std.json.Value, allocator, source, options);
+            return jsonParseFromValue(allocator, json_value, options);
+        }
+
+        pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, options: std.json.ParseOptions) std.json.ParseFromValueError!T {
+            for (std.meta.fields(T)) |field| {
+                std.json.innerParseFromValue(field.type, alloc, source, options) catch continue;
+                break;
+            } else {
+                std.log.err("invalid format for type '{s}', provided json: {s}", .{ @typeName(T), std.json.fmt(source, .{}) });
+                return error.InvalidEnumTag;
+            }
+        }
+    };
+}
+
 fn writePossiblyOmittableFieldToStream(field: std.builtin.Type.StructField, value: anytype, json_writer: anytype) !void {
     if (@typeInfo(field.type) != .Union) {
         try json_writer.objectField(field.name);
