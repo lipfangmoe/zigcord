@@ -134,7 +134,7 @@ pub const GuildCreate = model.guild.MaybeAvailable(struct {
     stage_instances: []const model.StageInstance,
     guild_scheduled_events: []const model.GuildScheduledEvent,
 
-    pub usingnamespace deanson.InlineFieldJsonMixin(@This(), "guild");
+    pub usingnamespace deanson.InlineSingleStructFieldJsonMixin(@This(), "guild");
 });
 
 pub const GuildUpdate = model.guild.Guild;
@@ -145,7 +145,7 @@ pub const GuildAuditLogEntryCreate = struct {
     audit_log_entry: model.AuditLog.Entry,
     guild_id: model.Snowflake,
 
-    pub usingnamespace deanson.InlineFieldJsonMixin(GuildAuditLogEntryCreate, "audit_log_entry");
+    pub usingnamespace deanson.InlineSingleStructFieldJsonMixin(GuildAuditLogEntryCreate, "audit_log_entry");
 };
 
 pub const GuildBanAdd = struct {
@@ -176,7 +176,7 @@ pub const GuildMemberAdd = struct {
     guild_member: model.guild.Member,
     guild_id: model.Snowflake,
 
-    pub usingnamespace deanson.InlineFieldJsonMixin(@This(), "guild_member");
+    pub usingnamespace deanson.InlineSingleStructFieldJsonMixin(@This(), "guild_member");
 };
 
 pub const GuildMemberRemove = struct {
@@ -251,14 +251,14 @@ pub const IntegrationCreate = struct {
     integration: model.guild.Integration,
     guild_id: model.Snowflake,
 
-    pub usingnamespace deanson.InlineFieldJsonMixin(@This(), "integration");
+    pub usingnamespace deanson.InlineSingleStructFieldJsonMixin(@This(), "integration");
 };
 
 pub const IntegrationUpdate = struct {
     integration: model.guild.Integration,
     guild_id: model.Snowflake,
 
-    pub usingnamespace deanson.InlineFieldJsonMixin(@This(), "integration");
+    pub usingnamespace deanson.InlineSingleStructFieldJsonMixin(@This(), "integration");
 };
 
 pub const IntegrationDelete = struct {
@@ -302,13 +302,13 @@ pub const MessageCreate = struct {
     member: deanson.Omittable(deanson.Partial(model.guild.Member)) = .omit,
     mentions: []const UserWithPartialMember,
 
-    pub usingnamespace deanson.InlineFieldJsonMixin(@This(), "message");
+    pub usingnamespace deanson.InlineSingleStructFieldJsonMixin(@This(), "message");
 
     pub const UserWithPartialMember = struct {
         user: model.User,
         member: deanson.Partial(model.guild.Member),
 
-        pub usingnamespace deanson.InlineFieldJsonMixin(@This(), "user");
+        pub usingnamespace deanson.InlineSingleStructFieldJsonMixin(@This(), "user");
     };
 };
 
@@ -318,13 +318,13 @@ pub const MessageUpdate = struct {
     member: deanson.Omittable(deanson.Partial(model.guild.Member)) = .omit,
     mentions: []const UserWithPartialMember,
 
-    pub usingnamespace deanson.InlineFieldJsonMixin(@This(), "message");
+    pub usingnamespace deanson.InlineSingleStructFieldJsonMixin(@This(), "message");
 
     pub const UserWithPartialMember = struct {
         user: model.User,
         member: deanson.Partial(model.guild.Member),
 
-        pub usingnamespace deanson.InlineFieldJsonMixin(@This(), "user");
+        pub usingnamespace deanson.InlineSingleStructFieldJsonMixin(@This(), "user");
     };
 };
 

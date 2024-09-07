@@ -42,7 +42,7 @@ pub const TriggerMetadata = union(TriggerType) {
         mention_raid_protection_enabled: bool,
     },
 
-    pub const jsonStringify = deanson.stringifyUnionInline;
+    pub usingnamespace deanson.InlineUnionJsonMixin(@This());
 };
 
 pub const KeywordPreset = enum(u8) {

@@ -31,7 +31,7 @@ pub const TypedProps = union(Type) {
     mentionable_select: Select,
     channel_select: ChannelSelect,
 
-    pub const jsonStringify = deanson.stringifyUnionInline;
+    pub usingnamespace deanson.InlineUnionJsonMixin(@This());
 
     pub const Button = struct {
         custom_id: Omittable([]const u8) = .omit,

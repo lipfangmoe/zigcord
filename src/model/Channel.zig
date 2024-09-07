@@ -75,6 +75,7 @@ pub const PermissionOverwrite = struct {
     deny: []const u8,
 };
 
+// woah, discord actually used a data structure that follows how programming languages often define enums
 pub const DefaultReaction = union(enum) {
     emoji_id: Snowflake,
     emoji_name: []const u8,

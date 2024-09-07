@@ -96,7 +96,7 @@ pub const MessageAuthor = union(enum) {
         avatar: ?[]const u8,
     };
 
-    pub const jsonStringify = model.deanson.stringifyUnionInline;
+    pub usingnamespace deanson.InlineUnionJsonMixin(@This());
 };
 
 pub const Attachment = struct {

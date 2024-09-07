@@ -34,22 +34,77 @@ pub const Interaction = struct {
 
 pub const InteractionType = enum(u8) {
     ping = 1,
-    application_command,
-    message_component,
-    application_command_autocomplete,
-    modal_submit,
+    application_command = 2,
+    message_component = 3,
+    application_command_autocomplete = 4,
+    modal_submit = 5,
 };
 
-pub const InteractionData = union(enum) {
+pub const InteractionData = union(InteractionType) {
     ping: void,
-    application_command: ApplicationCommandData,
+    application_command: ApplicationCommandInteractionData,
+    message_component: MessageComponentData,
+    application_command_autocomplete: ApplicationCommandAutocompleteInteractionData,
+    modal_submit: ModalSubmitData,
+
+    pub usingnamespace deanson.InlineUnionJsonMixin(@This());
 };
 
-pub const ApplicationCommandData = struct {
+pub const ApplicationCommandInteractionData = struct {
     id: Snowflake,
     name: []const u8,
     type: command.ApplicationCommandType,
-    resolved: ResolvedData,
+    resolved: deanson.Omittable(ResolvedData) = .omit,
+    options: deanson.Omittable([]const ApplicationCommandInteractionDataOption) = .omit,
+    guild_id: deanson.Omittable(model.Snowflake) = .omit,
+    target_id: deanson.Omittable(model.Snowflake) = .omit,
+
+    pub const jsonStringify = deanson.stringifyWithOmit;
+};
+
+pub const ApplicationCommandInteractionDataOption = struct {
+    id: Snowflake,
+    name: []const u8,
+    type: command.ApplicationCommandType,
+    resolved: deanson.Omittable(ResolvedData) = .omit,
+    options: deanson.Omittable([]const deanson.Partial(ApplicationCommandInteractionDataOption)) = .omit,
+    guild_id: deanson.Omittable(model.Snowflake) = .omit,
+    target_id: deanson.Omittable(model.Snowflake) = .omit,
+
+    pub const jsonStringify = deanson.stringifyWithOmit;
+};
+
+pub const MessageComponentData = struct {
+    custom_id: []const u8,
+    component_type: model.MessageComponent.Type,
+    values: deanson.Omittable(model.MessageComponent.TypedProps.StringSelect.Option) = .omit,
+    resolved: deanson.Omittable(ResolvedData) = .omit,
+
+    pub const jsonStringify = deanson.stringifyWithOmit;
+};
+
+pub const ModalSubmitData = struct {
+    custom_id: []const u8,
+    components: []const model.MessageComponent,
+};
+
+pub const ApplicationCommandAutocompleteInteractionData = struct {
+    name: []const u8,
+    type: command_option.ApplicationCommandOptionType,
+    value: deanson.Omittable(Value) = .omit,
+    options: deanson.Omittable([]const ApplicationCommandAutocompleteInteractionData) = .omit,
+    focused: deanson.Omittable(bool) = .omit,
+
+    pub const Value = union(enum) {
+        string: []const u8,
+        int: i64,
+        double: f64,
+        boolean: bool,
+
+        pub usingnamespace deanson.InlineUnionJsonMixin(@This());
+    };
+
+    pub const jsonStringify = deanson.stringifyWithOmit;
 };
 
 pub const ResolvedData = struct {
@@ -80,6 +135,8 @@ pub const InteractionMember = struct {
 pub const InteractionResponse = struct {
     type: Type,
     data: deanson.Omittable(InteractionCallbackData) = .omit,
+
+    pub const jsonStringify = deanson.stringifyWithOmit;
 
     pub const Type = enum(u8) {
         pong = 1,

@@ -567,7 +567,7 @@ pub const ModifyChannelBody = union(enum) {
         pub const jsonStringify = deanson.stringifyWithOmit;
     },
 
-    pub const jsonStringify = deanson.stringifyUnionInline;
+    pub usingnamespace deanson.InlineUnionJsonMixin(@This());
 };
 
 pub const GetChannelMessagesQuery = struct {

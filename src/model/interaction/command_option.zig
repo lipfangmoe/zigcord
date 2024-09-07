@@ -36,12 +36,12 @@ pub const ApplicationCommandOption = struct {
     min_value: Omittable(union(enum) {
         double: f64,
         integer: i64,
-        pub const jsonStringify = deanson.stringifyUnionInline;
+        pub usingnamespace deanson.InlineUnionJsonMixin(@This());
     }) = .omit,
     max_value: Omittable(union(enum) {
         double: f64,
         integer: i64,
-        pub const jsonStringify = deanson.stringifyUnionInline;
+        pub usingnamespace deanson.InlineUnionJsonMixin(@This());
     }) = .omit,
     min_length: Omittable(i64) = .omit,
     max_length: Omittable(i64) = .omit,
@@ -66,7 +66,7 @@ pub const ApplicationCommandOption = struct {
         integer: []IntegerChoice,
         double: []DoubleChoice,
 
-        pub const jsonStringify = deanson.stringifyUnionInline;
+        pub usingnamespace deanson.InlineUnionJsonMixin(@This());
     };
 
     pub const jsonStringify = deanson.stringifyWithOmit;
@@ -138,7 +138,6 @@ pub const SubcommandGroupOptionBuilder = struct {
 };
 
 pub const StringOptionBuilder = struct {
-    type: ApplicationCommandOptionType,
     name: []const u8,
     name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     description: []const u8,
@@ -171,7 +170,6 @@ pub const StringOptionBuilder = struct {
 };
 
 pub const IntegerOptionBuilder = struct {
-    type: ApplicationCommandOptionType,
     name: []const u8,
     name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     description: []const u8,
@@ -204,7 +202,6 @@ pub const IntegerOptionBuilder = struct {
 };
 
 pub const NumberOptionBuilder = struct {
-    type: ApplicationCommandOptionType,
     name: []const u8,
     name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     description: []const u8,

@@ -79,10 +79,40 @@ pub fn stringifyUnionInline(self: anytype, json_writer: anytype) !void {
                 inline else => |value| try json_writer.write(value),
             }
         },
-        else => {
-            @compileError("stringifyUnionInline may only be called with a union type, or a pointer to a union type. Found: '" ++ @typeName(@TypeOf(self)) ++ "'");
-        },
+        else => @compileError("stringifyUnionInline may only be called with a union type, or a pointer to a union type. Found '" ++ @typeName(@TypeOf(self)) ++ "'"),
     }
+}
+
+/// Mixin which means "any of the following". Stringifies by just stringifying the target value. Parses by trying to parse each union field in declared order.
+pub fn InlineUnionJsonMixin(comptime T: type) type {
+    switch (@typeInfo(T)) {
+        .Union => {},
+        else => @compileError("InlineUnionJsonMixin may only be used on a union type. Found: '" ++ @typeName(T) ++ "'"),
+    }
+
+    return struct {
+        pub fn jsonStringify(self: T, jw: anytype) !void {
+            switch (self) {
+                inline else => |value| try jw.write(value),
+            }
+        }
+
+        pub fn jsonParse(allocator: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !T {
+            const json_value = try std.json.innerParse(std.json.Value, allocator, source, options);
+            return jsonParseFromValue(allocator, json_value, options);
+        }
+
+        pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, options: std.json.ParseOptions) std.json.ParseFromValueError!T {
+            inline for (std.meta.fields(T)) |field| {
+                if (std.json.innerParseFromValue(field.type, alloc, source, options)) |value| {
+                    return @unionInit(T, field.name, value);
+                } else |_| {}
+            } else {
+                std.log.err("invalid format for type '{s}', provided json: {s}", .{ @typeName(T), std.json.fmt(source, .{}) });
+                return error.InvalidEnumTag;
+            }
+        }
+    };
 }
 
 test "union inline - regular" {
@@ -90,7 +120,7 @@ test "union inline - regular" {
         number: i64,
         string: []const u8,
 
-        pub const jsonStringify = stringifyUnionInline;
+        pub usingnamespace InlineUnionJsonMixin(@This());
     };
 
     const twenty = TestUnion{ .number = 20 };
@@ -110,7 +140,7 @@ test "union inline - inside struct" {
         number: i64,
         string: []const u8,
 
-        pub const jsonStringify = stringifyUnionInline;
+        pub usingnamespace InlineUnionJsonMixin(@This());
     };
     const TestStruct = struct {
         foo: []const u8,
@@ -165,37 +195,6 @@ pub fn stringifyWithOmit(self: anytype, json_writer: anytype) @typeInfo(@TypeOf(
     }
 
     try json_writer.endObject();
-}
-
-/// Mixin which means "any of the following". Stringifies by just stringifying the target value. Parses by trying to parse each union field in declared order.
-pub fn InlineUnionJsonMixin(comptime T: type) type {
-    switch (@typeInfo(T)) {
-        .Union => {},
-        else => @compileError("InlineUnionJsonMixin may only be used on a union type. Found: '" ++ @typeName(T) ++ "'"),
-    }
-
-    return struct {
-        pub fn jsonStringify(self: T, jw: anytype) !void {
-            switch (self) {
-                inline else => |value| try jw.write(value),
-            }
-        }
-
-        pub fn jsonParse(allocator: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !T {
-            const json_value = try std.json.innerParse(std.json.Value, allocator, source, options);
-            return jsonParseFromValue(allocator, json_value, options);
-        }
-
-        pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, options: std.json.ParseOptions) std.json.ParseFromValueError!T {
-            for (std.meta.fields(T)) |field| {
-                std.json.innerParseFromValue(field.type, alloc, source, options) catch continue;
-                break;
-            } else {
-                std.log.err("invalid format for type '{s}', provided json: {s}", .{ @typeName(T), std.json.fmt(source, .{}) });
-                return error.InvalidEnumTag;
-            }
-        }
-    };
 }
 
 fn writePossiblyOmittableFieldToStream(field: std.builtin.Type.StructField, value: anytype, json_writer: anytype) !void {
@@ -406,7 +405,7 @@ test "Partial Parse" {
 
 /// For `struct{ field1: struct{ foo: i64 }, field2: struct{ bar: u64 }, pub usingnamespace InlineFieldJsonMixin(@This(), "field1"); }`,
 /// returns a mixin which will JSON stringify and parse the struct into a `struct{ foo: i64, field2: struct{ bar: u64 }}`
-pub fn InlineFieldJsonMixin(comptime T: type, comptime inline_field: []const u8) type {
+pub fn InlineSingleStructFieldJsonMixin(comptime T: type, comptime inline_field: []const u8) type {
     return struct {
         pub fn jsonParse(allocator: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !T {
             // way too lazy to give this a more efficient implementation. maybe in the future.
@@ -532,7 +531,7 @@ test "InlineFieldJsonMixin - stringify" {
         field1: struct { foo: i64 },
         field2: struct { bar: u64 },
 
-        pub usingnamespace InlineFieldJsonMixin(@This(), "field1");
+        pub usingnamespace InlineSingleStructFieldJsonMixin(@This(), "field1");
     };
 
     const t = TestStruct{ .field1 = .{ .foo = 5 }, .field2 = .{ .bar = 100 } };
@@ -550,7 +549,7 @@ test "InlineFieldJsonMixin - parse" {
         field1: struct { foo: i64 },
         field2: struct { bar: u64 },
 
-        pub usingnamespace InlineFieldJsonMixin(@This(), "field1");
+        pub usingnamespace InlineSingleStructFieldJsonMixin(@This(), "field1");
     };
 
     const str =
