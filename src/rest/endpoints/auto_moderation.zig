@@ -1,12 +1,12 @@
 const std = @import("std");
 const deancord = @import("../../root.zig");
+const jconfig = deancord.jconfig;
 const model = deancord.model;
 const rest = deancord.rest;
 const Snowflake = model.Snowflake;
 const RestResult = rest.Client.Result;
 const Client = rest.Client;
-const deanson = model.deanson;
-const Omittable = deanson.Omittable;
+const Omittable = jconfig.Omittable;
 
 pub fn listAutoModerationRulesForGuild(
     client: *Client,

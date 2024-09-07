@@ -1,36 +1,36 @@
 const std = @import("std");
 const deancord = @import("../root.zig");
+const jconfig = @import("../root.zig").jconfig;
 const model = deancord.model;
-const deanson = model.deanson;
 
 id: model.Snowflake,
 name: []const u8,
 icon: ?[]const u8,
 description: []const u8,
-rpc_origins: deanson.Omittable([]const []const u8) = .omit,
+rpc_origins: jconfig.Omittable([]const []const u8) = .omit,
 bot_public: bool,
 bot_require_code_grant: bool,
-bot: deanson.Omittable(deanson.Partial(model.User)) = .omit,
-terms_of_service_url: deanson.Omittable([]const u8) = .omit,
-privacy_policy_url: deanson.Omittable([]const u8) = .omit,
-owner: deanson.Omittable(deanson.Partial(model.User)) = .omit,
+bot: jconfig.Omittable(jconfig.Partial(model.User)) = .omit,
+terms_of_service_url: jconfig.Omittable([]const u8) = .omit,
+privacy_policy_url: jconfig.Omittable([]const u8) = .omit,
+owner: jconfig.Omittable(jconfig.Partial(model.User)) = .omit,
 verify_key: []const u8,
 team: ?Team,
-guild_id: deanson.Omittable([]const u8) = .omit,
-guild: deanson.Omittable(model.guild.PartialGuild) = .omit,
-primary_sku_id: deanson.Omittable(model.Snowflake) = .omit,
-slug: deanson.Omittable([]const u8) = .omit,
-cover_image: deanson.Omittable([]const u8) = .omit,
-flags: deanson.Omittable(Flags) = .omit,
-approximate_guild_count: deanson.Omittable(i64) = .omit,
-redirect_uris: deanson.Omittable([]const []const u8) = .omit,
-interactions_endpoint_url: deanson.Omittable([]const u8) = .omit,
-role_connections_verification_url: deanson.Omittable([]const u8) = .omit,
-tags: deanson.Omittable([]const []const u8) = .omit,
-install_params: deanson.Omittable(InstallParams) = .omit,
-custom_install_url: deanson.Omittable([]const u8) = .omit,
+guild_id: jconfig.Omittable([]const u8) = .omit,
+guild: jconfig.Omittable(model.guild.PartialGuild) = .omit,
+primary_sku_id: jconfig.Omittable(model.Snowflake) = .omit,
+slug: jconfig.Omittable([]const u8) = .omit,
+cover_image: jconfig.Omittable([]const u8) = .omit,
+flags: jconfig.Omittable(Flags) = .omit,
+approximate_guild_count: jconfig.Omittable(i64) = .omit,
+redirect_uris: jconfig.Omittable([]const []const u8) = .omit,
+interactions_endpoint_url: jconfig.Omittable([]const u8) = .omit,
+role_connections_verification_url: jconfig.Omittable([]const u8) = .omit,
+tags: jconfig.Omittable([]const []const u8) = .omit,
+install_params: jconfig.Omittable(InstallParams) = .omit,
+custom_install_url: jconfig.Omittable([]const u8) = .omit,
 
-pub const jsonStringify = deanson.stringifyWithOmit;
+pub const jsonStringify = jconfig.stringifyWithOmit;
 
 pub const Team = struct {
     icon: ?[]const u8,
@@ -50,7 +50,7 @@ pub const TeamMember = struct {
         invited = 1,
         accepted,
 
-        pub const jsonStringify = deanson.stringifyEnumAsInt;
+        pub const jsonStringify = jconfig.stringifyEnumAsInt;
     };
 };
 

@@ -31,9 +31,11 @@
 //     }
 // }
 
-pub const stringifyUnionInline = @import("./jsonconfig/inline_union.zig").stringifyUnionInline;
-pub const InlineUnionMixin = @import("./jsonconfig/inline_union.zig").InlineUnionJsonMixin;
-pub const Omittable = @import("./jsonconfig/omit.zig").Omittable;
-pub const stringifyWithOmit = @import("./jsonconfig/omit.zig").stringifyWithOmit;
-pub const OmittableFieldsMixin = @import("./jsonconfig/omit.zig").OmittableFieldsMixin;
-pub const Partial = @import("./jsonconfig/partial.zig").Partial;
+pub const stringifyUnionInline = @import("./jconfig/inline_union.zig").stringifyUnionInline;
+pub const InlineUnionMixin = @import("./jconfig/inline_union.zig").InlineUnionJsonMixin;
+pub const Omittable = @import("./jconfig/omit.zig").Omittable;
+pub const stringifyWithOmit = @import("./jconfig/omit.zig").stringifyWithOmit;
+pub const OmittableFieldsMixin = @import("./jconfig/omit.zig").OmittableFieldsMixin;
+pub const Partial = @import("./jconfig/partial.zig").Partial;
+pub const stringifyEnumAsInt = @import("./jconfig/enums.zig").stringifyEnumAsInt;
+pub const InlineSingleStructFieldMixin = @import("./jconfig/inline_single_struct_field.zig").InlineSingleStructFieldMixin;

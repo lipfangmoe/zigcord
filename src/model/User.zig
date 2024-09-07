@@ -1,7 +1,8 @@
 const std = @import("std");
-const model = @import("../model.zig");
-const Omittable = model.deanson.Omittable;
-const Partial = model.deanson.Partial;
+const model = @import("../root.zig").model;
+const jconfig = @import("../root.zig").jconfig;
+const Omittable = jconfig.Omittable;
+const Partial = jconfig.Partial;
 const User = @This();
 
 /// This user's snowflake
@@ -110,13 +111,13 @@ pub const Connection = struct {
     two_way_link: bool,
     visibility: Visibility,
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = model.jconfig.stringifyWithOmit;
 
     pub const Visibility = enum(u1) {
         none = 0,
         everyone = 1,
 
-        pub const jsonStringify = model.deanson.stringifyEnumAsInt;
+        pub const jsonStringify = model.jconfig.stringifyEnumAsInt;
     };
 };
 
@@ -125,7 +126,7 @@ pub const ApplicationRoleConnection = struct {
     platform_username: Omittable([]const u8) = .omit,
     metadata: std.json.ArrayHashMap([]const u8),
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = model.jconfig.stringifyWithOmit;
 };
 
 test "idk some websocket response" {

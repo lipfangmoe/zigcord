@@ -1,6 +1,6 @@
 const model = @import("../root.zig").model;
-const deanson = model.deanson;
-const Omittable = deanson.Omittable;
+const jconfig = @import("../root.zig").jconfig;
+const Omittable = jconfig.Omittable;
 
 const MessageComponent = @This();
 
@@ -18,7 +18,7 @@ pub const Type = enum(u8) {
     mentionable_select = 7,
     channel_select = 8,
 
-    pub const jsonStringify = deanson.stringifyEnumAsInt;
+    pub const jsonStringify = jconfig.stringifyEnumAsInt;
 };
 
 pub const TypedProps = union(Type) {
@@ -31,7 +31,7 @@ pub const TypedProps = union(Type) {
     mentionable_select: Select,
     channel_select: ChannelSelect,
 
-    pub usingnamespace deanson.InlineUnionJsonMixin(@This());
+    pub usingnamespace jconfig.InlineUnionMixin(@This());
 
     pub const Button = struct {
         custom_id: Omittable([]const u8) = .omit,
@@ -42,7 +42,7 @@ pub const TypedProps = union(Type) {
         url: Omittable([]const u8) = .omit,
         disabled: Omittable(bool) = .omit,
 
-        pub const jsonStringify = deanson.stringifyWithOmit;
+        pub const jsonStringify = jconfig.stringifyWithOmit;
 
         // https://discord.com/developers/docs/interactions/message-components#button-object-button-styles
         pub const ButtonStyle = enum(u8) {
@@ -63,7 +63,7 @@ pub const TypedProps = union(Type) {
         max_values: Omittable(i64) = .omit,
         disabled: Omittable(bool) = .omit,
 
-        pub const jsonStringify = deanson.stringifyWithOmit;
+        pub const jsonStringify = jconfig.stringifyWithOmit;
 
         pub const DefaultValue = struct {
             id: model.Snowflake,
@@ -80,7 +80,7 @@ pub const TypedProps = union(Type) {
         max_values: Omittable(i64) = .omit,
         disabled: Omittable(bool) = .omit,
 
-        pub const jsonStringify = deanson.stringifyWithOmit;
+        pub const jsonStringify = jconfig.stringifyWithOmit;
 
         pub const DefaultValue = struct {
             id: model.Snowflake,
@@ -103,10 +103,10 @@ pub const TypedProps = union(Type) {
             emoji: Omittable(model.Emoji) = .omit,
             default: Omittable(bool) = .omit,
 
-            pub const jsonStringify = deanson.stringifyWithOmit;
+            pub const jsonStringify = jconfig.stringifyWithOmit;
         };
 
-        pub const jsonStringify = deanson.stringifyWithOmit;
+        pub const jsonStringify = jconfig.stringifyWithOmit;
     };
 
     pub const TextInput = struct {};

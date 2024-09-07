@@ -3,14 +3,14 @@ const model = deancord.model;
 const Snowflake = model.Snowflake;
 const User = model.User;
 const Member = model.guild.Member;
-const deanson = model.deanson;
-const Omittable = model.deanson.Omittable;
+const jconfig = deancord.jconfig;
+const Omittable = jconfig.Omittable;
 
 id: Snowflake,
 type: Type,
 guild_id: Omittable(Snowflake) = .omit,
 position: Omittable(i64) = .omit,
-permission_overwrites: Omittable([]const deanson.Partial(PermissionOverwrite)) = .omit,
+permission_overwrites: Omittable([]const jconfig.Partial(PermissionOverwrite)) = .omit,
 name: Omittable(?[]const u8) = .omit,
 topic: Omittable(?[]const u8) = .omit,
 nsfw: Omittable(bool) = .omit,
@@ -43,7 +43,7 @@ default_sort_order: Omittable(?SortOrder) = .omit,
 default_forum_layout: Omittable(ForumLayout) = .omit,
 newly_created: Omittable(bool) = .omit,
 
-pub const jsonStringify = deanson.stringifyWithOmit;
+pub const jsonStringify = jconfig.stringifyWithOmit;
 
 pub const Type = enum {
     guild_text,
@@ -60,7 +60,7 @@ pub const Type = enum {
     guild_forum,
     guild_media,
 
-    pub const jsonStringify = model.deanson.stringifyEnumAsInt;
+    pub const jsonStringify = jconfig.stringifyEnumAsInt;
 };
 
 pub const PermissionOverwrite = struct {
@@ -69,7 +69,7 @@ pub const PermissionOverwrite = struct {
         role,
         member,
 
-        pub const jsonStringify = model.deanson.stringifyEnumAsInt;
+        pub const jsonStringify = jconfig.stringifyEnumAsInt;
     },
     allow: []const u8,
     deny: []const u8,
@@ -108,7 +108,7 @@ pub const ThreadMetadata = struct {
     invitable: Omittable(bool) = .omit,
     create_timestamp: Omittable(model.IsoTime) = .omit,
 
-    pub const jsonStringify = deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const ThreadMember = struct {
@@ -118,7 +118,7 @@ pub const ThreadMember = struct {
     flags: ThreadMember.Flags,
     member: Omittable(Member) = .omit,
 
-    pub const jsonStringify = deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 
     pub const Flags = packed struct {
         notifications: bool = false,
@@ -131,7 +131,7 @@ pub const VideoQualityMode = enum(u2) {
     auto = 1,
     full = 2,
 
-    pub const jsonStringify = deanson.stringifyEnumAsInt;
+    pub const jsonStringify = jconfig.stringifyEnumAsInt;
 };
 
 pub const Tag = struct {

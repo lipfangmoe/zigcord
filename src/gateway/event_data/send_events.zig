@@ -1,18 +1,18 @@
 const deancord = @import("../../root.zig");
 const model = deancord.model;
-const deanson = deancord.model.deanson;
+const jconfig = deancord.jconfig;
 const receive_events = deancord.gateway.event_data.receive_events;
 
 pub const Identify = struct {
     token: []const u8,
     properties: Connection,
-    compress: deanson.Omittable(bool) = .omit,
-    large_threshold: deanson.Omittable(i64) = .omit,
-    shard: deanson.Omittable([2]i64) = .omit,
-    presence: deanson.Omittable(receive_events.PresenceUpdate) = .omit,
+    compress: jconfig.Omittable(bool) = .omit,
+    large_threshold: jconfig.Omittable(i64) = .omit,
+    shard: jconfig.Omittable([2]i64) = .omit,
+    presence: jconfig.Omittable(receive_events.PresenceUpdate) = .omit,
     intents: model.Intents,
 
-    pub const jsonStringify = deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 
     pub const Connection = struct {
         os: []const u8,
@@ -31,13 +31,13 @@ pub const Heartbeat = ?i64;
 
 pub const RequestGuildMembers = struct {
     guild_id: model.Snowflake,
-    query: deanson.Omittable([]const u8) = .omit,
+    query: jconfig.Omittable([]const u8) = .omit,
     limit: i64,
-    presences: deanson.Omittable(bool) = .omit,
-    user_ids: deanson.Omittable([]const model.Snowflake) = .omit,
-    nonce: deanson.Omittable([]const u8) = .omit,
+    presences: jconfig.Omittable(bool) = .omit,
+    user_ids: jconfig.Omittable([]const model.Snowflake) = .omit,
+    nonce: jconfig.Omittable([]const u8) = .omit,
 
-    pub const jsonStringify = deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const UpdateVoiceState = struct {

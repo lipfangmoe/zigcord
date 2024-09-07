@@ -8,7 +8,6 @@ pub const User = @import("./model/User.zig");
 pub const guild = @import("./model/guild.zig");
 pub const Snowflake = @import("./model/snowflake.zig").Snowflake;
 pub const PackedFlagsMixin = @import("./model/flags.zig").PackedFlagsMixin;
-pub const deanson = @import("./model/deanson.zig");
 pub const AuditLog = @import("./model/AuditLog.zig");
 pub const Message = @import("./model/Message.zig");
 pub const AutoModerationRule = @import("./model/AutoModerationRule.zig");

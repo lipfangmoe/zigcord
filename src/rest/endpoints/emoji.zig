@@ -74,8 +74,8 @@ pub const CreateGuildEmojiBody = struct {
 };
 
 pub const ModifyGuildEmojiBody = struct {
-    name: model.deanson.Omittable([]const u8) = .omit,
-    roles: model.deanson.Omittable(?[]const model.Snowflake) = .omit,
+    name: model.jconfig.Omittable([]const u8) = .omit,
+    roles: model.jconfig.Omittable(?[]const model.Snowflake) = .omit,
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = model.jconfig.stringifyWithOmit;
 };

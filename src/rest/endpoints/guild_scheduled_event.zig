@@ -2,7 +2,7 @@ const std = @import("std");
 const deancord = @import("../../root.zig");
 const model = deancord.model;
 const rest = deancord.rest;
-const Omittable = model.deanson.Omittable;
+const Omittable = model.jconfig.Omittable;
 
 pub fn listScheduledEventsForGuild(
     client: *rest.Client,
@@ -97,7 +97,7 @@ pub const CreateGuildScheduledEventBody = struct {
     scheduled_start_time: model.IsoTime,
     scheduled_end_time: model.IsoTime,
 
-    pub usingnamespace model.deanson.OmittableJsonMixin(@This());
+    pub usingnamespace model.jconfig.OmittableJsonMixin(@This());
 };
 
 pub const ModifyGuildScheduledEventBody = struct {
@@ -112,7 +112,7 @@ pub const ModifyGuildScheduledEventBody = struct {
     status: Omittable(model.GuildScheduledEvent.EventStatus) = .omit,
     image: Omittable(model.ImageData) = .omit,
 
-    pub usingnamespace model.deanson.OmittableJsonMixin(@This());
+    pub usingnamespace model.jconfig.OmittableJsonMixin(@This());
 };
 
 pub const GetGuildScheduledEventUsersQuery = struct {

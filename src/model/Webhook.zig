@@ -1,6 +1,6 @@
 const deancord = @import("../root.zig");
 const model = deancord.model;
-const deanson = model.deanson;
+const deanson = model.jconfig;
 
 id: model.Snowflake,
 type: Type,

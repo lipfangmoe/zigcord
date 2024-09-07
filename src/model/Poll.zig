@@ -1,25 +1,27 @@
 const std = @import("std");
 const deancord = @import("../root.zig");
+const jconfig = deancord.jconfig;
 const model = deancord.model;
 const Snowflake = model.Snowflake;
-const deanson = model.deanson;
 
 question: Media,
 answers: Answer,
 expiry: ?model.IsoTime,
 allow_multiselect: bool,
 layout_type: i64,
-results: deanson.Omittable(Results) = .omit,
+results: jconfig.Omittable(Results) = .omit,
+
+pub const jsonStringify = jconfig.stringifyWithOmit;
 
 pub const Media = struct {
-    text: deanson.Omittable([]const u8) = .omit,
-    emoji: deanson.Omittable(deanson.Partial(model.Emoji)) = .omit,
+    text: jconfig.Omittable([]const u8) = .omit,
+    emoji: jconfig.Omittable(jconfig.Partial(model.Emoji)) = .omit,
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const Answer = struct {
-    answer_id: deanson.Omittable(i64) = .omit,
+    answer_id: jconfig.Omittable(i64) = .omit,
     poll_media: Media,
 };
 
@@ -33,5 +35,3 @@ pub const Results = struct {
         me_voted: bool,
     };
 };
-
-pub const jsonStringify = model.deanson.stringifyWithOmit;

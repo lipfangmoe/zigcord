@@ -1,17 +1,17 @@
 const std = @import("std");
 const model = @import("../root.zig").model;
+const jconfig = @import("../root.zig").jconfig;
 const Snowflake = model.Snowflake;
-const deanson = model.deanson;
 
 pub const Guild = MaybeAvailable(AvailableGuild);
-pub const PartialGuild = MaybeAvailable(deanson.Partial(AvailableGuild));
+pub const PartialGuild = MaybeAvailable(jconfig.Partial(AvailableGuild));
 
 pub fn MaybeAvailable(comptime AvailableT: type) type {
     return union(enum) {
         available: AvailableT,
         unavailable: UnavailableGuild,
 
-        pub const jsonStringify = model.deanson.stringifyUnionInline;
+        pub const jsonStringify = model.jconfig.stringifyUnionInline;
 
         pub fn jsonParse(alloc: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !MaybeAvailable(AvailableT) {
             const value = try std.json.innerParse(std.json.Value, alloc, source, options);
@@ -45,18 +45,18 @@ pub const AvailableGuild = struct {
     name: []const u8,
     icon: ?[]const u8,
     /// used for guild templates
-    icon_hash: deanson.Omittable(?[]const u8) = .omit,
+    icon_hash: jconfig.Omittable(?[]const u8) = .omit,
     splash: ?[]const u8,
     discovery_splash: ?[]const u8,
     /// true if the authenticated user is the owner of the guild
-    owner: deanson.Omittable(bool) = .omit,
+    owner: jconfig.Omittable(bool) = .omit,
     owner_id: Snowflake,
-    permissions: deanson.Omittable([]const u8) = .omit,
-    region: deanson.Omittable(?[]const u8) = .omit,
+    permissions: jconfig.Omittable([]const u8) = .omit,
+    region: jconfig.Omittable(?[]const u8) = .omit,
     afk_channel_id: ?Snowflake,
     afk_timeout: i64,
-    widget_enabled: deanson.Omittable(bool) = .omit,
-    widget_channel_id: deanson.Omittable(?Snowflake) = .omit,
+    widget_enabled: jconfig.Omittable(bool) = .omit,
+    widget_channel_id: jconfig.Omittable(?Snowflake) = .omit,
     verification_level: VerificationLevel,
     default_message_notifications: MessageNotificationLevel,
     explicit_content_filter: ExplicitContentFilterLevel,
@@ -69,33 +69,33 @@ pub const AvailableGuild = struct {
     system_channel_id: ?Snowflake,
     system_channel_flags: SystemChannelFlags,
     rules_channel_id: ?Snowflake,
-    max_presences: deanson.Omittable(?i64) = .omit,
-    max_members: deanson.Omittable(i64) = .omit,
+    max_presences: jconfig.Omittable(?i64) = .omit,
+    max_members: jconfig.Omittable(i64) = .omit,
     vanity_url_code: ?[]const u8,
     description: ?[]const u8,
     banner: ?[]const u8,
     premium_tier: PremiumTier,
-    premium_subscription_count: deanson.Omittable(i64) = .omit,
+    premium_subscription_count: jconfig.Omittable(i64) = .omit,
     preferred_locale: []const u8,
     public_updates_channel_id: ?Snowflake,
-    max_video_channel_users: deanson.Omittable(i64) = .omit,
-    max_stage_video_channel_users: deanson.Omittable(i64) = .omit,
-    approximate_member_count: deanson.Omittable(i64) = .omit,
-    approximate_presence_count: deanson.Omittable(i64) = .omit,
-    welcome_screen: deanson.Omittable(WelcomeScreen) = .omit,
+    max_video_channel_users: jconfig.Omittable(i64) = .omit,
+    max_stage_video_channel_users: jconfig.Omittable(i64) = .omit,
+    approximate_member_count: jconfig.Omittable(i64) = .omit,
+    approximate_presence_count: jconfig.Omittable(i64) = .omit,
+    welcome_screen: jconfig.Omittable(WelcomeScreen) = .omit,
     nsfw_level: NsfwLevel,
-    stickers: deanson.Omittable([]const model.Sticker) = .omit,
+    stickers: jconfig.Omittable([]const model.Sticker) = .omit,
     premium_progress_bar_enabled: bool,
     safety_alerts_channel_id: ?Snowflake,
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = model.jconfig.stringifyWithOmit;
 };
 
 pub const UnavailableGuild = struct {
-    id: deanson.Omittable(model.Snowflake) = .omit,
-    unavailable: deanson.Omittable(bool) = .omit,
+    id: jconfig.Omittable(model.Snowflake) = .omit,
+    unavailable: jconfig.Omittable(bool) = .omit,
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = model.jconfig.stringifyWithOmit;
 };
 
 pub const VerificationLevel = enum {
@@ -110,14 +110,14 @@ pub const VerificationLevel = enum {
     /// must have a verified phone number
     very_high,
 
-    pub const jsonStringify = model.deanson.stringifyEnumAsInt;
+    pub const jsonStringify = model.jconfig.stringifyEnumAsInt;
 };
 
 pub const MessageNotificationLevel = enum {
     all_messages,
     only_mentions,
 
-    pub const jsonStringify = model.deanson.stringifyEnumAsInt;
+    pub const jsonStringify = model.jconfig.stringifyEnumAsInt;
 };
 
 pub const ExplicitContentFilterLevel = enum {
@@ -125,14 +125,14 @@ pub const ExplicitContentFilterLevel = enum {
     members_without_roles,
     all_members,
 
-    pub const jsonStringify = model.deanson.stringifyEnumAsInt;
+    pub const jsonStringify = model.jconfig.stringifyEnumAsInt;
 };
 
 pub const MfaLevel = enum {
     none,
     elevated,
 
-    pub const jsonStringify = model.deanson.stringifyEnumAsInt;
+    pub const jsonStringify = model.jconfig.stringifyEnumAsInt;
 };
 
 pub const PremiumTier = enum {
@@ -141,7 +141,7 @@ pub const PremiumTier = enum {
     tier_2,
     tier_3,
 
-    pub const jsonStringify = model.deanson.stringifyEnumAsInt;
+    pub const jsonStringify = model.jconfig.stringifyEnumAsInt;
 };
 
 pub const NsfwLevel = enum {
@@ -150,7 +150,7 @@ pub const NsfwLevel = enum {
     safe,
     age_restricted,
 
-    pub const jsonStringify = model.deanson.stringifyEnumAsInt;
+    pub const jsonStringify = model.jconfig.stringifyEnumAsInt;
 };
 
 pub const WelcomeScreen = struct {
@@ -187,8 +187,8 @@ pub const Widget = struct {
     id: model.Snowflake,
     name: []const u8,
     instant_invite: ?[]const u8,
-    channels: []const deanson.Partial(model.Channel),
-    members: []const deanson.Partial(model.User),
+    channels: []const jconfig.Partial(model.Channel),
+    members: []const jconfig.Partial(model.User),
     presence_count: i64,
 };
 
@@ -225,13 +225,13 @@ pub const Onboarding = struct {
         id: Snowflake,
         channel_ids: []const Snowflake,
         role_ids: []const Snowflake,
-        emoji: deanson.Omittable(model.Emoji) = .omit,
-        emoji_id: deanson.Omittable(Snowflake) = .omit,
-        emoji_animated: deanson.Omittable(bool) = .omit,
+        emoji: jconfig.Omittable(model.Emoji) = .omit,
+        emoji_id: jconfig.Omittable(Snowflake) = .omit,
+        emoji_animated: jconfig.Omittable(bool) = .omit,
         title: []const u8,
         description: ?[]const u8,
 
-        pub usingnamespace model.deanson.OmittableJsonMixin(@This());
+        pub usingnamespace jconfig.OmittableJsonMixin(@This());
     };
 
     pub const Mode = enum(u1) {
@@ -261,18 +261,18 @@ pub const Integration = struct {
     name: []const u8,
     type: []const u8,
     enabled: bool,
-    syncing: deanson.Omittable(bool) = .omit,
-    role_id: deanson.Omittable(model.Snowflake) = .omit,
-    enable_emoticons: deanson.Omittable(bool) = .omit,
-    expire_behavior: deanson.Omittable(ExpireBehavior) = .omit,
-    expire_grace_period: deanson.Omittable(i64) = .omit,
-    user: deanson.Omittable(model.User) = .omit,
-    account: deanson.Omittable(Account) = .omit,
-    synced_at: deanson.Omittable([]const u8) = .omit,
-    subscriber_count: deanson.Omittable(i64) = .omit,
-    revoked: deanson.Omittable(bool) = .omit,
-    application: deanson.Omittable(model.Application) = .omit,
-    scopes: deanson.Omittable([]const []const u8) = .omit,
+    syncing: jconfig.Omittable(bool) = .omit,
+    role_id: jconfig.Omittable(model.Snowflake) = .omit,
+    enable_emoticons: jconfig.Omittable(bool) = .omit,
+    expire_behavior: jconfig.Omittable(ExpireBehavior) = .omit,
+    expire_grace_period: jconfig.Omittable(i64) = .omit,
+    user: jconfig.Omittable(model.User) = .omit,
+    account: jconfig.Omittable(Account) = .omit,
+    synced_at: jconfig.Omittable([]const u8) = .omit,
+    subscriber_count: jconfig.Omittable(i64) = .omit,
+    revoked: jconfig.Omittable(bool) = .omit,
+    application: jconfig.Omittable(model.Application) = .omit,
+    scopes: jconfig.Omittable([]const []const u8) = .omit,
 
     pub const ExpireBehavior = enum(u1) {
         remove_role = 0,
@@ -287,17 +287,17 @@ pub const Integration = struct {
 
 pub const Member = struct {
     /// The User object for this guild member
-    user: deanson.Omittable(model.User) = .omit,
+    user: jconfig.Omittable(model.User) = .omit,
     /// The nickname this user uses in this guild
-    nick: deanson.Omittable(?[]const u8) = .omit,
+    nick: jconfig.Omittable(?[]const u8) = .omit,
     /// A guild-specific avatar hash
-    avatar: deanson.Omittable(?[]const u8) = .omit,
+    avatar: jconfig.Omittable(?[]const u8) = .omit,
     /// The role ids that this user has
     roles: []Snowflake,
     /// when the user joined the guild
     joined_at: model.IsoTime,
     /// when the user started boosting the guild
-    premium_since: deanson.Omittable(?model.IsoTime) = .omit,
+    premium_since: jconfig.Omittable(?model.IsoTime) = .omit,
     /// true if this user is deafened in voice channels
     deaf: bool,
     /// true if this user is muted in voice channels
@@ -305,13 +305,13 @@ pub const Member = struct {
     /// guild member flags
     flags: Flags,
     /// true if the user has not passed the guild's membership screening requirements
-    pending: deanson.Omittable(bool) = .omit,
+    pending: jconfig.Omittable(bool) = .omit,
     /// returned inside of interaction objects, permissions of the member in the interacted channel
-    permissions: deanson.Omittable([]const u8) = .omit,
+    permissions: jconfig.Omittable([]const u8) = .omit,
     /// when the user's timeout will expire. may be in the past; if so, the user is not timed out.
-    communication_disabled_until: deanson.Omittable(?model.IsoTime) = .omit,
+    communication_disabled_until: jconfig.Omittable(?model.IsoTime) = .omit,
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = model.jconfig.stringifyWithOmit;
 
     pub const Flags = packed struct {
         did_rejoin: bool = false,

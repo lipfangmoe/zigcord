@@ -1,43 +1,43 @@
 const std = @import("std");
 const model = @import("../root.zig").model;
 const command = model.interaction.command;
-const deanson = model.deanson;
+const jconfig = @import("../root.zig").jconfig;
 
 application_commands: []const model.interaction.command.ApplicationCommand,
 audit_log_entries: []const Entry,
 auto_moderation_rules: []const model.AutoModerationRule,
 guild_scheduled_events: []const model.GuildScheduledEvent,
-integrations: []const deanson.Partial(model.guild.Integration),
+integrations: []const jconfig.Partial(model.guild.Integration),
 threads: []const model.Channel,
 users: []const model.User,
 webhooks: []const model.Webhook,
 
 pub const Entry = struct {
     target_id: ?[]const u8,
-    changes: deanson.Omittable([]const std.json.Value) = .omit,
+    changes: jconfig.Omittable([]const std.json.Value) = .omit,
     user_id: ?model.Snowflake,
     id: model.Snowflake,
     action_type: Event,
-    options: deanson.Omittable(OptionalInfo) = .omit,
-    reason: deanson.Omittable([]const u8) = .omit,
+    options: jconfig.Omittable(OptionalInfo) = .omit,
+    reason: jconfig.Omittable([]const u8) = .omit,
 
-    pub const jsonStringify = deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 
     pub const OptionalInfo = struct {
-        application_id: deanson.Omittable(model.Snowflake) = .omit,
-        auto_moderation_rule_name: deanson.Omittable([]const u8) = .omit,
-        auto_moderation_rule_trigger_type: deanson.Omittable([]const u8) = .omit,
-        channel_id: deanson.Omittable(model.Snowflake) = .omit,
-        count: deanson.Omittable([]const u8) = .omit,
-        delete_member_days: deanson.Omittable([]const u8) = .omit,
-        id: deanson.Omittable(model.Snowflake) = .omit,
-        members_removed: deanson.Omittable([]const u8) = .omit,
-        message_id: deanson.Omittable(model.Snowflake) = .omit,
-        role_name: deanson.Omittable([]const u8) = .omit,
-        type: deanson.Omittable([]const u8) = .omit,
-        integration_type: deanson.Omittable([]const u8) = .omit,
+        application_id: jconfig.Omittable(model.Snowflake) = .omit,
+        auto_moderation_rule_name: jconfig.Omittable([]const u8) = .omit,
+        auto_moderation_rule_trigger_type: jconfig.Omittable([]const u8) = .omit,
+        channel_id: jconfig.Omittable(model.Snowflake) = .omit,
+        count: jconfig.Omittable([]const u8) = .omit,
+        delete_member_days: jconfig.Omittable([]const u8) = .omit,
+        id: jconfig.Omittable(model.Snowflake) = .omit,
+        members_removed: jconfig.Omittable([]const u8) = .omit,
+        message_id: jconfig.Omittable(model.Snowflake) = .omit,
+        role_name: jconfig.Omittable([]const u8) = .omit,
+        type: jconfig.Omittable([]const u8) = .omit,
+        integration_type: jconfig.Omittable([]const u8) = .omit,
 
-        pub const jsonStringify = deanson.stringifyWithOmit;
+        pub const jsonStringify = jconfig.stringifyWithOmit;
     };
 };
 
@@ -108,5 +108,5 @@ pub const Event = enum(u64) {
 
     _,
 
-    pub const jsonStringify = deanson.stringifyEnumAsInt;
+    pub const jsonStringify = jconfig.stringifyEnumAsInt;
 };

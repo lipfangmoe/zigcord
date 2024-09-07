@@ -2,7 +2,7 @@ const deancord = @import("../../root.zig");
 const std = @import("std");
 const model = deancord.model;
 const rest = deancord.rest;
-const deanson = model.deanson;
+const jconfig = deancord.jconfig;
 
 pub fn createWebhook(
     client: *rest.Client,
@@ -204,17 +204,17 @@ pub fn deleteWebhookMessage(
 
 pub const CreateWebhookBody = struct {
     name: []const u8,
-    avatar: deanson.Omittable(?model.ImageData) = .omit,
+    avatar: jconfig.Omittable(?model.ImageData) = .omit,
 
-    pub const jsonStringify = deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const ModifyWebhookBody = struct {
-    name: deanson.Omittable([]const u8) = .omit,
-    avatar: deanson.Omittable(?model.ImageData) = .omit,
-    channel_id: deanson.Omittable(model.Snowflake) = .omit,
+    name: jconfig.Omittable([]const u8) = .omit,
+    avatar: jconfig.Omittable(?model.ImageData) = .omit,
+    channel_id: jconfig.Omittable(model.Snowflake) = .omit,
 
-    pub const jsonStringify = deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const ExecuteWebhookQuery = struct {
@@ -231,7 +231,7 @@ pub const ExecuteWebhookFormBody = struct {
     allowed_mentions: ?model.Message.AllowedMentions = null,
     components: ?[]const model.MessageComponent = null,
     files: ?[]const ?std.io.AnyReader = null,
-    attachments: ?[]const deanson.Partial(model.Message.Attachment) = null,
+    attachments: ?[]const jconfig.Partial(model.Message.Attachment) = null,
     flags: ?model.Message.Flags = null,
     thread_name: ?[]const u8 = null,
     applied_tags: ?[]const model.Snowflake = null,
@@ -257,7 +257,7 @@ pub const EditWebhookMessageFormBody = struct {
     allowed_mentions: ?model.Message.AllowedMentions = null,
     components: ?[]const model.MessageComponent = null,
     files: ?[]const ?std.io.AnyReader = null,
-    attachments: ?[]const deanson.Partial(model.Message.Attachment) = null,
+    attachments: ?[]const jconfig.Partial(model.Message.Attachment) = null,
 
     pub fn format(self: EditWebhookMessageFormBody, comptime fmt: []const u8, _: std.fmt.FormatOptions, writer: anytype) !void {
         if (comptime !std.mem.eql(u8, fmt, "form")) {

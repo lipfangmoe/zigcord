@@ -1,8 +1,9 @@
 const std = @import("std");
 const model = @import("../../root.zig").model;
+const jconfig = @import("../../root.zig").jconfig;
 const Snowflake = model.Snowflake;
 const ApplicationCommandOption = model.interaction.command_option.ApplicationCommandOption;
-const Omittable = model.deanson.Omittable;
+const Omittable = jconfig.Omittable;
 const Permissions = model.Permissions;
 
 // TODO - sometimes this contains name_localized and description_localized fields.
@@ -24,7 +25,7 @@ pub const ApplicationCommand = struct {
     nsfw: Omittable(bool) = .omit,
     version: Snowflake,
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = model.jconfig.stringifyWithOmit;
 };
 
 pub const ApplicationCommandType = enum(u8) {

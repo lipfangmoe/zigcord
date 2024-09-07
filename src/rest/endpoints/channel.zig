@@ -5,7 +5,7 @@ const rest = deancord.rest;
 const Snowflake = model.Snowflake;
 const RestResult = rest.Client.Result;
 const Client = rest.Client;
-const deanson = model.deanson;
+const deanson = model.jconfig;
 const Omittable = deanson.Omittable;
 const Channel = model.Channel;
 
@@ -695,10 +695,10 @@ pub const EditChannelPermissions = struct {
         role = 0,
         member = 1,
 
-        pub const jsonStringify = model.deanson.stringifyEnumAsInt;
+        pub const jsonStringify = model.jconfig.stringifyEnumAsInt;
     },
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = model.jconfig.stringifyWithOmit;
 };
 
 pub const CreateChannelInvite = struct {
@@ -710,7 +710,7 @@ pub const CreateChannelInvite = struct {
     target_user_id: Omittable(Snowflake) = .omit,
     target_application_id: Omittable(Snowflake) = .omit,
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = model.jconfig.stringifyWithOmit;
 };
 
 pub const StartThreadFromMessage = struct {

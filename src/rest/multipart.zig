@@ -1,6 +1,6 @@
 const std = @import("std");
 const deancord = @import("../root.zig");
-const deanson = deancord.model.deanson;
+const deanson = deancord.model.jconfig;
 
 pub const boundary = "f89767726a7827c6f785b40aee1ca2ade74d951d6a2d50e27cc0f0e5072a12b2";
 
@@ -97,7 +97,7 @@ test "multipart single upload" {
             }
             try writeMultipartFormDataBody(self, "foo", writer);
         }
-        pub const jsonStringify = deancord.model.deanson.stringifyWithOmit;
+        pub const jsonStringify = deancord.model.jconfig.stringifyWithOmit;
     };
 
     const my_upload = "this is my upload";
@@ -133,7 +133,7 @@ test "multipart multi upload" {
             }
             try writeMultipartFormDataBody(self, "foo", writer);
         }
-        pub const jsonStringify = deancord.model.deanson.stringifyWithOmit;
+        pub const jsonStringify = deancord.model.jconfig.stringifyWithOmit;
     };
 
     const my_upload1 = "this is my first upload";
@@ -176,7 +176,7 @@ test "multipart optional single upload - present" {
             }
             try writeMultipartFormDataBody(self, "foo", writer);
         }
-        pub const jsonStringify = deancord.model.deanson.stringifyWithOmit;
+        pub const jsonStringify = deancord.model.jconfig.stringifyWithOmit;
     };
 
     const my_upload = "this is my upload";
@@ -212,7 +212,7 @@ test "multipart optional single upload - null" {
             }
             try writeMultipartFormDataBody(self, "foo", writer);
         }
-        pub const jsonStringify = deancord.model.deanson.stringifyWithOmit;
+        pub const jsonStringify = deancord.model.jconfig.stringifyWithOmit;
     };
 
     const foo = Foo{ .foo = null, .bar = "some string" };
@@ -241,7 +241,7 @@ test "multipart optional multi upload" {
             }
             try writeMultipartFormDataBody(self, "foo", writer);
         }
-        pub const jsonStringify = deancord.model.deanson.stringifyWithOmit;
+        pub const jsonStringify = deancord.model.jconfig.stringifyWithOmit;
     };
 
     const my_upload2 = "this is my second upload";

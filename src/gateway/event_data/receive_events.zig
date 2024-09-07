@@ -1,7 +1,7 @@
 const std = @import("std");
 const deancord = @import("../../root.zig");
 const model = deancord.model;
-const deanson = model.deanson;
+const jconfig = deancord.jconfig;
 
 pub const Hello = struct {
     heartbeat_interval: u64,
@@ -13,10 +13,10 @@ pub const Ready = struct {
     guilds: []const model.guild.UnavailableGuild,
     session_id: []const u8,
     resume_gateway_url: []const u8,
-    shard: deanson.Omittable([2]i64) = .omit,
+    shard: jconfig.Omittable([2]i64) = .omit,
     application: PartialApplication,
 
-    pub const jsonStringify = deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 
     pub const PartialApplication = struct {
         id: model.Snowflake,
@@ -46,14 +46,14 @@ pub const AutoModerationActionExecution = struct {
     rule_id: model.Snowflake,
     rule_trigger_type: model.AutoModerationRule.TriggerType,
     user_id: model.Snowflake,
-    channel_id: deanson.Omittable(model.Snowflake) = .omit,
-    message_id: deanson.Omittable(model.Snowflake) = .omit,
-    alert_system_message_id: deanson.Omittable(model.Snowflake) = .omit,
+    channel_id: jconfig.Omittable(model.Snowflake) = .omit,
+    message_id: jconfig.Omittable(model.Snowflake) = .omit,
+    alert_system_message_id: jconfig.Omittable(model.Snowflake) = .omit,
     content: []const u8,
     matched_keyword: ?[]const u8,
     matched_content: ?[]const u8,
 
-    pub const jsonStringify = deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const ChannelCreate = model.Channel;
@@ -63,11 +63,11 @@ pub const ChannelUpdate = model.Channel;
 pub const ChannelDelete = model.Channel;
 
 pub const ChannelPinsUpdate = struct {
-    guild_id: deanson.Omittable(model.Snowflake) = .omit,
+    guild_id: jconfig.Omittable(model.Snowflake) = .omit,
     channel_id: model.Snowflake,
-    last_pin_timestamp: deanson.Omittable(?model.IsoTime) = .omit,
+    last_pin_timestamp: jconfig.Omittable(?model.IsoTime) = .omit,
 
-    pub const jsonStringify = deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const ThreadCreate = model.Channel;
@@ -76,41 +76,41 @@ pub const ThreadUpdate = model.Channel;
 
 pub const ThreadDelete = struct {
     id: model.Snowflake,
-    guild_id: deanson.Omittable(model.Snowflake) = .omit,
-    parent_id: deanson.Omittable(model.Snowflake) = .omit,
+    guild_id: jconfig.Omittable(model.Snowflake) = .omit,
+    parent_id: jconfig.Omittable(model.Snowflake) = .omit,
     type: model.Channel.Type,
 
-    pub const jsonStringify = deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const ThreadListSync = struct {
     guild_id: model.Snowflake,
-    channel_ids: deanson.Omittable([]const model.Snowflake) = .omit,
+    channel_ids: jconfig.Omittable([]const model.Snowflake) = .omit,
     threads: []const model.Channel,
     members: []const model.Channel.ThreadMember,
 
-    pub const jsonStringify = deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const ThreadMemberUpdate = struct {
     guild_id: model.Snowflake,
-    id: deanson.Omittable(model.Snowflake) = .omit,
-    user_id: deanson.Omittable(model.Snowflake) = .omit,
+    id: jconfig.Omittable(model.Snowflake) = .omit,
+    user_id: jconfig.Omittable(model.Snowflake) = .omit,
     join_timestamp: model.IsoTime,
     flags: model.Channel.ThreadMember.Flags,
-    member: deanson.Omittable(model.guild.Member) = .omit,
+    member: jconfig.Omittable(model.guild.Member) = .omit,
 
-    pub const jsonStringify = deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const ThreadMembersUpdate = struct {
     id: model.Snowflake,
     guild_id: model.Snowflake,
     member_count: i64,
-    added_members: deanson.Omittable([]const model.Channel.ThreadMember) = .omit,
-    removed_members: deanson.Omittable([]const model.Snowflake) = .omit,
+    added_members: jconfig.Omittable([]const model.Channel.ThreadMember) = .omit,
+    removed_members: jconfig.Omittable([]const model.Snowflake) = .omit,
 
-    pub const jsonStringify = deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const EntitlementCreate = model.Entitlement;
@@ -124,17 +124,17 @@ pub const GuildCreate = model.guild.MaybeAvailable(struct {
 
     joined_at: model.IsoTime,
     large: bool,
-    unavailable: deanson.Omittable(bool) = .omit,
+    unavailable: jconfig.Omittable(bool) = .omit,
     member_count: i64,
-    voice_states: []const deanson.Partial(model.voice.VoiceState),
+    voice_states: []const jconfig.Partial(model.voice.VoiceState),
     members: []const model.guild.Member,
     channels: []const model.Channel,
     threads: []const model.Channel,
-    presences: []const deanson.Partial(PresenceUpdate),
+    presences: []const jconfig.Partial(PresenceUpdate),
     stage_instances: []const model.StageInstance,
     guild_scheduled_events: []const model.GuildScheduledEvent,
 
-    pub usingnamespace deanson.InlineSingleStructFieldJsonMixin(@This(), "guild");
+    pub usingnamespace jconfig.InlineSingleStructFieldMixin(@This(), "guild");
 });
 
 pub const GuildUpdate = model.guild.Guild;
@@ -145,7 +145,7 @@ pub const GuildAuditLogEntryCreate = struct {
     audit_log_entry: model.AuditLog.Entry,
     guild_id: model.Snowflake,
 
-    pub usingnamespace deanson.InlineSingleStructFieldJsonMixin(GuildAuditLogEntryCreate, "audit_log_entry");
+    pub usingnamespace jconfig.InlineSingleStructFieldMixin(GuildAuditLogEntryCreate, "audit_log_entry");
 };
 
 pub const GuildBanAdd = struct {
@@ -176,7 +176,7 @@ pub const GuildMemberAdd = struct {
     guild_member: model.guild.Member,
     guild_id: model.Snowflake,
 
-    pub usingnamespace deanson.InlineSingleStructFieldJsonMixin(@This(), "guild_member");
+    pub usingnamespace jconfig.InlineSingleStructFieldMixin(@This(), "guild_member");
 };
 
 pub const GuildMemberRemove = struct {
@@ -188,18 +188,18 @@ pub const GuildMemberUpdate = struct {
     guild_id: model.Snowflake,
     roles: []const model.Snowflake,
     user: model.User,
-    nick: deanson.Omittable(?[]const u8) = .omit,
+    nick: jconfig.Omittable(?[]const u8) = .omit,
     avatar: ?[]const u8,
     joined_at: ?model.IsoTime,
-    premium_since: deanson.Omittable(?model.IsoTime) = .omit,
-    deaf: deanson.Omittable(bool) = .omit,
-    mute: deanson.Omittable(bool) = .omit,
-    pending: deanson.Omittable(bool) = .omit,
-    communications_disabled_until: deanson.Omittable(?model.IsoTime) = .omit,
+    premium_since: jconfig.Omittable(?model.IsoTime) = .omit,
+    deaf: jconfig.Omittable(bool) = .omit,
+    mute: jconfig.Omittable(bool) = .omit,
+    pending: jconfig.Omittable(bool) = .omit,
+    communications_disabled_until: jconfig.Omittable(?model.IsoTime) = .omit,
     flags: model.guild.Member.Flags,
     avatar_decoration_data: model.User.AvatarDecorationData,
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = model.jconfig.stringifyWithOmit;
 };
 
 pub const GuildMembersChunk = struct {
@@ -207,11 +207,11 @@ pub const GuildMembersChunk = struct {
     members: []const model.guild.Member,
     chunk_index: i64,
     chunk_count: i64,
-    not_found: deanson.Omittable([]const std.json.Value) = .omit,
-    presences: deanson.Omittable([]const PresenceUpdate) = .omit,
-    nonce: deanson.Omittable([]const u8) = .omit,
+    not_found: jconfig.Omittable([]const std.json.Value) = .omit,
+    presences: jconfig.Omittable([]const PresenceUpdate) = .omit,
+    nonce: jconfig.Omittable([]const u8) = .omit,
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = model.jconfig.stringifyWithOmit;
 };
 
 pub const GuildRoleCreate = struct {
@@ -251,22 +251,22 @@ pub const IntegrationCreate = struct {
     integration: model.guild.Integration,
     guild_id: model.Snowflake,
 
-    pub usingnamespace deanson.InlineSingleStructFieldJsonMixin(@This(), "integration");
+    pub usingnamespace jconfig.InlineSingleStructFieldMixin(@This(), "integration");
 };
 
 pub const IntegrationUpdate = struct {
     integration: model.guild.Integration,
     guild_id: model.Snowflake,
 
-    pub usingnamespace deanson.InlineSingleStructFieldJsonMixin(@This(), "integration");
+    pub usingnamespace jconfig.InlineSingleStructFieldMixin(@This(), "integration");
 };
 
 pub const IntegrationDelete = struct {
     id: model.Snowflake,
     guild_id: model.Snowflake,
-    application_id: deanson.Omittable(model.Snowflake) = .omit,
+    application_id: jconfig.Omittable(model.Snowflake) = .omit,
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = model.jconfig.stringifyWithOmit;
 };
 
 pub const InteractionCreate = model.interaction.Interaction;
@@ -275,117 +275,117 @@ pub const InviteCreate = struct {
     channel_id: model.Snowflake,
     code: []const u8,
     created_at: model.IsoTime,
-    guild_id: deanson.Omittable(model.Snowflake) = .omit,
-    inviter: deanson.Omittable(model.User) = .omit,
+    guild_id: jconfig.Omittable(model.Snowflake) = .omit,
+    inviter: jconfig.Omittable(model.User) = .omit,
     max_age: i64,
     max_uses: i64,
-    target_type: deanson.Omittable(model.Invite.Type) = .omit,
-    target_user: deanson.Omittable(model.User) = .omit,
-    target_application: deanson.Omittable(model.Application) = .omit,
+    target_type: jconfig.Omittable(model.Invite.Type) = .omit,
+    target_user: jconfig.Omittable(model.User) = .omit,
+    target_application: jconfig.Omittable(model.Application) = .omit,
     temporary: bool,
     uses: i64,
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = model.jconfig.stringifyWithOmit;
 };
 
 pub const InviteDelete = struct {
     channel_id: model.Snowflake,
-    guild_id: deanson.Omittable(model.Snowflake) = .omit,
+    guild_id: jconfig.Omittable(model.Snowflake) = .omit,
     code: []const u8,
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = model.jconfig.stringifyWithOmit;
 };
 
 pub const MessageCreate = struct {
     message: model.Message,
-    guild_id: deanson.Omittable(model.Snowflake) = .omit,
-    member: deanson.Omittable(deanson.Partial(model.guild.Member)) = .omit,
+    guild_id: jconfig.Omittable(model.Snowflake) = .omit,
+    member: jconfig.Omittable(jconfig.Partial(model.guild.Member)) = .omit,
     mentions: []const UserWithPartialMember,
 
-    pub usingnamespace deanson.InlineSingleStructFieldJsonMixin(@This(), "message");
+    pub usingnamespace jconfig.InlineSingleStructFieldMixin(@This(), "message");
 
     pub const UserWithPartialMember = struct {
         user: model.User,
-        member: deanson.Partial(model.guild.Member),
+        member: jconfig.Partial(model.guild.Member),
 
-        pub usingnamespace deanson.InlineSingleStructFieldJsonMixin(@This(), "user");
+        pub usingnamespace jconfig.InlineSingleStructFieldMixin(@This(), "user");
     };
 };
 
 pub const MessageUpdate = struct {
     message: model.Message,
-    guild_id: deanson.Omittable(model.Snowflake) = .omit,
-    member: deanson.Omittable(deanson.Partial(model.guild.Member)) = .omit,
+    guild_id: jconfig.Omittable(model.Snowflake) = .omit,
+    member: jconfig.Omittable(jconfig.Partial(model.guild.Member)) = .omit,
     mentions: []const UserWithPartialMember,
 
-    pub usingnamespace deanson.InlineSingleStructFieldJsonMixin(@This(), "message");
+    pub usingnamespace jconfig.InlineSingleStructFieldMixin(@This(), "message");
 
     pub const UserWithPartialMember = struct {
         user: model.User,
-        member: deanson.Partial(model.guild.Member),
+        member: jconfig.Partial(model.guild.Member),
 
-        pub usingnamespace deanson.InlineSingleStructFieldJsonMixin(@This(), "user");
+        pub usingnamespace jconfig.InlineSingleStructFieldMixin(@This(), "user");
     };
 };
 
 pub const MessageDelete = struct {
     id: model.Snowflake,
     channel_id: model.Snowflake,
-    guild_id: deanson.Omittable(model.Snowflake),
+    guild_id: jconfig.Omittable(model.Snowflake),
 
-    pub const jsonStringify = deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const MessageDeleteBulk = struct {
     ids: []const model.Snowflake,
     channel_id: model.Snowflake,
-    guild_id: deanson.Omittable(model.Snowflake) = .omit,
+    guild_id: jconfig.Omittable(model.Snowflake) = .omit,
 
-    pub const jsonStringify = deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const MessageReactionAdd = struct {
     user_id: model.Snowflake,
     channel_id: model.Snowflake,
     message_id: model.Snowflake,
-    guild_id: deanson.Omittable(model.Snowflake) = .omit,
-    member: deanson.Omittable(model.guild.Member) = .omit,
-    emoji: deanson.Partial(model.Emoji),
-    message_author_id: deanson.Omittable(model.Snowflake) = .omit,
+    guild_id: jconfig.Omittable(model.Snowflake) = .omit,
+    member: jconfig.Omittable(model.guild.Member) = .omit,
+    emoji: jconfig.Partial(model.Emoji),
+    message_author_id: jconfig.Omittable(model.Snowflake) = .omit,
     burst: bool,
-    burst_colors: deanson.Omittable([]const u8) = .omit,
+    burst_colors: jconfig.Omittable([]const u8) = .omit,
     type: model.Message.Reaction.Type,
 
-    pub const jsonStringify = deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const MessageReactionRemove = struct {
     user_id: model.Snowflake,
     channel_id: model.Snowflake,
     message_id: model.Snowflake,
-    guild_id: deanson.Omittable(model.Snowflake) = .omit,
-    emoji: deanson.Partial(model.Emoji),
+    guild_id: jconfig.Omittable(model.Snowflake) = .omit,
+    emoji: jconfig.Partial(model.Emoji),
     burst: bool,
     type: model.Message.Reaction.Type,
 
-    pub const jsonStringify = deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const MessageReactionRemoveAll = struct {
     channel_id: model.Snowflake,
     message_id: model.Snowflake,
-    guild_id: deanson.Omittable(model.Snowflake) = .omit,
+    guild_id: jconfig.Omittable(model.Snowflake) = .omit,
 
-    pub const jsonStringify = deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const MessageReactionRemoveEmoji = struct {
     channel_id: model.Snowflake,
     message_id: model.Snowflake,
-    guild_id: deanson.Omittable(model.Snowflake) = .omit,
-    emoji: deanson.Partial(model.Emoji),
+    guild_id: jconfig.Omittable(model.Snowflake) = .omit,
+    emoji: jconfig.Partial(model.Emoji),
 
-    pub const jsonStringify = deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const PresenceUpdate = struct {
@@ -402,11 +402,11 @@ pub const PresenceUpdate = struct {
         offline,
     };
     pub const ClientStatus = struct {
-        desktop: deanson.Omittable([]const u8) = .omit,
-        mobile: deanson.Omittable([]const u8) = .omit,
-        web: deanson.Omittable([]const u8) = .omit,
+        desktop: jconfig.Omittable([]const u8) = .omit,
+        mobile: jconfig.Omittable([]const u8) = .omit,
+        web: jconfig.Omittable([]const u8) = .omit,
 
-        pub const jsonStringify = deanson.stringifyWithOmit;
+        pub const jsonStringify = jconfig.stringifyWithOmit;
     };
 };
 
@@ -418,12 +418,12 @@ pub const StageInstanceDelete = model.StageInstance;
 
 pub const TypingStart = struct {
     channel_id: model.Snowflake,
-    guild_id: deanson.Omittable(model.Snowflake) = .omit,
+    guild_id: jconfig.Omittable(model.Snowflake) = .omit,
     user_id: model.Snowflake,
     timestamp: i64,
-    member: deanson.Omittable(model.guild.Member) = .omit,
+    member: jconfig.Omittable(model.guild.Member) = .omit,
 
-    pub const jsonStringify = deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const UserUpdate = model.User;
@@ -432,19 +432,19 @@ pub const VoiceChannelEffectSend = struct {
     channel_id: model.Snowflake,
     guild_id: model.Snowflake,
     user_id: model.Snowflake,
-    emoji: deanson.Omittable(?model.Emoji) = .omit,
-    animation_type: deanson.Omittable(?AnimationType) = .omit,
-    animation_id: deanson.Omittable(i64) = .omit,
-    sound_id: deanson.Omittable(model.Snowflake) = .omit,
-    sound_volume: deanson.Omittable(f64) = .omit,
+    emoji: jconfig.Omittable(?model.Emoji) = .omit,
+    animation_type: jconfig.Omittable(?AnimationType) = .omit,
+    animation_id: jconfig.Omittable(i64) = .omit,
+    sound_id: jconfig.Omittable(model.Snowflake) = .omit,
+    sound_volume: jconfig.Omittable(f64) = .omit,
 
-    pub const jsonStringify = deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 
     pub const AnimationType = enum {
         premium,
         basic,
 
-        pub const jsonStringify = deanson.stringifyEnumAsInt;
+        pub const jsonStringify = jconfig.stringifyEnumAsInt;
     };
 };
 
@@ -465,18 +465,18 @@ pub const MessagePollVoteAdd = struct {
     user_id: model.Snowflake,
     channel_id: model.Snowflake,
     message_id: model.Snowflake,
-    guild_id: deanson.Omittable(model.Snowflake) = .omit,
+    guild_id: jconfig.Omittable(model.Snowflake) = .omit,
     answer_id: i64,
 
-    pub const jsonStringify = deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const MessagePollVoteRemove = struct {
     user_id: model.Snowflake,
     channel_id: model.Snowflake,
     message_id: model.Snowflake,
-    guild_id: deanson.Omittable(model.Snowflake) = .omit,
+    guild_id: jconfig.Omittable(model.Snowflake) = .omit,
     answer_id: i64,
 
-    pub const jsonStringify = deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };

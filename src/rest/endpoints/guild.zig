@@ -1,9 +1,9 @@
-const deancord = @import("../../root.zig");
 const std = @import("std");
+const deancord = @import("../../root.zig");
 const model = deancord.model;
 const rest = deancord.rest;
-const deanson = model.deanson;
-const Omittable = model.deanson.Omittable;
+const jconfig = deancord.jconfig;
+const Omittable = jconfig.Omittable;
 const Guild = model.guild.Guild;
 
 pub fn createGuild(
@@ -484,12 +484,12 @@ pub fn getGuildWidget(
 pub fn getGuildVanityUrl(
     client: *rest.Client,
     guild_id: model.Snowflake,
-) !rest.Client.Result(deanson.Partial(model.Invite)) {
+) !rest.Client.Result(jconfig.Partial(model.Invite)) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/guilds/{}/vanity-url", .{guild_id});
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.request(deanson.Partial(model.Invite), .GET, uri);
+    return client.request(jconfig.Partial(model.Invite), .GET, uri);
 }
 
 /// Because this endpoint is unauthenticated and does not return JSON (it returns a PNG), `std.http.Client.Request` is
@@ -593,19 +593,19 @@ pub fn modifyUserVoiceState(
 
 pub const CreateGuildBody = struct {
     name: []const u8,
-    region: model.deanson.Omittable(?[]const u8) = .omit,
+    region: model.jconfig.Omittable(?[]const u8) = .omit,
     icon: Omittable(?model.ImageData) = .omit,
     verification_level: Omittable(model.guild.VerificationLevel) = .omit,
     default_message_notifications: Omittable(model.guild.MessageNotificationLevel) = .omit,
     explicit_content_Filter: Omittable(model.guild.ExplicitContentFilterLevel) = .omit,
     roles: Omittable([]const model.Role) = .omit,
-    channels: Omittable([]const deanson.Partial(model.Channel)) = .omit,
+    channels: Omittable([]const jconfig.Partial(model.Channel)) = .omit,
     afk_channel_id: Omittable(model.Snowflake) = .omit,
     afk_timeout: Omittable(model.Snowflake) = .omit,
     system_channel_id: Omittable(model.Snowflake) = .omit,
     system_channel_flags: Omittable(model.guild.SystemChannelFlags) = .omit,
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = model.jconfig.stringifyWithOmit;
 };
 
 pub const ModifyGuildBody = struct {
@@ -633,7 +633,7 @@ pub const ModifyGuildBody = struct {
     premium_progress_bar_enabled: Omittable(bool) = .omit,
     safety_alerts_channel_id: Omittable(?model.Snowflake) = .omit,
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = model.jconfig.stringifyWithOmit;
 };
 
 const CreateGuildChannelBody = struct {
@@ -644,7 +644,7 @@ const CreateGuildChannelBody = struct {
     user_limit: Omittable(?i64) = .omit,
     rate_limit_per_user: Omittable(?i64) = .omit,
     position: Omittable(?i64) = .omit,
-    permission_overwrites: Omittable(?[]const deanson.Partial(model.Channel.PermissionOverwrite)) = .omit,
+    permission_overwrites: Omittable(?[]const jconfig.Partial(model.Channel.PermissionOverwrite)) = .omit,
     parent_id: Omittable(?model.Snowflake) = .omit,
     nsfw: Omittable(?bool) = .omit,
     rtc_region: Omittable(?[]const u8) = .omit,
@@ -656,7 +656,7 @@ const CreateGuildChannelBody = struct {
     default_forum_layout: Omittable(?model.Channel.ForumLayout) = .omit,
     default_thread_rate_limit_per_user: Omittable(?i64) = .omit,
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = model.jconfig.stringifyWithOmit;
 };
 
 pub const ModifyGuildChannelPositionsBodyEntry = struct {
@@ -665,7 +665,7 @@ pub const ModifyGuildChannelPositionsBodyEntry = struct {
     lock_permissions: Omittable(?bool) = .omit,
     parent_id: Omittable(?model.Snowflake) = .omit,
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = model.jconfig.stringifyWithOmit;
 };
 
 pub const ListActiveGuildThreadsBody = struct {
@@ -694,7 +694,7 @@ pub const AddGuildMemberBody = struct {
     mute: Omittable(bool) = .omit,
     deaf: Omittable(bool) = .omit,
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = model.jconfig.stringifyWithOmit;
 };
 
 pub const ModifyGuildMemberBody = struct {
@@ -706,7 +706,7 @@ pub const ModifyGuildMemberBody = struct {
     comunication_disabled_until: Omittable(?[]const u8) = .omit,
     flags: Omittable(?model.guild.Member.Flags) = .omit,
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = model.jconfig.stringifyWithOmit;
 };
 
 pub const GetGuildBansQuery = struct {
@@ -721,7 +721,7 @@ pub const BulkGuildBanBody = struct {
     user_ids: []const model.Snowflake,
     delete_message_seconds: Omittable(i64) = .omit,
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = model.jconfig.stringifyWithOmit;
 };
 
 pub const BulkGuildBanResponse = struct {
@@ -738,14 +738,14 @@ pub const CreateGuildRoleBody = struct {
     unicode_emoji: Omittable(?[]const u8) = .omit,
     mentionable: Omittable(bool) = .omit,
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = model.jconfig.stringifyWithOmit;
 };
 
 pub const ModifyGuildRolePositionsBodyEntry = struct {
     id: model.Snowflake,
     position: Omittable(?i64) = .omit,
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = model.jconfig.stringifyWithOmit;
 };
 
 pub const ModifyGuildRoleBody = struct {
@@ -757,7 +757,7 @@ pub const ModifyGuildRoleBody = struct {
     unicode_emoji: Omittable(?[]const u8) = .omit,
     mentionable: Omittable(?bool) = .omit,
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = model.jconfig.stringifyWithOmit;
 };
 
 pub const ModifyGuildMfaLevelBody = struct {
@@ -813,14 +813,14 @@ pub const BeginGuildPruneBody = struct {
     include_roles: Omittable([]const model.Snowflake) = .omit,
     reason: Omittable([]const u8) = .omit,
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = model.jconfig.stringifyWithOmit;
 };
 
 pub const ModifyGuildWidgetBody = struct {
     enabled: Omittable(bool) = .omit,
     channel_id: Omittable(?model.Snowflake) = .omit,
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = model.jconfig.stringifyWithOmit;
 };
 
 pub const GetGuildWidgetImageQuery = struct {
@@ -846,7 +846,7 @@ pub const ModifyGuildWelcomeScreenBody = struct {
     welcome_channels: Omittable(?[]const model.guild.WelcomeScreen.WelcomeChannel) = .omit,
     description: Omittable(?[]const u8) = .omit,
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = model.jconfig.stringifyWithOmit;
 };
 
 pub const ModifyGuildOnboardingBody = struct {
@@ -861,12 +861,12 @@ pub const ModifyCurrentUserVoiceStateBody = struct {
     suppress: Omittable(bool) = .omit,
     request_to_speak_timestamp: Omittable(?[]const u8) = .omit,
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = model.jconfig.stringifyWithOmit;
 };
 
 pub const ModifyUserVoiceStateBody = struct {
     channel_id: model.Snowflake,
     suppress: Omittable(bool) = .omit,
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = model.jconfig.stringifyWithOmit;
 };

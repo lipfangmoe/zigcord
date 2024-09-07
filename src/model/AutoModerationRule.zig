@@ -1,5 +1,5 @@
 const model = @import("../root.zig").model;
-const deanson = model.deanson;
+const jconfig = @import("../root.zig").jconfig;
 const Snowflake = model.Snowflake;
 
 id: Snowflake,
@@ -13,7 +13,7 @@ trigger_metadata: TriggerMetadata,
 pub const EventType = enum(u8) {
     message_send = 1,
 
-    pub const jsonStringify = deanson.stringifyEnumAsInt;
+    pub const jsonStringify = jconfig.stringifyEnumAsInt;
 };
 
 pub const TriggerType = enum(u8) {
@@ -22,7 +22,7 @@ pub const TriggerType = enum(u8) {
     keyword_preset = 4,
     mention_spam = 5,
 
-    pub const jsonStringify = deanson.stringifyEnumAsInt;
+    pub const jsonStringify = jconfig.stringifyEnumAsInt;
 };
 
 // TODO https://discord.com/developers/docs/resources/auto-moderation#auto-moderation-rule-object-trigger-metadata
@@ -42,7 +42,7 @@ pub const TriggerMetadata = union(TriggerType) {
         mention_raid_protection_enabled: bool,
     },
 
-    pub usingnamespace deanson.InlineUnionJsonMixin(@This());
+    pub usingnamespace jconfig.InlineUnionMixin(@This());
 };
 
 pub const KeywordPreset = enum(u8) {

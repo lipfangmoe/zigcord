@@ -2,7 +2,7 @@ const deancord = @import("../../root.zig");
 const std = @import("std");
 const model = deancord.model;
 const rest = deancord.rest;
-const deanson = model.deanson;
+const jconfig = deancord.jconfig;
 
 pub fn createStageInstance(
     client: *rest.Client,
@@ -54,16 +54,16 @@ pub fn deleteStageInstance(
 pub const CreateStageInstanceBody = struct {
     channel_id: model.Snowflake,
     topic: []const u8,
-    privacy_level: deanson.Omittable(model.StageInstance.PrivacyLevel) = .omit,
-    send_start_notification: deanson.Omittable(bool) = .omit,
-    guild_scheduled_event_id: deanson.Omittable(model.Snowflake) = .omit,
+    privacy_level: jconfig.Omittable(model.StageInstance.PrivacyLevel) = .omit,
+    send_start_notification: jconfig.Omittable(bool) = .omit,
+    guild_scheduled_event_id: jconfig.Omittable(model.Snowflake) = .omit,
 
-    pub usingnamespace deanson.OmittableJsonMixin(@This());
+    pub usingnamespace jconfig.OmittableFieldsMixin(@This());
 };
 
 pub const ModifyStageInstanceBody = struct {
-    topic: deanson.Omittable([]const u8) = .omit,
-    privacy_level: deanson.Omittable(i64) = .omit,
+    topic: jconfig.Omittable([]const u8) = .omit,
+    privacy_level: jconfig.Omittable(i64) = .omit,
 
-    pub usingnamespace deanson.OmittableJsonMixin(@This());
+    pub usingnamespace jconfig.OmittableFieldsMixin(@This());
 };

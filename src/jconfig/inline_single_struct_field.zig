@@ -4,7 +4,7 @@ const writePossiblyOmittableFieldToStream = @import("./omit.zig").writePossiblyO
 
 /// For `struct{ field1: struct{ foo: i64 }, field2: struct{ bar: u64 }, pub usingnamespace InlineFieldJsonMixin(@This(), "field1"); }`,
 /// returns a mixin which will JSON stringify and parse the struct into a `struct{ foo: i64, field2: struct{ bar: u64 }}`
-pub fn InlineSingleStructFieldJsonMixin(comptime T: type, comptime inline_field: []const u8) type {
+pub fn InlineSingleStructFieldMixin(comptime T: type, comptime inline_field: []const u8) type {
     return struct {
         pub fn jsonParse(allocator: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !T {
             // way too lazy to give this a more efficient implementation. maybe in the future.
@@ -130,7 +130,7 @@ test "InlineFieldJsonMixin - stringify" {
         field1: struct { foo: i64 },
         field2: struct { bar: u64 },
 
-        pub usingnamespace InlineSingleStructFieldJsonMixin(@This(), "field1");
+        pub usingnamespace InlineSingleStructFieldMixin(@This(), "field1");
     };
 
     const t = TestStruct{ .field1 = .{ .foo = 5 }, .field2 = .{ .bar = 100 } };
@@ -148,7 +148,7 @@ test "InlineFieldJsonMixin - parse" {
         field1: struct { foo: i64 },
         field2: struct { bar: u64 },
 
-        pub usingnamespace InlineSingleStructFieldJsonMixin(@This(), "field1");
+        pub usingnamespace InlineSingleStructFieldMixin(@This(), "field1");
     };
 
     const str =

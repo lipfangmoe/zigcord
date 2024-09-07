@@ -1,6 +1,6 @@
 const std = @import("std");
 const event_data = @import("./event_data.zig");
-const deanson = @import("../root.zig").model.deanson;
+const jconfig = @import("../root.zig").jconfig;
 const SendEvent = @This();
 
 op: event_data.Opcode,
@@ -69,7 +69,7 @@ pub fn jsonStringify(self: SendEvent, jw: anytype) !void {
         const field_value = @field(self, field.name);
         if (comptime std.mem.eql(u8, field.name, "d")) {
             try jw.objectField(field.name);
-            try deanson.stringifyUnionInline(field_value, jw);
+            try jconfig.stringifyUnionInline(field_value, jw);
         } else {
             try jw.objectField(field.name);
             try jw.write(field_value);

@@ -1,29 +1,29 @@
-const model = @import("../model.zig");
-const Snowflake = model.Snowflake;
-const Omittable = model.deanson.Omittable;
+const deancord = @import("../root.zig");
+const model = deancord.model;
+const jconfig = deancord.jconfig;
 
 const Sticker = @This();
 
-id: Snowflake,
-pack_id: Omittable(Snowflake) = .omit,
+id: model.Snowflake,
+pack_id: jconfig.Omittable(model.Snowflake) = .omit,
 name: []const u8,
 description: ?[]const u8,
 tags: []const u8,
-asset: Omittable([]const u8) = .omit,
+asset: jconfig.Omittable([]const u8) = .omit,
 type: Type,
 format_type: Format,
-available: Omittable(bool) = .omit,
-guild_id: Omittable(Snowflake) = .omit,
-user: Omittable(model.User) = .omit,
-sort_value: Omittable(i64) = .omit,
+available: jconfig.Omittable(bool) = .omit,
+guild_id: jconfig.Omittable(model.Snowflake) = .omit,
+user: jconfig.Omittable(model.User) = .omit,
+sort_value: jconfig.Omittable(i64) = .omit,
 
-pub const jsonStringify = model.deanson.stringifyWithOmit;
+pub const jsonStringify = jconfig.stringifyWithOmit;
 
 pub const Type = enum(u2) {
     standard = 1,
     guild = 2,
 
-    pub const jsonStringify = model.deanson.stringifyEnumAsInt;
+    pub const jsonStringify = jconfig.stringifyEnumAsInt;
 };
 
 pub const Format = enum(u3) {
@@ -32,11 +32,11 @@ pub const Format = enum(u3) {
     lottie = 3,
     gif = 4,
 
-    pub const jsonStringify = model.deanson.stringifyEnumAsInt;
+    pub const jsonStringify = jconfig.stringifyEnumAsInt;
 };
 
 pub const Item = struct {
-    id: Snowflake,
+    id: model.Snowflake,
     name: []const u8,
     format_type: Format,
 };
@@ -46,9 +46,9 @@ pub const Pack = struct {
     stickers: []const Sticker,
     name: []const u8,
     sku_id: model.Snowflake,
-    cover_sticker_id: Omittable(model.Snowflake) = .omit,
+    cover_sticker_id: jconfig.Omittable(model.Snowflake) = .omit,
     description: []const u8,
-    banner_asset_id: Omittable(model.Snowflake) = .omit,
+    banner_asset_id: jconfig.Omittable(model.Snowflake) = .omit,
 
-    pub usingnamespace model.deanson.OmittableJsonMixin(@This());
+    pub usingnamespace jconfig.OmittableFieldsMixin(@This());
 };

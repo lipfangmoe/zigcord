@@ -1,8 +1,8 @@
 const std = @import("std");
 const model = @import("../../root.zig").model;
+const jconfig = @import("../../root.zig").jconfig;
 const Channel = model.Channel;
-const deanson = model.deanson;
-const Omittable = deanson.Omittable;
+const Omittable = jconfig.Omittable;
 
 pub const ApplicationCommandOptionType = enum(u8) {
     subcommand = 1,
@@ -17,7 +17,7 @@ pub const ApplicationCommandOptionType = enum(u8) {
     number,
     attachment,
 
-    pub const jsonStringify = deanson.stringifyEnumAsInt;
+    pub const jsonStringify = jconfig.stringifyEnumAsInt;
 };
 
 /// An option ("argument") for an application command.
@@ -36,12 +36,12 @@ pub const ApplicationCommandOption = struct {
     min_value: Omittable(union(enum) {
         double: f64,
         integer: i64,
-        pub usingnamespace deanson.InlineUnionJsonMixin(@This());
+        pub usingnamespace jconfig.InlineUnionMixin(@This());
     }) = .omit,
     max_value: Omittable(union(enum) {
         double: f64,
         integer: i64,
-        pub usingnamespace deanson.InlineUnionJsonMixin(@This());
+        pub usingnamespace jconfig.InlineUnionMixin(@This());
     }) = .omit,
     min_length: Omittable(i64) = .omit,
     max_length: Omittable(i64) = .omit,
@@ -66,10 +66,10 @@ pub const ApplicationCommandOption = struct {
         integer: []IntegerChoice,
         double: []DoubleChoice,
 
-        pub usingnamespace deanson.InlineUnionJsonMixin(@This());
+        pub usingnamespace jconfig.InlineUnionMixin(@This());
     };
 
-    pub const jsonStringify = deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 
     /// Creates an ApplicationCommandOption from a builder. See `Builder` for a list of allowed builders.
     pub fn new(builder: Builder) ApplicationCommandOption {
@@ -269,7 +269,7 @@ pub const StringChoice = struct {
     name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     value: []const u8,
 
-    pub const jsonStringify = deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 /// A possible choice for an ApplicationCommandOption of type `integer`.
@@ -278,7 +278,7 @@ pub const IntegerChoice = struct {
     name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     value: i64,
 
-    pub const jsonStringify = deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 /// A possible choice for an ApplicationCommandOption of type `double`.
@@ -287,5 +287,5 @@ pub const DoubleChoice = struct {
     name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     value: f64,
 
-    pub const jsonStringify = deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };

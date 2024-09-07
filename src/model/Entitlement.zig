@@ -1,20 +1,19 @@
 const std = @import("std");
-const model = @import("../model.zig");
-const deanson = model.deanson;
-const Omittable = deanson.Omittable;
+const model = @import("../root.zig").model;
+const jconfig = @import("../root.zig").jconfig;
 
 id: model.Snowflake,
 sku_id: model.Snowflake,
 application_id: model.Snowflake,
-user_id: Omittable(model.Snowflake) = .omit,
+user_id: jconfig.Omittable(model.Snowflake) = .omit,
 type: Type,
 deleted: bool,
-starts_at: Omittable([]const u8) = .omit,
-ends_at: Omittable([]const u8) = .omit,
-guild_id: Omittable(model.Snowflake) = .omit,
-consumed: Omittable(bool) = .omit,
+starts_at: jconfig.Omittable([]const u8) = .omit,
+ends_at: jconfig.Omittable([]const u8) = .omit,
+guild_id: jconfig.Omittable(model.Snowflake) = .omit,
+consumed: jconfig.Omittable(bool) = .omit,
 
-pub const jsonStringify = deanson.stringifyWithOmit;
+pub const jsonStringify = jconfig.stringifyWithOmit;
 
 pub const Type = enum(u8) {
     purchase = 1,
@@ -26,5 +25,5 @@ pub const Type = enum(u8) {
     premium_purchase = 7,
     application_subscription = 8,
 
-    pub const jsonStringify = deanson.stringifyEnumAsInt;
+    pub const jsonStringify = jconfig.stringifyEnumAsInt;
 };

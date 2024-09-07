@@ -1,8 +1,8 @@
 const std = @import("std");
 const model = @import("../root.zig").model;
-const deanson = model.deanson;
-const Omittable = deanson.Omittable;
-const Partial = deanson.Partial;
+const jconfig = @import("../root.zig").jconfig;
+const Omittable = jconfig.Omittable;
+const Partial = jconfig.Partial;
 
 // partial version of this object is included in `rest/endpoints/guild.zig` (GetGuildVanityUrlResponse), changes here should be reflected in changes there.
 
@@ -20,14 +20,14 @@ expires_at: Omittable(?[]const u8) = .omit,
 stage_instance: Omittable(InviteStageInstance) = .omit, // deprecated
 guild_scheduled_event: Omittable(model.GuildScheduledEvent) = .omit,
 
-pub const jsonStringify = deanson.stringifyWithOmit;
+pub const jsonStringify = jconfig.stringifyWithOmit;
 
 pub const Type = enum(u2) {
     guild = 0,
     group_dm = 1,
     friend = 2,
 
-    pub const jsonStringify = deanson.stringifyEnumAsInt;
+    pub const jsonStringify = jconfig.stringifyEnumAsInt;
 };
 
 pub const InviteStageInstance = struct {
@@ -59,5 +59,5 @@ pub const WithMetadata = struct {
     temporary: bool,
     created_at: []const u8,
 
-    pub const jsonStringify = deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };

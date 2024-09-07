@@ -1,8 +1,8 @@
 const std = @import("std");
 const deancord = @import("../root.zig");
 const model = deancord.model;
+const jconfig = deancord.jconfig;
 const Snowflake = model.Snowflake;
-const deanson = model.deanson;
 
 const Message = @This();
 
@@ -16,32 +16,32 @@ tts: bool,
 mention_everyone: bool,
 mentions: []const model.User,
 mention_roles: []const model.Role,
-mention_channels: deanson.Omittable([]const ChannelMention) = .omit,
+mention_channels: jconfig.Omittable([]const ChannelMention) = .omit,
 attachments: []const Attachment,
 embeds: []const Embed,
-reactions: deanson.Omittable([]const Reaction) = .omit,
-nonce: deanson.Omittable(Nonce) = .omit,
+reactions: jconfig.Omittable([]const Reaction) = .omit,
+nonce: jconfig.Omittable(Nonce) = .omit,
 pinned: bool,
-webhook_id: deanson.Omittable(Snowflake) = .omit,
+webhook_id: jconfig.Omittable(Snowflake) = .omit,
 type: Type,
-activity: deanson.Omittable(Activity) = .omit,
-application: deanson.Omittable(deanson.Partial(model.Application)) = .omit,
-application_id: deanson.Omittable(Snowflake) = .omit,
-message_reference: deanson.Omittable(Reference) = .omit,
-flags: deanson.Omittable(Flags) = .omit,
-referenced_message: deanson.Omittable(?*const Message) = .omit,
-interaction_metadata: deanson.Omittable(InteractionMetadata) = .omit,
-thread: deanson.Omittable(model.Channel) = .omit,
-components: deanson.Omittable([]const model.MessageComponent) = .omit,
-sticker_items: deanson.Omittable([]const model.Sticker.Item) = .omit,
-stickers: deanson.Omittable([]const model.Sticker) = .omit,
-position: deanson.Omittable(i64) = .omit,
-role_subscription_data: deanson.Omittable(RoleSubscriptionData) = .omit,
-resolved: deanson.Omittable(model.interaction.ResolvedData) = .omit,
-poll: deanson.Omittable(model.Poll) = .omit,
-call: deanson.Omittable(Call) = .omit,
+activity: jconfig.Omittable(Activity) = .omit,
+application: jconfig.Omittable(jconfig.Partial(model.Application)) = .omit,
+application_id: jconfig.Omittable(Snowflake) = .omit,
+message_reference: jconfig.Omittable(Reference) = .omit,
+flags: jconfig.Omittable(Flags) = .omit,
+referenced_message: jconfig.Omittable(?*const Message) = .omit,
+interaction_metadata: jconfig.Omittable(InteractionMetadata) = .omit,
+thread: jconfig.Omittable(model.Channel) = .omit,
+components: jconfig.Omittable([]const model.MessageComponent) = .omit,
+sticker_items: jconfig.Omittable([]const model.Sticker.Item) = .omit,
+stickers: jconfig.Omittable([]const model.Sticker) = .omit,
+position: jconfig.Omittable(i64) = .omit,
+role_subscription_data: jconfig.Omittable(RoleSubscriptionData) = .omit,
+resolved: jconfig.Omittable(model.interaction.ResolvedData) = .omit,
+poll: jconfig.Omittable(model.Poll) = .omit,
+call: jconfig.Omittable(Call) = .omit,
 
-pub const jsonStringify = model.deanson.stringifyWithOmit;
+pub const jsonStringify = model.jconfig.stringifyWithOmit;
 
 pub fn jsonParse(alloc: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !Message {
     return try jsonParseFromValue(
@@ -96,25 +96,25 @@ pub const MessageAuthor = union(enum) {
         avatar: ?[]const u8,
     };
 
-    pub usingnamespace deanson.InlineUnionJsonMixin(@This());
+    pub usingnamespace jconfig.InlineUnionMixin(@This());
 };
 
 pub const Attachment = struct {
     id: Snowflake,
     filename: []const u8,
-    description: deanson.Omittable([]const u8) = .omit,
-    content_type: deanson.Omittable([]const u8) = .omit,
+    description: jconfig.Omittable([]const u8) = .omit,
+    content_type: jconfig.Omittable([]const u8) = .omit,
     size: u64,
     url: []const u8,
     proxy_url: []const u8,
-    height: deanson.Omittable(?[]const u8) = .omit,
-    width: deanson.Omittable(?[]const u8) = .omit,
-    ephemeral: deanson.Omittable(bool) = .omit,
-    duration_secs: deanson.Omittable(f64) = .omit,
-    waveform: deanson.Omittable([]const u8) = .omit,
+    height: jconfig.Omittable(?[]const u8) = .omit,
+    width: jconfig.Omittable(?[]const u8) = .omit,
+    ephemeral: jconfig.Omittable(bool) = .omit,
+    duration_secs: jconfig.Omittable(f64) = .omit,
+    waveform: jconfig.Omittable([]const u8) = .omit,
     flags: Flags,
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = model.jconfig.stringifyWithOmit;
 };
 
 pub const ChannelMention = struct {
@@ -125,21 +125,21 @@ pub const ChannelMention = struct {
 };
 
 pub const Embed = struct {
-    title: deanson.Omittable([]const u8) = .omit,
-    type: deanson.Omittable(EmbedType) = .omit,
-    description: deanson.Omittable([]const u8) = .omit,
-    url: deanson.Omittable([]const u8) = .omit,
-    timestamp: deanson.Omittable(model.IsoTime) = .omit,
-    color: deanson.Omittable(i64) = .omit,
-    footer: deanson.Omittable(Footer) = .omit,
-    image: deanson.Omittable(Media) = .omit,
-    thumbnail: deanson.Omittable(Media) = .omit,
-    video: deanson.Omittable(Media) = .omit,
-    provider: deanson.Omittable(Provider) = .omit,
-    author: deanson.Omittable(Author) = .omit,
-    fields: deanson.Omittable([]const Field) = .omit,
+    title: jconfig.Omittable([]const u8) = .omit,
+    type: jconfig.Omittable(EmbedType) = .omit,
+    description: jconfig.Omittable([]const u8) = .omit,
+    url: jconfig.Omittable([]const u8) = .omit,
+    timestamp: jconfig.Omittable(model.IsoTime) = .omit,
+    color: jconfig.Omittable(i64) = .omit,
+    footer: jconfig.Omittable(Footer) = .omit,
+    image: jconfig.Omittable(Media) = .omit,
+    thumbnail: jconfig.Omittable(Media) = .omit,
+    video: jconfig.Omittable(Media) = .omit,
+    provider: jconfig.Omittable(Provider) = .omit,
+    author: jconfig.Omittable(Author) = .omit,
+    fields: jconfig.Omittable([]const Field) = .omit,
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 
     pub const EmbedType = enum {
         rich,
@@ -154,41 +154,41 @@ pub const Embed = struct {
 
     pub const Footer = struct {
         text: []const u8,
-        icon_url: deanson.Omittable([]const u8) = .omit,
-        proxy_icon_url: deanson.Omittable([]const u8) = .omit,
+        icon_url: jconfig.Omittable([]const u8) = .omit,
+        proxy_icon_url: jconfig.Omittable([]const u8) = .omit,
 
-        pub const jsonStringify = model.deanson.stringifyWithOmit;
+        pub const jsonStringify = jconfig.stringifyWithOmit;
     };
 
     pub const Media = struct {
-        url: deanson.Omittable([]const u8) = .omit,
-        proxy_url: deanson.Omittable([]const u8) = .omit,
-        height: deanson.Omittable(i64) = .omit,
-        width: deanson.Omittable(i64) = .omit,
+        url: jconfig.Omittable([]const u8) = .omit,
+        proxy_url: jconfig.Omittable([]const u8) = .omit,
+        height: jconfig.Omittable(i64) = .omit,
+        width: jconfig.Omittable(i64) = .omit,
 
-        pub const jsonStringify = model.deanson.stringifyWithOmit;
+        pub const jsonStringify = jconfig.stringifyWithOmit;
     };
 
     pub const Provider = struct {
-        name: deanson.Omittable([]const u8) = .omit,
-        url: deanson.Omittable([]const u8) = .omit,
+        name: jconfig.Omittable([]const u8) = .omit,
+        url: jconfig.Omittable([]const u8) = .omit,
 
-        pub const jsonStringify = model.deanson.stringifyWithOmit;
+        pub const jsonStringify = jconfig.stringifyWithOmit;
     };
 
     pub const Author = struct {
         name: []const u8,
-        url: deanson.Omittable([]const u8) = .omit,
-        icon_url: deanson.Omittable([]const u8) = .omit,
-        proxy_icon_url: deanson.Omittable([]const u8) = .omit,
+        url: jconfig.Omittable([]const u8) = .omit,
+        icon_url: jconfig.Omittable([]const u8) = .omit,
+        proxy_icon_url: jconfig.Omittable([]const u8) = .omit,
 
-        pub const jsonStringify = model.deanson.stringifyWithOmit;
+        pub const jsonStringify = jconfig.stringifyWithOmit;
     };
 
     pub const Field = struct {
         name: []const u8,
         value: []const u8,
-        @"inline": deanson.Omittable(bool) = .omit,
+        @"inline": jconfig.Omittable(bool) = .omit,
     };
 };
 
@@ -197,7 +197,7 @@ pub const Reaction = struct {
     count_details: CountDetails,
     me: bool,
     me_burst: bool,
-    emoji: deanson.Partial(model.Emoji),
+    emoji: jconfig.Partial(model.Emoji),
     burst_colors: []const i64,
 
     pub const CountDetails = struct {
@@ -215,7 +215,7 @@ pub const Nonce = union(enum) {
     int: i64,
     str: []const u8,
 
-    pub const jsonStringify = model.deanson.stringifyUnionInline;
+    pub const jsonStringify = model.jconfig.stringifyUnionInline;
 
     pub fn jsonParse(allocator: std.mem.Allocator, source: anytype, _: std.json.ParseOptions) !Nonce {
         const token = try source.nextAlloc(allocator, .alloc_if_needed);
@@ -279,12 +279,12 @@ pub const Type = enum(u8) {
     purchase_notification = 44,
     _,
 
-    pub const jsonStringify = model.deanson.stringifyEnumAsInt;
+    pub const jsonStringify = model.jconfig.stringifyEnumAsInt;
 };
 
 pub const Activity = struct {
     type: ActivityType,
-    party_id: deanson.Omittable([]const u8) = .omit,
+    party_id: jconfig.Omittable([]const u8) = .omit,
 
     pub const ActivityType = enum(u3) {
         join = 1,
@@ -292,15 +292,15 @@ pub const Activity = struct {
         listen = 3,
         join_request = 5,
 
-        pub const jsonStringify = model.deanson.stringifyEnumAsInt;
+        pub const jsonStringify = model.jconfig.stringifyEnumAsInt;
     };
 };
 
 pub const Reference = struct {
-    message_id: deanson.Omittable(Snowflake) = .omit,
-    channel_id: deanson.Omittable(Snowflake) = .omit,
-    guild_id: deanson.Omittable(Snowflake) = .omit,
-    fail_if_not_exists: deanson.Omittable(bool) = .omit,
+    message_id: jconfig.Omittable(Snowflake) = .omit,
+    channel_id: jconfig.Omittable(Snowflake) = .omit,
+    guild_id: jconfig.Omittable(Snowflake) = .omit,
+    fail_if_not_exists: jconfig.Omittable(bool) = .omit,
 };
 
 pub const Flags = packed struct {
@@ -324,11 +324,11 @@ pub const InteractionMetadata = struct {
     type: model.interaction.InteractionType,
     user: model.User,
     authorizing_integration_owners: std.json.Value, // TODO: https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-object-authorizing-integration-owners-object
-    original_response_message_id: deanson.Omittable(Snowflake) = .omit,
-    interacted_message_id: deanson.Omittable(Snowflake) = .omit,
-    triggering_interaction_metadata: deanson.Omittable(?*const InteractionMetadata) = .omit,
+    original_response_message_id: jconfig.Omittable(Snowflake) = .omit,
+    interacted_message_id: jconfig.Omittable(Snowflake) = .omit,
+    triggering_interaction_metadata: jconfig.Omittable(?*const InteractionMetadata) = .omit,
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = model.jconfig.stringifyWithOmit;
 };
 
 pub const RoleSubscriptionData = struct {
@@ -340,9 +340,9 @@ pub const RoleSubscriptionData = struct {
 
 pub const Call = struct {
     participants: []const Snowflake,
-    ended_timestamp: deanson.Omittable(?model.IsoTime) = .omit,
+    ended_timestamp: jconfig.Omittable(?model.IsoTime) = .omit,
 
-    pub const jsonStringify = model.deanson.stringifyWithOmit;
+    pub const jsonStringify = model.jconfig.stringifyWithOmit;
 };
 
 pub const AllowedMentions = struct {

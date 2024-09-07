@@ -1,5 +1,5 @@
 const std = @import("std");
-const jsonconfig = @import("../jsonconfig.zig");
+const jconfig = @import("../jconfig.zig");
 
 /// Partial(T) takes a struct, and returns a similar struct but with all types set to be Omittable(T).
 ///
@@ -16,7 +16,7 @@ pub fn Partial(comptime T: type) type {
         const Self = @This();
 
         pub fn jsonStringify(self: Self, json_writer: anytype) !void {
-            try jsonconfig.stringifyWithOmit(self.partial, json_writer);
+            try jconfig.stringifyWithOmit(self.partial, json_writer);
         }
 
         pub fn jsonParse(allocator: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !Self {
@@ -39,7 +39,7 @@ fn PartialStruct(comptime T: type) type {
                 if (field_names.len == 2 and std.mem.eql(u8, field_names[0], "some") and std.mem.eql(u8, field_names[1], "omit")) {
                     break :blk field;
                 }
-                const OmittableType = jsonconfig.Omittable(field.type);
+                const OmittableType = jconfig.Omittable(field.type);
                 break :blk std.builtin.Type.StructField{
                     .name = field.name,
                     .type = OmittableType,
@@ -49,7 +49,7 @@ fn PartialStruct(comptime T: type) type {
                 };
             },
             else => blk: {
-                const OmittableType = jsonconfig.Omittable(field.type);
+                const OmittableType = jconfig.Omittable(field.type);
                 break :blk std.builtin.Type.StructField{
                     .name = field.name,
                     .type = OmittableType,
@@ -76,8 +76,8 @@ test "Partial Stringify" {
         something: []const u8,
         nested_type: struct { foo: i64 },
         omitted: u8,
-        already_omittable: jsonconfig.Omittable(u8) = .omit,
-        already_omittable_omitted: jsonconfig.Omittable(u8) = .omit,
+        already_omittable: jconfig.Omittable(u8) = .omit,
+        already_omittable_omitted: jconfig.Omittable(u8) = .omit,
     });
 
     const value = MyPartial{ .partial = .{
@@ -101,8 +101,8 @@ test "Partial Parse" {
         something: []const u8,
         nested_type: struct { foo: i64 },
         omitted: u8,
-        already_omittable: jsonconfig.Omittable(u8) = .omit,
-        already_omittable_omitted: jsonconfig.Omittable(u8) = .omit,
+        already_omittable: jconfig.Omittable(u8) = .omit,
+        already_omittable_omitted: jconfig.Omittable(u8) = .omit,
     });
 
     const value = try std.json.parseFromSlice(MyPartial, std.testing.allocator,

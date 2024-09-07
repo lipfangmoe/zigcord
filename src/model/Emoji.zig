@@ -1,21 +1,20 @@
 const std = @import("std");
 const model = @import("../model.zig");
+const jconfig = @import("../root.zig").jconfig;
 const Snowflake = model.Snowflake;
-const Omittable = model.deanson.Omittable;
+const Emoji = @This();
 
 id: ?Snowflake,
 name: ?[]const u8,
-roles: Omittable([]Snowflake) = .omit,
-user: Omittable(Snowflake) = .omit,
-require_colons: Omittable(bool) = .omit,
-managed: Omittable(bool) = .omit,
-animated: Omittable(bool) = .omit,
-available: Omittable(bool) = .omit,
+roles: jconfig.Omittable([]Snowflake) = .omit,
+user: jconfig.Omittable(Snowflake) = .omit,
+require_colons: jconfig.Omittable(bool) = .omit,
+managed: jconfig.Omittable(bool) = .omit,
+animated: jconfig.Omittable(bool) = .omit,
+available: jconfig.Omittable(bool) = .omit,
 
-const Emoji = @This();
+pub const jsonStringify = jconfig.stringifyWithOmit;
 
 pub fn fromUnicode(emoji: []const u8) Emoji {
     return Emoji{ .id = null, .name = emoji };
 }
-
-pub const jsonStringify = model.deanson.stringifyWithOmit;
