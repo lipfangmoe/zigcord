@@ -11,7 +11,7 @@ const Permissions = model.Permissions;
 // TODO - translate to use Omittable
 pub const ApplicationCommand = struct {
     id: Snowflake,
-    type: Omittable(ApplicationCommandType) = .omit,
+    type: ApplicationCommandType, // documentation says this is omittable but REST api seems to disagree
     application_id: Snowflake,
     guild_id: Omittable(Snowflake) = .omit,
     name: []const u8,
@@ -25,13 +25,15 @@ pub const ApplicationCommand = struct {
     nsfw: Omittable(bool) = .omit,
     version: Snowflake,
 
-    pub const jsonStringify = model.jconfig.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const ApplicationCommandType = enum(u8) {
     chat_input = 1,
     user = 2,
     message = 3,
+
+    pub const jsonStringify = jconfig.stringifyEnumAsInt;
 };
 
 pub const GuildApplicationCommandPermissions = struct {

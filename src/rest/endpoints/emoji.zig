@@ -2,6 +2,7 @@ const std = @import("std");
 const deancord = @import("../../root.zig");
 const model = deancord.model;
 const rest = deancord.rest;
+const jconfig = deancord.jconfig;
 
 pub fn listGuildEmoji(
     client: *rest.Client,
@@ -74,8 +75,8 @@ pub const CreateGuildEmojiBody = struct {
 };
 
 pub const ModifyGuildEmojiBody = struct {
-    name: model.jconfig.Omittable([]const u8) = .omit,
-    roles: model.jconfig.Omittable(?[]const model.Snowflake) = .omit,
+    name: jconfig.Omittable([]const u8) = .omit,
+    roles: jconfig.Omittable(?[]const model.Snowflake) = .omit,
 
-    pub const jsonStringify = model.jconfig.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };

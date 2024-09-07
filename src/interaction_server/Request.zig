@@ -9,17 +9,17 @@ interaction: model.interaction.Interaction,
 
 const Request = @This();
 
-pub fn init(http_request: *std.http.Server.Request) !Request {
+pub fn init(http_request: *std.http.Server.Request, alloc: std.mem.Allocator) !Request {
     const body_reader = try http_request.reader();
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    var arena = std.heap.ArenaAllocator.init(alloc);
 
-    const json_reader = std.json.reader(arena.allocator(), body_reader);
-    const interaction = try std.json.parseFromTokenSource(model.interaction.Interaction, arena.allocator(), json_reader, .{});
+    var json_reader = std.json.reader(arena.allocator(), body_reader);
+    const interaction = try std.json.parseFromTokenSourceLeaky(model.interaction.Interaction, arena.allocator(), &json_reader, .{});
 
     return Request{ .arena = arena, .http_request = http_request, .interaction = interaction };
 }
 
-pub fn deinit(self: Request) !void {
+pub fn deinit(self: Request) void {
     self.arena.deinit();
 }
 

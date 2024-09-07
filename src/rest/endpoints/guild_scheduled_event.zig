@@ -2,7 +2,7 @@ const std = @import("std");
 const deancord = @import("../../root.zig");
 const model = deancord.model;
 const rest = deancord.rest;
-const Omittable = model.jconfig.Omittable;
+const jconfig = deancord.jconfig;
 
 pub fn listScheduledEventsForGuild(
     client: *rest.Client,
@@ -90,29 +90,29 @@ pub const WithUserCountQuery = struct {
 };
 
 pub const CreateGuildScheduledEventBody = struct {
-    channel_id: Omittable(model.Snowflake) = .omit,
-    entity_metadata: Omittable(model.GuildScheduledEvent.EntityMetadata) = .omit,
+    channel_id: jconfig.Omittable(model.Snowflake) = .omit,
+    entity_metadata: jconfig.Omittable(model.GuildScheduledEvent.EntityMetadata) = .omit,
     name: []const u8,
     privacy_level: model.GuildScheduledEvent.PrivacyLevel,
     scheduled_start_time: model.IsoTime,
     scheduled_end_time: model.IsoTime,
 
-    pub usingnamespace model.jconfig.OmittableJsonMixin(@This());
+    pub usingnamespace jconfig.OmittableFieldsMixin(@This());
 };
 
 pub const ModifyGuildScheduledEventBody = struct {
-    channel_id: Omittable(?model.Snowflake) = .omit,
-    entity_metadata: Omittable(?model.GuildScheduledEvent.EntityMetadata) = .omit,
-    name: Omittable([]const u8) = .omit,
-    privacy_level: Omittable(model.GuildScheduledEvent.PrivacyLevel) = .omit,
-    scheduled_start_time: Omittable(model.IsoTime) = .omit,
-    scheduled_end_time: Omittable(model.IsoTime) = .omit,
-    description: Omittable(?[]const u8) = .omit,
-    entity_type: Omittable(model.GuildScheduledEvent.EntityType) = .omit,
-    status: Omittable(model.GuildScheduledEvent.EventStatus) = .omit,
-    image: Omittable(model.ImageData) = .omit,
+    channel_id: jconfig.Omittable(?model.Snowflake) = .omit,
+    entity_metadata: jconfig.Omittable(?model.GuildScheduledEvent.EntityMetadata) = .omit,
+    name: jconfig.Omittable([]const u8) = .omit,
+    privacy_level: jconfig.Omittable(model.GuildScheduledEvent.PrivacyLevel) = .omit,
+    scheduled_start_time: jconfig.Omittable(model.IsoTime) = .omit,
+    scheduled_end_time: jconfig.Omittable(model.IsoTime) = .omit,
+    description: jconfig.Omittable(?[]const u8) = .omit,
+    entity_type: jconfig.Omittable(model.GuildScheduledEvent.EntityType) = .omit,
+    status: jconfig.Omittable(model.GuildScheduledEvent.EventStatus) = .omit,
+    image: jconfig.Omittable(model.ImageData) = .omit,
 
-    pub usingnamespace model.jconfig.OmittableJsonMixin(@This());
+    pub usingnamespace jconfig.OmittableFieldsMixin(@This());
 };
 
 pub const GetGuildScheduledEventUsersQuery = struct {

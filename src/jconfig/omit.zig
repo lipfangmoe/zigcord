@@ -92,8 +92,8 @@ pub fn writePossiblyOmittableFieldToStream(field: std.builtin.Type.StructField, 
         return;
     }
 
-    const field_names = std.meta.fieldNames(field.type);
-    if (field_names.len == 2 and std.mem.eql(u8, field_names[0], "some") and std.mem.eql(u8, field_names[1], "omit")) {
+    const field_names = comptime std.meta.fieldNames(field.type);
+    if (comptime field_names.len == 2 and std.mem.eql(u8, field_names[0], "some") and std.mem.eql(u8, field_names[1], "omit")) {
         switch (value) {
             .some => |some| {
                 try json_writer.objectField(field.name);

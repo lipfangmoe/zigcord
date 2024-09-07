@@ -199,7 +199,7 @@ pub const GuildMemberUpdate = struct {
     flags: model.guild.Member.Flags,
     avatar_decoration_data: model.User.AvatarDecorationData,
 
-    pub const jsonStringify = model.jconfig.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const GuildMembersChunk = struct {
@@ -211,7 +211,7 @@ pub const GuildMembersChunk = struct {
     presences: jconfig.Omittable([]const PresenceUpdate) = .omit,
     nonce: jconfig.Omittable([]const u8) = .omit,
 
-    pub const jsonStringify = model.jconfig.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const GuildRoleCreate = struct {
@@ -266,7 +266,7 @@ pub const IntegrationDelete = struct {
     guild_id: model.Snowflake,
     application_id: jconfig.Omittable(model.Snowflake) = .omit,
 
-    pub const jsonStringify = model.jconfig.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const InteractionCreate = model.interaction.Interaction;
@@ -285,7 +285,7 @@ pub const InviteCreate = struct {
     temporary: bool,
     uses: i64,
 
-    pub const jsonStringify = model.jconfig.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const InviteDelete = struct {
@@ -293,7 +293,7 @@ pub const InviteDelete = struct {
     guild_id: jconfig.Omittable(model.Snowflake) = .omit,
     code: []const u8,
 
-    pub const jsonStringify = model.jconfig.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const MessageCreate = struct {

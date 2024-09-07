@@ -5,8 +5,7 @@ const rest = deancord.rest;
 const Snowflake = model.Snowflake;
 const RestResult = rest.Client.Result;
 const Client = rest.Client;
-const deanson = model.jconfig;
-const Omittable = deanson.Omittable;
+const jconfig = deancord.jconfig;
 const Channel = model.Channel;
 
 pub fn getChannel(client: *Client, channel_id: Snowflake) !RestResult(Channel) {
@@ -526,48 +525,48 @@ pub fn listJoinedPrivateArchivedThreads(client: *Client, channel_id: Snowflake, 
 
 pub const ModifyChannelBody = union(enum) {
     group_dm: struct {
-        name: Omittable([]const u8) = .omit,
-        icon: Omittable([]const u8) = .omit,
+        name: jconfig.Omittable([]const u8) = .omit,
+        icon: jconfig.Omittable([]const u8) = .omit,
 
-        pub const jsonStringify = deanson.stringifyWithOmit;
+        pub const jsonStringify = jconfig.stringifyWithOmit;
     },
     guild: struct {
-        name: Omittable([]const u8) = .omit,
-        type: Omittable(Channel.Type) = .omit,
-        position: Omittable(?i64) = .omit,
-        topic: Omittable(?[]const u8) = .omit,
-        nsfw: Omittable(?bool) = .omit,
-        rate_limit_per_user: Omittable(?i64) = .omit,
-        bitrate: Omittable(?i64) = .omit,
-        user_limit: Omittable(?i64) = .omit,
-        permission_overwrites: Omittable(?[]const deanson.Partial(Channel.PermissionOverwrite)) = .omit,
-        parent_id: Omittable(?Snowflake) = .omit,
-        rtc_region: Omittable(?[]const u8) = .omit,
-        video_quality_mode: Omittable(?Channel.VideoQualityMode) = .omit,
-        default_auto_archive_duration: Omittable(?i64) = .omit,
-        flags: Omittable(Channel.Flags) = .omit,
-        available_tags: Omittable([]const Channel.Tag) = .omit,
-        default_reaction_emoji: Omittable(?Channel.DefaultReaction) = .omit,
-        default_thread_rate_limit_per_user: Omittable(i64) = .omit,
-        default_sort_order: Omittable(?i64) = .omit,
-        default_forum_layout: Omittable(i64) = .omit,
+        name: jconfig.Omittable([]const u8) = .omit,
+        type: jconfig.Omittable(Channel.Type) = .omit,
+        position: jconfig.Omittable(?i64) = .omit,
+        topic: jconfig.Omittable(?[]const u8) = .omit,
+        nsfw: jconfig.Omittable(?bool) = .omit,
+        rate_limit_per_user: jconfig.Omittable(?i64) = .omit,
+        bitrate: jconfig.Omittable(?i64) = .omit,
+        user_limit: jconfig.Omittable(?i64) = .omit,
+        permission_overwrites: jconfig.Omittable(?[]const jconfig.Partial(Channel.PermissionOverwrite)) = .omit,
+        parent_id: jconfig.Omittable(?Snowflake) = .omit,
+        rtc_region: jconfig.Omittable(?[]const u8) = .omit,
+        video_quality_mode: jconfig.Omittable(?Channel.VideoQualityMode) = .omit,
+        default_auto_archive_duration: jconfig.Omittable(?i64) = .omit,
+        flags: jconfig.Omittable(Channel.Flags) = .omit,
+        available_tags: jconfig.Omittable([]const Channel.Tag) = .omit,
+        default_reaction_emoji: jconfig.Omittable(?Channel.DefaultReaction) = .omit,
+        default_thread_rate_limit_per_user: jconfig.Omittable(i64) = .omit,
+        default_sort_order: jconfig.Omittable(?i64) = .omit,
+        default_forum_layout: jconfig.Omittable(i64) = .omit,
 
-        pub const jsonStringify = deanson.stringifyWithOmit;
+        pub const jsonStringify = jconfig.stringifyWithOmit;
     },
     thread: struct {
-        name: Omittable([]const u8) = .omit,
-        archived: Omittable(bool) = .omit,
-        auto_archive_duration: Omittable(i64) = .omit,
-        locked: Omittable(bool) = .omit,
-        invitable: Omittable(bool) = .omit,
-        rate_limit_per_user: Omittable(?i64) = .omit,
-        flags: Omittable(Channel.Flags) = .omit,
-        applied_tags: Omittable([]const Snowflake) = .omit,
+        name: jconfig.Omittable([]const u8) = .omit,
+        archived: jconfig.Omittable(bool) = .omit,
+        auto_archive_duration: jconfig.Omittable(i64) = .omit,
+        locked: jconfig.Omittable(bool) = .omit,
+        invitable: jconfig.Omittable(bool) = .omit,
+        rate_limit_per_user: jconfig.Omittable(?i64) = .omit,
+        flags: jconfig.Omittable(Channel.Flags) = .omit,
+        applied_tags: jconfig.Omittable([]const Snowflake) = .omit,
 
-        pub const jsonStringify = deanson.stringifyWithOmit;
+        pub const jsonStringify = jconfig.stringifyWithOmit;
     },
 
-    pub usingnamespace deanson.InlineUnionJsonMixin(@This());
+    pub usingnamespace jconfig.InlineUnionMixin(@This());
 };
 
 pub const GetChannelMessagesQuery = struct {
@@ -593,7 +592,7 @@ pub const CreateMessageFormBody = struct {
     components: ?[]const model.MessageComponent = null,
     sticker_ids: ?[]const Snowflake = null,
     files: ?[]const std.io.AnyReader = null,
-    attachments: ?[]const deanson.Partial(model.Message.Attachment) = null,
+    attachments: ?[]const jconfig.Partial(model.Message.Attachment) = null,
     flags: ?model.Message.Flags = null,
     enforce_nonce: ?bool = null,
     poll: ?model.Poll = null,
@@ -615,7 +614,7 @@ pub const CreateMessageFormBody = struct {
     pub fn initMessageWithFiles(
         message: ?[]const u8,
         files: []const std.io.AnyReader,
-        attachments: []const deanson.Partial(model.Message.Attachment),
+        attachments: []const jconfig.Partial(model.Message.Attachment),
     ) CreateMessageFormBody {
         std.debug.assert(files.len == attachments.len);
         return CreateMessageFormBody{ .content = message, .files = files, .attachments = attachments };
@@ -689,46 +688,46 @@ pub const EditMessageFormBody = struct {
 };
 
 pub const EditChannelPermissions = struct {
-    allow: Omittable(?model.Permissions) = .omit,
-    deny: Omittable(?model.Permissions) = .omit,
+    allow: jconfig.Omittable(?model.Permissions) = .omit,
+    deny: jconfig.Omittable(?model.Permissions) = .omit,
     type: enum(u2) {
         role = 0,
         member = 1,
 
-        pub const jsonStringify = model.jconfig.stringifyEnumAsInt;
+        pub const jsonStringify = jconfig.stringifyEnumAsInt;
     },
 
-    pub const jsonStringify = model.jconfig.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const CreateChannelInvite = struct {
-    max_age: Omittable(i64) = .omit,
-    max_uses: Omittable(i64) = .omit,
-    temporary: Omittable(bool) = .omit,
-    unique: Omittable(bool) = .omit,
-    target_tpe: Omittable(i64) = .omit,
-    target_user_id: Omittable(Snowflake) = .omit,
-    target_application_id: Omittable(Snowflake) = .omit,
+    max_age: jconfig.Omittable(i64) = .omit,
+    max_uses: jconfig.Omittable(i64) = .omit,
+    temporary: jconfig.Omittable(bool) = .omit,
+    unique: jconfig.Omittable(bool) = .omit,
+    target_tpe: jconfig.Omittable(i64) = .omit,
+    target_user_id: jconfig.Omittable(Snowflake) = .omit,
+    target_application_id: jconfig.Omittable(Snowflake) = .omit,
 
-    pub const jsonStringify = model.jconfig.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const StartThreadFromMessage = struct {
     name: []const u8,
-    auto_archive_duration: Omittable(i64) = .omit,
-    rate_limit_per_user: Omittable(?i64) = .omit,
+    auto_archive_duration: jconfig.Omittable(i64) = .omit,
+    rate_limit_per_user: jconfig.Omittable(?i64) = .omit,
 
-    pub const jsonStringify = deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const StartThreadWithoutMessage = struct {
     name: []const u8,
-    auto_archive_duration: Omittable(i64) = .omit,
+    auto_archive_duration: jconfig.Omittable(i64) = .omit,
     type: Channel.Type,
-    invitable: Omittable(bool) = .omit,
-    rate_limit_per_user: Omittable(?i64) = .omit,
+    invitable: jconfig.Omittable(bool) = .omit,
+    rate_limit_per_user: jconfig.Omittable(?i64) = .omit,
 
-    pub const jsonStringify = deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const StartThreadInForumOrMediaChannelFormBody = struct {
@@ -748,15 +747,15 @@ pub const StartThreadInForumOrMediaChannelFormBody = struct {
     }
 
     pub const ForumAndMediaThreadMessage = struct {
-        content: Omittable([]const u8) = .omit,
-        embeds: Omittable([]const model.Message.Embed) = .omit,
-        allowed_mentions: Omittable([]const model.Message.AllowedMentions) = .omit,
-        components: Omittable([]const model.MessageComponent) = .omit,
-        sticker_ids: Omittable([]const Snowflake) = .omit,
-        attachments: Omittable([]const deanson.Partial(model.Message.Attachment)) = .omit,
-        flags: Omittable(model.Message.Flags) = .omit,
+        content: jconfig.Omittable([]const u8) = .omit,
+        embeds: jconfig.Omittable([]const model.Message.Embed) = .omit,
+        allowed_mentions: jconfig.Omittable([]const model.Message.AllowedMentions) = .omit,
+        components: jconfig.Omittable([]const model.MessageComponent) = .omit,
+        sticker_ids: jconfig.Omittable([]const Snowflake) = .omit,
+        attachments: jconfig.Omittable([]const jconfig.Partial(model.Message.Attachment)) = .omit,
+        flags: jconfig.Omittable(model.Message.Flags) = .omit,
 
-        pub const jsonStringify = deanson.stringifyWithOmit;
+        pub const jsonStringify = jconfig.stringifyWithOmit;
     };
 };
 

@@ -12,7 +12,8 @@ pub fn main() !void {
 
     const allocator = gpa.allocator();
 
-    const env = try std.process.getEnvMap(allocator);
+    var env = try std.process.getEnvMap(allocator);
+    defer env.deinit();
     const token = env.get("TOKEN") orelse {
         std.log.err("environment variable TOKEN (set to bot token) is required", .{});
         return error.MissingEnv;
@@ -30,7 +31,8 @@ pub fn main() !void {
 
     const cmd_id = try createTestCommand(&client, application_id);
 
-    while (server.receiveInteraction()) |req| {
+    while (server.receiveInteraction(allocator)) |_req| {
+        var req = _req;
         defer req.deinit();
 
         const interaction = req.interaction;
@@ -39,14 +41,36 @@ pub fn main() !void {
                 std.log.warn("data expected from application command: {}", .{std.json.fmt(interaction, .{})});
                 continue;
             };
-            if (data.id == cmd_id) {}
+            const command_data = data.application_command;
+            if (command_data.id.asU64() == cmd_id.asU64()) {
+                if (data.application_command.options.asSome()) |options| {
+                    const lol_opt = for (options) |opt| {
+                        if (std.mem.eql(u8, opt.name, "lol")) break opt;
+                    } else continue;
+                    if (lol_opt.value.asSome()) |value| {
+                        const str = switch (value) {
+                            .string => |str| str,
+                            else => continue,
+                        };
+                        if (std.mem.eql(u8, str, "quit")) {
+                            break;
+                        } else {
+                            try req.respond(deancord.model.interaction.InteractionResponse{
+                                .type = .channel_message_with_source,
+                                .data = .{ .some = .{ .content = .{ .some = str } } },
+                            });
+                        }
+                    }
+                }
+            }
         }
     } else |err| {
-        _ = err;
+        std.log.err("error when receiving interaction: {}", .{err});
     }
 }
 
 fn createTestCommand(client: *deancord.rest.Client, application_id: deancord.model.Snowflake) !deancord.model.Snowflake {
+    // TODO - this is all way too verbose.
     const command_result = try deancord.rest.endpoints.application_commands.createGlobalApplicationCommand(
         client,
         application_id,

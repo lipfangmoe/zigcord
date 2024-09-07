@@ -32,7 +32,14 @@ pub fn InlineUnionJsonMixin(comptime T: type) type {
     return struct {
         pub fn jsonStringify(self: T, jw: anytype) !void {
             switch (self) {
-                inline else => |value| try jw.write(value),
+                inline else => |value| {
+                    if (@TypeOf(value) == void) {
+                        std.log.warn("tried to stringify a void type... replacing with null", .{});
+                        try jw.write(null);
+                    } else {
+                        try jw.write(value);
+                    }
+                },
             }
         }
 
@@ -42,9 +49,12 @@ pub fn InlineUnionJsonMixin(comptime T: type) type {
         }
 
         pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, options: std.json.ParseOptions) std.json.ParseFromValueError!T {
-            inline for (std.meta.fields(T)) |field| {
-                if (std.json.innerParseFromValue(field.type, alloc, source, options)) |value| {
-                    return @unionInit(T, field.name, value);
+            inline for (std.meta.fields(T)) |union_field| {
+                if (union_field.type == void) {
+                    return @unionInit(T, union_field.name, void{});
+                }
+                if (std.json.innerParseFromValue(union_field.type, alloc, source, options)) |value| {
+                    return @unionInit(T, union_field.name, value);
                 } else |_| {}
             } else {
                 std.log.err("invalid format for type '{s}', provided json: {s}", .{ @typeName(T), std.json.fmt(source, .{}) });

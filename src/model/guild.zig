@@ -11,7 +11,7 @@ pub fn MaybeAvailable(comptime AvailableT: type) type {
         available: AvailableT,
         unavailable: UnavailableGuild,
 
-        pub const jsonStringify = model.jconfig.stringifyUnionInline;
+        pub const jsonStringify = jconfig.stringifyUnionInline;
 
         pub fn jsonParse(alloc: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !MaybeAvailable(AvailableT) {
             const value = try std.json.innerParse(std.json.Value, alloc, source, options);
@@ -88,14 +88,14 @@ pub const AvailableGuild = struct {
     premium_progress_bar_enabled: bool,
     safety_alerts_channel_id: ?Snowflake,
 
-    pub const jsonStringify = model.jconfig.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const UnavailableGuild = struct {
     id: jconfig.Omittable(model.Snowflake) = .omit,
     unavailable: jconfig.Omittable(bool) = .omit,
 
-    pub const jsonStringify = model.jconfig.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const VerificationLevel = enum {
@@ -110,14 +110,14 @@ pub const VerificationLevel = enum {
     /// must have a verified phone number
     very_high,
 
-    pub const jsonStringify = model.jconfig.stringifyEnumAsInt;
+    pub const jsonStringify = jconfig.stringifyEnumAsInt;
 };
 
 pub const MessageNotificationLevel = enum {
     all_messages,
     only_mentions,
 
-    pub const jsonStringify = model.jconfig.stringifyEnumAsInt;
+    pub const jsonStringify = jconfig.stringifyEnumAsInt;
 };
 
 pub const ExplicitContentFilterLevel = enum {
@@ -125,14 +125,14 @@ pub const ExplicitContentFilterLevel = enum {
     members_without_roles,
     all_members,
 
-    pub const jsonStringify = model.jconfig.stringifyEnumAsInt;
+    pub const jsonStringify = jconfig.stringifyEnumAsInt;
 };
 
 pub const MfaLevel = enum {
     none,
     elevated,
 
-    pub const jsonStringify = model.jconfig.stringifyEnumAsInt;
+    pub const jsonStringify = jconfig.stringifyEnumAsInt;
 };
 
 pub const PremiumTier = enum {
@@ -141,7 +141,7 @@ pub const PremiumTier = enum {
     tier_2,
     tier_3,
 
-    pub const jsonStringify = model.jconfig.stringifyEnumAsInt;
+    pub const jsonStringify = jconfig.stringifyEnumAsInt;
 };
 
 pub const NsfwLevel = enum {
@@ -150,7 +150,7 @@ pub const NsfwLevel = enum {
     safe,
     age_restricted,
 
-    pub const jsonStringify = model.jconfig.stringifyEnumAsInt;
+    pub const jsonStringify = jconfig.stringifyEnumAsInt;
 };
 
 pub const WelcomeScreen = struct {
@@ -231,7 +231,7 @@ pub const Onboarding = struct {
         title: []const u8,
         description: ?[]const u8,
 
-        pub usingnamespace jconfig.OmittableJsonMixin(@This());
+        pub usingnamespace jconfig.OmittableFieldsMixin(@This());
     };
 
     pub const Mode = enum(u1) {
@@ -311,7 +311,7 @@ pub const Member = struct {
     /// when the user's timeout will expire. may be in the past; if so, the user is not timed out.
     communication_disabled_until: jconfig.Omittable(?model.IsoTime) = .omit,
 
-    pub const jsonStringify = model.jconfig.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 
     pub const Flags = packed struct {
         did_rejoin: bool = false,

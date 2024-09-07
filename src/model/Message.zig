@@ -41,7 +41,7 @@ resolved: jconfig.Omittable(model.interaction.ResolvedData) = .omit,
 poll: jconfig.Omittable(model.Poll) = .omit,
 call: jconfig.Omittable(Call) = .omit,
 
-pub const jsonStringify = model.jconfig.stringifyWithOmit;
+pub const jsonStringify = jconfig.stringifyWithOmit;
 
 pub fn jsonParse(alloc: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !Message {
     return try jsonParseFromValue(
@@ -114,7 +114,7 @@ pub const Attachment = struct {
     waveform: jconfig.Omittable([]const u8) = .omit,
     flags: Flags,
 
-    pub const jsonStringify = model.jconfig.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const ChannelMention = struct {
@@ -215,7 +215,7 @@ pub const Nonce = union(enum) {
     int: i64,
     str: []const u8,
 
-    pub const jsonStringify = model.jconfig.stringifyUnionInline;
+    pub const jsonStringify = jconfig.stringifyUnionInline;
 
     pub fn jsonParse(allocator: std.mem.Allocator, source: anytype, _: std.json.ParseOptions) !Nonce {
         const token = try source.nextAlloc(allocator, .alloc_if_needed);
@@ -279,7 +279,7 @@ pub const Type = enum(u8) {
     purchase_notification = 44,
     _,
 
-    pub const jsonStringify = model.jconfig.stringifyEnumAsInt;
+    pub const jsonStringify = jconfig.stringifyEnumAsInt;
 };
 
 pub const Activity = struct {
@@ -292,7 +292,7 @@ pub const Activity = struct {
         listen = 3,
         join_request = 5,
 
-        pub const jsonStringify = model.jconfig.stringifyEnumAsInt;
+        pub const jsonStringify = jconfig.stringifyEnumAsInt;
     };
 };
 
@@ -328,7 +328,7 @@ pub const InteractionMetadata = struct {
     interacted_message_id: jconfig.Omittable(Snowflake) = .omit,
     triggering_interaction_metadata: jconfig.Omittable(?*const InteractionMetadata) = .omit,
 
-    pub const jsonStringify = model.jconfig.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const RoleSubscriptionData = struct {
@@ -342,7 +342,7 @@ pub const Call = struct {
     participants: []const Snowflake,
     ended_timestamp: jconfig.Omittable(?model.IsoTime) = .omit,
 
-    pub const jsonStringify = model.jconfig.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const AllowedMentions = struct {

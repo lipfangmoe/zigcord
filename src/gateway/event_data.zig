@@ -1,5 +1,5 @@
 const std = @import("std");
-const jconfig = @import("../root.zig").model.jconfig;
+const jconfig = @import("../root.zig").jconfig;
 
 pub const send_events = @import("./event_data/send_events.zig");
 pub const receive_events = @import("./event_data/receive_events.zig");

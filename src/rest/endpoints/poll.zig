@@ -2,7 +2,7 @@ const deancord = @import("../../root.zig");
 const std = @import("std");
 const model = deancord.model;
 const rest = deancord.rest;
-const deanson = model.jconfig;
+const jconfig = deancord.jconfig;
 
 pub fn getAnswerVoters(
     client: *rest.Client,

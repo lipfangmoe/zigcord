@@ -65,6 +65,7 @@ pub fn beginRequest(
 
     var defaulted_headers = headers orelse std.http.Client.Request.Headers{};
     defaulted_headers.authorization = .{ .override = authValue };
+    defaulted_headers.content_type = .{ .override = "application/json" };
 
     var server_header_buffer: [2048]u8 = undefined;
     var req = try self.client.open(method, url, std.http.Client.RequestOptions{

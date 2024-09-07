@@ -63,15 +63,22 @@ pub const ApplicationCommandInteractionData = struct {
 };
 
 pub const ApplicationCommandInteractionDataOption = struct {
-    id: Snowflake,
     name: []const u8,
     type: command.ApplicationCommandType,
-    resolved: jconfig.Omittable(ResolvedData) = .omit,
-    options: jconfig.Omittable([]const jconfig.Partial(ApplicationCommandInteractionDataOption)) = .omit,
-    guild_id: jconfig.Omittable(model.Snowflake) = .omit,
-    target_id: jconfig.Omittable(model.Snowflake) = .omit,
+    value: jconfig.Omittable(Value) = .omit,
+    options: jconfig.Omittable([]const ApplicationCommandInteractionDataOption) = .omit,
+    focused: jconfig.Omittable(bool) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
+
+    pub const Value = union(enum) {
+        string: []const u8,
+        int: i64,
+        double: f64,
+        boolean: bool,
+
+        pub usingnamespace jconfig.InlineUnionMixin(@This());
+    };
 };
 
 pub const MessageComponentData = struct {
@@ -92,8 +99,10 @@ pub const ApplicationCommandAutocompleteInteractionData = struct {
     name: []const u8,
     type: command_option.ApplicationCommandOptionType,
     value: jconfig.Omittable(Value) = .omit,
-    options: jconfig.Omittable([]const ApplicationCommandAutocompleteInteractionData) = .omit,
+    options: jconfig.Omittable([]const jconfig.Partial(ApplicationCommandInteractionData)) = .omit,
     focused: jconfig.Omittable(bool) = .omit,
+
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 
     pub const Value = union(enum) {
         string: []const u8,
@@ -101,10 +110,8 @@ pub const ApplicationCommandAutocompleteInteractionData = struct {
         double: f64,
         boolean: bool,
 
-        pub usingnamespace jconfig.InlineUnionJsonMixin(@This());
+        pub usingnamespace jconfig.InlineUnionMixin(@This());
     };
-
-    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const ResolvedData = struct {

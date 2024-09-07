@@ -111,13 +111,13 @@ pub const Connection = struct {
     two_way_link: bool,
     visibility: Visibility,
 
-    pub const jsonStringify = model.jconfig.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 
     pub const Visibility = enum(u1) {
         none = 0,
         everyone = 1,
 
-        pub const jsonStringify = model.jconfig.stringifyEnumAsInt;
+        pub const jsonStringify = jconfig.stringifyEnumAsInt;
     };
 };
 
@@ -126,7 +126,7 @@ pub const ApplicationRoleConnection = struct {
     platform_username: Omittable([]const u8) = .omit,
     metadata: std.json.ArrayHashMap([]const u8),
 
-    pub const jsonStringify = model.jconfig.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 test "idk some websocket response" {

@@ -2,7 +2,7 @@ const std = @import("std");
 const deancord = @import("../../root.zig");
 const model = deancord.model;
 const rest = deancord.rest;
-const Omittable = model.jconfig.Omittable;
+const jconfig = deancord.jconfig;
 
 pub fn getGuildTemplate(
     client: *rest.Client,
@@ -89,21 +89,21 @@ pub fn deleteGuildTemplate(
 
 pub const CreateGuildFromGuildTemplateBody = struct {
     name: []const u8,
-    icon: Omittable(model.ImageData) = .omit,
+    icon: jconfig.Omittable(model.ImageData) = .omit,
 
-    pub usingnamespace model.jconfig.OmittableJsonMixin(@This());
+    pub usingnamespace jconfig.OmittableFieldsMixin(@This());
 };
 
 pub const CreateGuildTemplateBody = struct {
     name: []const u8,
-    description: Omittable(?[]const u8) = .omit,
+    description: jconfig.Omittable(?[]const u8) = .omit,
 
-    pub usingnamespace model.jconfig.OmittableJsonMixin(@This());
+    pub usingnamespace jconfig.OmittableFieldsMixin(@This());
 };
 
 pub const ModifyGuildTemplateBody = struct {
-    name: Omittable([]const u8) = .omit,
-    description: Omittable(?[]const u8) = .omit,
+    name: jconfig.Omittable([]const u8) = .omit,
+    description: jconfig.Omittable(?[]const u8) = .omit,
 
-    pub usingnamespace model.jconfig.OmittableJsonMixin(@This());
+    pub usingnamespace jconfig.OmittableFieldsMixin(@This());
 };
