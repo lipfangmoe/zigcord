@@ -2,7 +2,8 @@ const std = @import("std");
 const deancord = @import("deancord");
 
 pub const std_options: std.Options = .{ .log_level = switch (@import("builtin").mode) {
-    .Debug, .ReleaseSafe => .info,
+    .Debug => .debug,
+    .ReleaseSafe => .info,
     .ReleaseFast, .ReleaseSmall => .err,
 } };
 
@@ -14,25 +15,40 @@ pub fn main() !void {
 
     var env = try std.process.getEnvMap(allocator);
     defer env.deinit();
+
+    const application_public_key = env.get("APPLICATION_PUBLIC_KEY") orelse {
+        std.log.err("environment variable APPLICATION_PUBLIC_KEY is required", .{});
+        return error.MissingEnv;
+    };
     const token = env.get("TOKEN") orelse {
         std.log.err("environment variable TOKEN (set to bot token) is required", .{});
         return error.MissingEnv;
     };
-    const application_id_str = env.get("APP") orelse {
-        std.log.err("environment variable APP (set to application id) is required", .{});
+    const application_id_str = env.get("APPLICATION_ID") orelse {
+        std.log.err("environment variable APPLICATION_ID is required", .{});
         return error.MissingEnv;
+    };
+    const port_str = env.get("PORT") orelse "8080";
+    const port = std.fmt.parseInt(u16, port_str, 10) catch {
+        std.log.err("environment variable PORT must be a number", .{});
+        return error.InvalidEnv;
     };
     const application_id = deancord.model.Snowflake.fromU64(try std.fmt.parseInt(u64, application_id_str, 10));
 
     var client = deancord.rest.Client.init(allocator, .{ .token = .{ .bot = token } });
     defer client.deinit();
 
-    var server = try deancord.rest.Server.init(std.net.Address.initIp4(.{ 0, 0, 0, 0 }, 8080));
+    var server = try deancord.rest.Server.init(std.net.Address.initIp4(.{ 0, 0, 0, 0 }, port), application_public_key[0..64].*);
 
     const cmd_id = try createTestCommand(&client, application_id);
 
-    while (server.receiveInteraction(allocator)) |_req| {
-        var req = _req;
+    while (true) {
+        var req = server.receiveInteraction(allocator) catch |err| {
+            std.log.err("error when receiving interaction: {}", .{err});
+            const trace = @errorReturnTrace() orelse continue;
+            std.debug.dumpStackTrace(trace.*);
+            continue;
+        };
         defer req.deinit();
 
         const interaction = req.interaction;
@@ -64,8 +80,6 @@ pub fn main() !void {
                 }
             }
         }
-    } else |err| {
-        std.log.err("error when receiving interaction: {}", .{err});
     }
 }
 
@@ -77,11 +91,9 @@ fn createTestCommand(client: *deancord.rest.Client, application_id: deancord.mod
         deancord.rest.endpoints.application_commands.CreateGlobalApplicationCommandBody{
             .name = "test",
             .type = .{ .some = .chat_input },
+            .description = "test",
             .options = .{ .some = &.{deancord.model.interaction.command_option.ApplicationCommandOption.new(
-                deancord.model.interaction.command_option.ApplicationCommandOption.Builder{ .string = deancord.model.interaction.command_option.StringOptionBuilder{
-                    .name = "lol",
-                    .description = "set to 'quit' to quit",
-                } },
+                .{ .string = deancord.model.interaction.command_option.StringOptionBuilder{ .name = "weee", .description = "wowie!" } },
             )} },
         },
     );

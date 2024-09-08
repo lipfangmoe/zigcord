@@ -180,7 +180,7 @@ pub fn editApplicationCommandPermissions(
 pub const CreateGlobalApplicationCommandBody = struct {
     name: []const u8,
     name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
-    description: Omittable([]const u8) = .omit,
+    description: []const u8,
     description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     options: Omittable([]const ApplicationCommandOption) = .omit,
     default_member_permissions: Omittable(?[]const u8) = .omit,

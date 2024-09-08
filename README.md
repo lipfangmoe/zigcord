@@ -14,14 +14,16 @@ To include this in your zig project, use the Zig Package Manager:
 zig fetch --save 'git+https://github.com/deanveloper/deancord.zig#main'
 ```
 
-Then, make sure the following is in your `build.zig`:
+Then, make sure something similar to the following is in your `build.zig`:
 
 ```rs
-    const gateway_bot = b.addExecutable(.{
-        .name = "gateway-example",
+	const deancord_dependency = b.dependency("deancord");
+	const deancord_module = deancord_dependency.module("deancord");
+    const my_bot = b.addExecutable(.{
+        .name = "my-bot",
         .optimize = optimize,
         .target = target,
-        .root_source_file = b.path("./examples/gateway_bot.zig"),
+        .root_source_file = b.path("./src/main.zig"),
     });
     gateway_bot.root_module.addImport("deancord", deancord_module);
 	b.installArtifact(gateway_bot);

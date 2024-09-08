@@ -31,7 +31,7 @@ pub const ApplicationCommandOption = struct {
     description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     required: Omittable(bool) = .omit,
     choices: Omittable(Choices) = .omit,
-    options: Omittable([]ApplicationCommandOption) = .omit,
+    options: Omittable([]const ApplicationCommandOption) = .omit,
     channel_types: Omittable([]const Channel.Type) = .omit,
     min_value: Omittable(union(enum) {
         double: f64,
@@ -62,9 +62,9 @@ pub const ApplicationCommandOption = struct {
     };
 
     pub const Choices = union(enum) {
-        string: []StringChoice,
-        integer: []IntegerChoice,
-        double: []DoubleChoice,
+        string: []const StringChoice,
+        integer: []const IntegerChoice,
+        double: []const DoubleChoice,
 
         pub usingnamespace jconfig.InlineUnionMixin(@This());
     };
@@ -85,7 +85,7 @@ pub const SubcommandOptionBuilder = struct {
     description: []const u8,
     description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     required: Omittable(bool) = .omit,
-    options: Omittable([]ApplicationCommandOption) = .omit,
+    options: Omittable([]const ApplicationCommandOption) = .omit,
     channel_types: Omittable([]const Channel.Type) = .omit,
 
     fn build(self: @This()) ApplicationCommandOption {
@@ -114,7 +114,7 @@ pub const SubcommandGroupOptionBuilder = struct {
     description: []const u8,
     description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     required: Omittable(bool) = .omit,
-    options: Omittable([]ApplicationCommandOption) = .omit,
+    options: Omittable([]const ApplicationCommandOption) = .omit,
     channel_types: Omittable([]const Channel.Type) = .omit,
 
     fn build(self: @This()) ApplicationCommandOption {
@@ -143,7 +143,7 @@ pub const StringOptionBuilder = struct {
     description: []const u8,
     description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     required: Omittable(bool) = .omit,
-    choices: Omittable([]StringChoice) = .omit,
+    choices: Omittable([]const StringChoice) = .omit,
     channel_types: Omittable([]const Channel.Type) = .omit,
     min_length: Omittable(i64) = .omit,
     max_length: Omittable(i64) = .omit,
@@ -175,7 +175,7 @@ pub const IntegerOptionBuilder = struct {
     description: []const u8,
     description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     required: Omittable(bool) = .omit,
-    choices: Omittable([]IntegerChoice) = .omit,
+    choices: Omittable([]const IntegerChoice) = .omit,
     channel_types: Omittable([]const Channel.Type) = .omit,
     min_value: Omittable(i64) = .omit,
     max_value: Omittable(i64) = .omit,
@@ -207,7 +207,7 @@ pub const NumberOptionBuilder = struct {
     description: []const u8,
     description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     required: Omittable(bool) = .omit,
-    choices: Omittable([]DoubleChoice) = .omit,
+    choices: Omittable([]const DoubleChoice) = .omit,
     channel_types: Omittable([]const Channel.Type) = .omit,
     min_value: Omittable(f64) = .omit,
     max_value: Omittable(f64) = .omit,
