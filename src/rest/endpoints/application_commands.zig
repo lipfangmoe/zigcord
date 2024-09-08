@@ -5,7 +5,6 @@ const rest = deancord.rest;
 const jconfig = deancord.jconfig;
 const Omittable = jconfig.Omittable;
 const stringifyWithOmit = jconfig.stringifyWithOmit;
-const RestResult = rest.Client.Result;
 const ApplicationCommandOption = model.interaction.command_option.ApplicationCommandOption;
 const ApplicationCommand = model.interaction.command.ApplicationCommand;
 const ApplicationCommandType = model.interaction.command.ApplicationCommandType;
@@ -15,7 +14,7 @@ const Snowflake = model.Snowflake;
 /// The objects returned by this endpoint may be augmented with additional fields if localization is active.
 ///
 /// Fetch all of the global commands for your application. Returns an array of application command objects.
-pub fn getGlobalApplicationCommands(client: *Client, application_id: Snowflake, with_localizations: ?bool) !RestResult([]ApplicationCommand) {
+pub fn getGlobalApplicationCommands(client: *Client, application_id: Snowflake, with_localizations: ?bool) !Client.Result([]ApplicationCommand) {
     const query = WithLocalizationsQuery{ .with_localizations = with_localizations };
 
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/applications/{d}/commands?{query}", .{ application_id, query });
@@ -30,7 +29,7 @@ pub fn getGlobalApplicationCommands(client: *Client, application_id: Snowflake, 
 /// Create a new global command. Returns `201` if a command with the same name does not
 /// already exist, or a `200` if it does (in which case the previous command will be overwritten).
 /// Both responses include an application command object.
-pub fn createGlobalApplicationCommand(client: *Client, application_id: Snowflake, body: CreateGlobalApplicationCommandBody) !RestResult(ApplicationCommand) {
+pub fn createGlobalApplicationCommand(client: *Client, application_id: Snowflake, body: CreateGlobalApplicationCommandBody) !Client.Result(ApplicationCommand) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/applications/{d}/commands?", .{application_id});
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -39,7 +38,7 @@ pub fn createGlobalApplicationCommand(client: *Client, application_id: Snowflake
 }
 
 /// Fetch a global command for your application. Returns an application command object.
-pub fn getGlobalApplicationCommand(client: *Client, application_id: Snowflake, command_id: Snowflake) !RestResult(ApplicationCommand) {
+pub fn getGlobalApplicationCommand(client: *Client, application_id: Snowflake, command_id: Snowflake) !Client.Result(ApplicationCommand) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/applications/{d}/commands/{d}", .{ application_id, command_id });
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -49,7 +48,7 @@ pub fn getGlobalApplicationCommand(client: *Client, application_id: Snowflake, c
 
 /// Edit a global command. Returns `200` and an application command object.
 /// All fields are optional, but any fields provided will entirely overwrite the existing values of those fields.
-pub fn editGlobalApplicationCommand(client: *Client, application_id: Snowflake, command_id: Snowflake, body: EditGlobalApplicationCommandBody) !RestResult(ApplicationCommand) {
+pub fn editGlobalApplicationCommand(client: *Client, application_id: Snowflake, command_id: Snowflake, body: EditGlobalApplicationCommandBody) !Client.Result(ApplicationCommand) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/applications/{d}/commands/{d}", .{ application_id, command_id });
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -58,7 +57,7 @@ pub fn editGlobalApplicationCommand(client: *Client, application_id: Snowflake, 
 }
 
 /// Deletes a global command. Returns `204 No Content` on success.
-pub fn deleteGlobalApplicationCommand(client: *Client, application_id: Snowflake, command_id: Snowflake) !RestResult(void) {
+pub fn deleteGlobalApplicationCommand(client: *Client, application_id: Snowflake, command_id: Snowflake) !Client.Result(void) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/applications/{d}/commands/{d}", .{ application_id, command_id });
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -71,7 +70,7 @@ pub fn deleteGlobalApplicationCommand(client: *Client, application_id: Snowflake
 /// Commands that do not already exist will count toward daily application command create limits.
 ///
 /// This will overwrite all types of application commands: slash commands, user commands, and message commands.
-pub fn bulkOverwriteGlobalApplicationCommands(client: *Client, application_id: Snowflake, new_commands: []const ApplicationCommand) !RestResult([]ApplicationCommand) {
+pub fn bulkOverwriteGlobalApplicationCommands(client: *Client, application_id: Snowflake, new_commands: []const ApplicationCommand) !Client.Result([]ApplicationCommand) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/applications/{d}/commands/", .{application_id});
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -79,7 +78,7 @@ pub fn bulkOverwriteGlobalApplicationCommands(client: *Client, application_id: S
     return client.requestWithValueBody([]ApplicationCommand, .PUT, uri, new_commands, .{});
 }
 
-pub fn getGuildApplicationCommands(client: *Client, application_id: Snowflake, guild_id: Snowflake, with_localizations: ?bool) !RestResult([]ApplicationCommand) {
+pub fn getGuildApplicationCommands(client: *Client, application_id: Snowflake, guild_id: Snowflake, with_localizations: ?bool) !Client.Result([]ApplicationCommand) {
     const query = WithLocalizationsQuery{ .with_localizations = with_localizations };
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/applications/{d}/guilds/{d}/commands?{query}", .{ application_id, guild_id, query });
     defer client.allocator.free(uri_str);
@@ -88,7 +87,7 @@ pub fn getGuildApplicationCommands(client: *Client, application_id: Snowflake, g
     return client.request([]ApplicationCommand, .GET, uri);
 }
 
-pub fn createGuildApplicationCommand(client: *Client, application_id: Snowflake, guild_id: Snowflake, body: CreateGuildApplicationCommandBody) !RestResult(ApplicationCommand) {
+pub fn createGuildApplicationCommand(client: *Client, application_id: Snowflake, guild_id: Snowflake, body: CreateGuildApplicationCommandBody) !Client.Result(ApplicationCommand) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/applications/{d}/guilds/{d}/commands", .{ application_id, guild_id });
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -96,7 +95,7 @@ pub fn createGuildApplicationCommand(client: *Client, application_id: Snowflake,
     return client.requestWithValueBody(ApplicationCommand, .POST, uri, body, .{});
 }
 
-pub fn getGuildApplicationCommand(client: *Client, application_id: Snowflake, guild_id: Snowflake, command_id: Snowflake) !RestResult(ApplicationCommand) {
+pub fn getGuildApplicationCommand(client: *Client, application_id: Snowflake, guild_id: Snowflake, command_id: Snowflake) !Client.Result(ApplicationCommand) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/applications/{d}/guilds/{d}/commands/{d}", .{ application_id, guild_id, command_id });
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -104,7 +103,7 @@ pub fn getGuildApplicationCommand(client: *Client, application_id: Snowflake, gu
     return client.request(ApplicationCommand, .GET, uri);
 }
 
-pub fn editGuildApplicationCommand(client: *Client, application_id: Snowflake, guild_id: Snowflake, command_id: Snowflake, body: EditGuildApplicationCommandBody) !RestResult(ApplicationCommand) {
+pub fn editGuildApplicationCommand(client: *Client, application_id: Snowflake, guild_id: Snowflake, command_id: Snowflake, body: EditGuildApplicationCommandBody) !Client.Result(ApplicationCommand) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/applications/{d}/guilds/{d}/commands/{d}", .{ application_id, guild_id, command_id });
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -117,7 +116,7 @@ pub fn deleteGuildApplicationCommand(
     application_id: Snowflake,
     guild_id: Snowflake,
     command_id: Snowflake,
-) !RestResult(ApplicationCommand) {
+) !Client.Result(ApplicationCommand) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/applications/{d}/guilds/{d}/commands/{d}", .{ application_id, guild_id, command_id });
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -130,7 +129,7 @@ pub fn bulkOverwriteGuildApplicationCommands(
     application_id: Snowflake,
     guild_id: Snowflake,
     new_commands: []const ApplicationCommand,
-) !RestResult([]const ApplicationCommand) {
+) !Client.Result([]const ApplicationCommand) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/applications/{d}/guilds/{d}/commands", .{ application_id, guild_id });
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -142,7 +141,7 @@ pub fn getGuildApplicationCommandPermissions(
     client: *Client,
     application_id: Snowflake,
     guild_id: Snowflake,
-) !RestResult([]const model.interaction.command.GuildApplicationCommandPermissions) {
+) !Client.Result([]const model.interaction.command.GuildApplicationCommandPermissions) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/applications/{d}/guilds/{d}/permissions", .{ application_id, guild_id });
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -155,7 +154,7 @@ pub fn getApplicationCommandPermissions(
     application_id: Snowflake,
     guild_id: Snowflake,
     command_id: Snowflake,
-) !RestResult(model.interaction.command.ApplicationCommandPermission) {
+) !Client.Result(model.interaction.command.ApplicationCommandPermission) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/applications/{d}/guilds/{d}/commands/{d}/permissions", .{ application_id, guild_id, command_id });
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -169,7 +168,7 @@ pub fn editApplicationCommandPermissions(
     guild_id: Snowflake,
     command_id: Snowflake,
     body: []const model.interaction.command.ApplicationCommandPermission,
-) !RestResult(model.interaction.command.ApplicationCommandPermission) {
+) !Client.Result(model.interaction.command.ApplicationCommandPermission) {
     const uri_str = try rest.allocDiscordUriStr(client.allocator, "/applications/{d}/guilds/{d}/commands/{d}/permissions", .{ application_id, guild_id, command_id });
     defer client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);

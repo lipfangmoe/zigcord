@@ -85,10 +85,10 @@ pub fn main() !void {
 
 fn createTestCommand(client: *deancord.rest.Client, application_id: deancord.model.Snowflake) !deancord.model.Snowflake {
     // TODO - this is all way too verbose.
-    const command_result = try deancord.rest.endpoints.application_commands.createGlobalApplicationCommand(
+    const command_result = try deancord.rest.endpoints.createGlobalApplicationCommand(
         client,
         application_id,
-        deancord.rest.endpoints.application_commands.CreateGlobalApplicationCommandBody{
+        deancord.rest.endpoints.CreateGlobalApplicationCommandBody{
             .name = "test",
             .type = .{ .some = .chat_input },
             .description = "test",

@@ -27,7 +27,7 @@ pub fn init(allocator: std.mem.Allocator, auth: rest.Client.Authorization) !Clie
 /// Initializes a Gateway Client from an existing Rest Client. The rest client only needs to live as long as this method call, but the
 /// allocator should live as long as the returned Gateway Client.
 pub fn initWithRestClient(allocator: std.mem.Allocator, rest_client: *rest.Client) !Client {
-    const gateway_resp = try rest.endpoints.gateway.getGateway(rest_client);
+    const gateway_resp = try rest.endpoints.getGateway(rest_client);
     defer gateway_resp.deinit();
 
     const url = switch (gateway_resp.value()) {

@@ -44,9 +44,9 @@ pub fn respond(self: *Request, response: model.interaction.InteractionResponse) 
 pub fn followupEditOriginal(
     self: Request,
     client: *deancord.rest.Client,
-    body: rest.endpoints.webhook.EditWebhookMessageFormBody,
+    body: rest.endpoints.EditWebhookMessageFormBody,
 ) !rest.Client.Result(model.Message) {
-    return try rest.endpoints.interaction.editOriginalInteractionResponse(client, self.interaction.application_id, self.interaction.token, body);
+    return try rest.endpoints.editOriginalInteractionResponse(client, self.interaction.application_id, self.interaction.token, body);
 }
 
 /// send a followup request which deletes the original message
@@ -54,16 +54,16 @@ pub fn followupDeleteOriginal(
     self: Request,
     client: *deancord.rest.Client,
 ) !rest.Client.Result(void) {
-    return try rest.endpoints.interaction.deleteOriginalInteractionResponse(client, self.interaction.application_id, self.interaction.token);
+    return try rest.endpoints.deleteOriginalInteractionResponse(client, self.interaction.application_id, self.interaction.token);
 }
 
 /// send a followup request which sends a new message
 pub fn followupNewMessage(
     self: Request,
     client: *deancord.rest.Client,
-    body: rest.endpoints.webhook.ExecuteWebhookFormBody,
+    body: rest.endpoints.ExecuteWebhookFormBody,
 ) !rest.Client.Result(model.Message) {
-    return try rest.endpoints.interaction.createFollowupMessage(client, self.interaction.application_id, self.interaction.token, body);
+    return try rest.endpoints.createFollowupMessage(client, self.interaction.application_id, self.interaction.token, body);
 }
 
 /// send a followup request which edits a message that was previously sent with followupNewMessage()
@@ -71,9 +71,9 @@ pub fn followupEditNewMessage(
     self: Request,
     client: *deancord.rest.Client,
     message_id: model.Snowflake,
-    body: rest.endpoints.webhook.EditWebhookMessageFormBody,
+    body: rest.endpoints.EditWebhookMessageFormBody,
 ) !rest.Client.Result(model.Message) {
-    return try rest.endpoints.interaction.editFollowupMessage(client, self.interaction.application_id, self.interaction.token, message_id, body);
+    return try rest.endpoints.editFollowupMessage(client, self.interaction.application_id, self.interaction.token, message_id, body);
 }
 
 fn verify(allocator: std.mem.Allocator, http_req: *std.http.Server.Request, application_public_key: std.crypto.sign.Ed25519.PublicKey) ![]const u8 {
