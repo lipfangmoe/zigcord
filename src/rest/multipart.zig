@@ -4,7 +4,6 @@ const deanson = deancord.jconfig;
 
 pub const boundary = "f89767726a7827c6f785b40aee1ca2ade74d951d6a2d50e27cc0f0e5072a12b2";
 
-// TODO - tests
 pub fn writeMultipartFormDataBody(value: anytype, comptime upload_field_name: []const u8, writer: anytype) !void {
     var buffered_writer = std.io.bufferedWriter(writer);
 
