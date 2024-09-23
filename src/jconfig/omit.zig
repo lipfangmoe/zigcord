@@ -42,7 +42,7 @@ pub fn Omittable(comptime T: type) type {
         }
 
         pub fn jsonStringify(_: Omittable(T), _: anytype) !void {
-            @panic("make sure to use jconfig.stringifyWithOmit or jconfig.OmittableFieldsMixin on any types that use Omittable");
+            std.debug.panic("make sure to use jconfig.stringifyWithOmit or jconfig.OmittableFieldsMixin on any types that use Omittable. (problematic type {s})", .{@typeName(T)});
         }
     };
 }

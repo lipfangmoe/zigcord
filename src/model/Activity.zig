@@ -59,7 +59,7 @@ pub const Secrets = struct {
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
-pub const Flags = packed struct {
+pub const Flags = packed struct(u64) {
     instance: bool = false,
     join: bool = false,
     spectate: bool = false,
@@ -69,6 +69,7 @@ pub const Flags = packed struct {
     party_privacy_friends: bool = false,
     party_privacy_voice_channel: bool = false,
     embedded: bool = false,
+    _overflow: u55 = 0,
 
     pub usingnamespace model.PackedFlagsMixin(@This());
 };

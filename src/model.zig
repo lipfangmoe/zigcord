@@ -29,7 +29,7 @@ pub const Webhook = @import("./model/Webhook.zig");
 pub const Activity = @import("./model/Activity.zig");
 pub const IsoTime = @import("./model/IsoTime.zig");
 
-pub const Permissions = packed struct {
+pub const Permissions = packed struct(u64) {
     create_instant_invite: bool = false, // 1 << 0
     kick_members: bool = false,
     ban_members: bool = false,
@@ -77,13 +77,14 @@ pub const Permissions = packed struct {
     create_events: bool = false,
     use_external_sounds: bool = false,
     send_voice_messages: bool = false, // 1 << 46
+    _unknown: u17 = 0,
 
     pub fn fromU64(int: u64) Permissions {
-        return @bitCast(@as(u47, @truncate(int)));
+        return @bitCast(int);
     }
 
     pub fn asU64(self: Permissions) u64 {
-        return @intCast(@as(u47, @bitCast(self)));
+        return @bitCast(self);
     }
 
     pub fn format(self: Permissions, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: anytype) !void {
@@ -95,12 +96,12 @@ pub const Permissions = packed struct {
     }
 
     pub fn jsonParse(alloc: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !Permissions {
-        const int = try std.json.innerParse(u47, alloc, source, options);
+        const int = try std.json.innerParse(u64, alloc, source, options);
         return fromU64(int);
     }
 
     pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, options: std.json.ParseOptions) !Permissions {
-        const int = try std.json.innerParseFromValue(u47, alloc, source, options);
+        const int = try std.json.innerParseFromValue(u64, alloc, source, options);
         return fromU64(int);
     }
 
@@ -114,7 +115,7 @@ pub const Permissions = packed struct {
     }
 };
 
-pub const Intents = packed struct {
+pub const Intents = packed struct(u64) {
     guilds: bool = false, // 1 << 0
     guild_members: bool = false,
     guild_moderation: bool = false,
@@ -132,32 +133,36 @@ pub const Intents = packed struct {
     direct_message_typing: bool = false,
     message_content: bool = false,
     guild_scheduled_events: bool = false,
-    gap: u3 = 0, // gap of 3 removed(?) intents
+    _gap: u3 = 0, // gap of 3 removed(?) intents
     auto_moderation_configuration: bool = false, // 1 << 20
     auto_moderation_execution: bool = false,
-    gap2: u2 = 0, // gap of 2 more removed(?) intents
+    _gap2: u2 = 0, // gap of 2 more removed(?) intents
     guild_message_polls: bool = false,
     direct_message_polls: bool = false, // 1 << 25
+    _unknown: u38 = 0,
+
+    pub const all: Intents = @bitCast(@as(u64, 0xFFFFFFFF_FFFFFFFF));
 
     pub fn fromU64(int: u64) Intents {
-        return @bitCast(@as(u26, @truncate(int)));
+        return @bitCast(int);
     }
 
     pub fn asU64(self: Intents) u64 {
-        return @intCast(@as(u26, @bitCast(self)));
+        return @bitCast(self);
     }
 
     pub fn jsonStringify(self: Intents, jw: anytype) !void {
-        try jw.write(@as(u26, @bitCast(self)));
+        const int: u64 = @bitCast(self);
+        try jw.write(int);
     }
 
     pub fn jsonParse(alloc: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !Intents {
-        const int = try std.json.innerParse(u26, alloc, source, options);
+        const int = try std.json.innerParse(u64, alloc, source, options);
         return @bitCast(int);
     }
 
     pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, options: std.json.ParseOptions) !Intents {
-        const int = try std.json.innerParseFromValue(u26, alloc, source, options);
+        const int = try std.json.innerParseFromValue(u64, alloc, source, options);
         return @bitCast(int);
     }
 };

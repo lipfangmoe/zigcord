@@ -50,10 +50,10 @@ pub fn InlineSingleStructFieldMixin(comptime T: type, comptime inline_field: []c
             try jw.beginObject();
             inline for (std.meta.fields(T)) |outer_field| {
                 const outer_field_value = @field(self, outer_field.name);
-                if (std.mem.eql(u8, outer_field.name, inline_field)) {
-                    if (std.meta.hasMethod(outer_field.type, "jsonStringify")) {
-                        const jw_inline_obj = inlineFieldsJsonWriteStream(jw);
-                        try outer_field_value.jsonStringify(jw_inline_obj);
+                if (comptime std.mem.eql(u8, outer_field.name, inline_field)) {
+                    if (comptime std.meta.hasMethod(outer_field.type, "jsonStringify")) {
+                        var jw_inline_obj = inlineFieldsJsonWriteStream(jw);
+                        try outer_field_value.jsonStringify(&jw_inline_obj);
                         continue;
                     }
                     inline for (std.meta.fields(outer_field.type)) |inner_field| {
@@ -79,6 +79,8 @@ fn InlineFieldsJsonWriteStream(UnderlyingWriteStream: type) type {
         nesting_level: u64 = 0,
 
         const Self = @This();
+
+        pub const Error = @typeInfo(UnderlyingWriteStream).Pointer.child.Error;
 
         // changed methods
         pub fn beginObject(self: *Self) !void {

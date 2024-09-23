@@ -81,7 +81,7 @@ pub const DefaultReaction = union(enum) {
     emoji_name: []const u8,
 };
 
-pub const Flags = packed struct {
+pub const Flags = packed struct(u64) {
     _unused: u1 = 0,
 
     // 1 << 1
@@ -96,6 +96,8 @@ pub const Flags = packed struct {
 
     // 1 << 15
     hide_media_download_options: bool = false,
+
+    _overflow: u48 = 0,
 
     pub usingnamespace model.PackedFlagsMixin(@This());
 };
@@ -120,8 +122,9 @@ pub const ThreadMember = struct {
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 
-    pub const Flags = packed struct {
+    pub const Flags = packed struct(u64) {
         notifications: bool = false,
+        _overflow: u63 = 0,
 
         pub usingnamespace model.PackedFlagsMixin(@This());
     };

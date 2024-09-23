@@ -167,13 +167,14 @@ pub const WelcomeScreen = struct {
     };
 };
 
-pub const SystemChannelFlags = packed struct {
+pub const SystemChannelFlags = packed struct(u64) {
     supress_join_notifications: bool = false,
     suppress_premium_subscriptions: bool = false,
     suppress_guild_reminder_notifications: bool = false,
     suppress_join_notification_replies: bool = false,
     suppress_role_subscription_purchase_notifications: bool = false,
     suppress_role_subscription_purchase_notification_replies: bool = false,
+    _overflow: u58 = 0,
 
     pub usingnamespace model.PackedFlagsMixin(@This());
 };
@@ -313,11 +314,12 @@ pub const Member = struct {
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 
-    pub const Flags = packed struct {
+    pub const Flags = packed struct(u64) {
         did_rejoin: bool = false,
         completed_onboarding: bool = false,
         bypasses_verification: bool = false,
         started_onboarding: bool = false,
+        _overflow: u60 = 0,
 
         pub usingnamespace model.PackedFlagsMixin(@This());
     };

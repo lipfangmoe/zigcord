@@ -40,8 +40,9 @@ pub const Tags = struct {
     pub const stringifyWithOmit = jconfig.stringifyWithOmit;
 };
 
-pub const Flags = packed struct {
+pub const Flags = packed struct(u64) {
     in_prompt: bool = false,
+    _overflow: u63 = 0,
 
     pub usingnamespace model.PackedFlagsMixin(@This());
 };

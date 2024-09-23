@@ -40,7 +40,9 @@ public_flags: Omittable(Flags) = .omit,
 /// The user's avatar decoration data.
 avatar_decoration_data: Omittable(?AvatarDecorationData) = .omit,
 
-pub const Flags = packed struct {
+pub usingnamespace jconfig.OmittableFieldsMixin(@This());
+
+pub const Flags = packed struct(u64) {
     /// discord employee, 1 << 0
     staff: bool = false,
     /// partnered server owner, 1 << 1
@@ -83,6 +85,8 @@ pub const Flags = packed struct {
 
     /// active developer, 1 << 22
     active_developer: bool = false,
+
+    _overflow: u41 = 0,
 
     pub usingnamespace model.PackedFlagsMixin(@This());
 };

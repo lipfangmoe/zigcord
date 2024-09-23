@@ -56,7 +56,7 @@ pub const Snowflake = packed struct {
         }
     }
 
-    pub fn jsonStringify(self: *const Snowflake, jw: anytype) !void {
+    pub fn jsonStringify(self: Snowflake, jw: anytype) !void {
         var buf: [100]u8 = undefined;
         const n = std.fmt.formatIntBuf(&buf, self.asU64(), 10, .lower, .{});
         try jw.write(buf[0..n]);

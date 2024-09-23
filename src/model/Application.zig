@@ -54,7 +54,7 @@ pub const TeamMember = struct {
     };
 };
 
-pub const Flags = packed struct {
+pub const Flags = packed struct(u64) {
     _unused: u6 = 0,
     application_auto_moderation_rule_create_badge: bool = false, // 1 << 6
     _unused1: u5 = 0,
@@ -68,6 +68,7 @@ pub const Flags = packed struct {
     gateway_message_content_limited: bool = false, // 1 << 19
     _unused2: u3 = 0,
     application_command_badge: bool = false, // 1 << 23
+    _overflow: u40 = 0,
 
     pub usingnamespace model.PackedFlagsMixin(Flags);
 

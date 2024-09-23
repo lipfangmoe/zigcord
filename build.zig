@@ -54,6 +54,18 @@ pub fn build(b: *std.Build) !void {
     const example_gateway_step = b.step("examples:gateway", "Builds an example gateway bot");
     example_gateway_step.dependOn(&gateway_artifact.step);
 
+    // zig build examples:gateway_logger
+    const gateway_logger_bot = b.addExecutable(.{
+        .name = "gateway-logger-example",
+        .optimize = optimize,
+        .target = target,
+        .root_source_file = b.path("./examples/gateway_logger_bot.zig"),
+    });
+    gateway_logger_bot.root_module.addImport("deancord", deancord_module);
+    const gateway_logger_artifact = b.addInstallArtifact(gateway_logger_bot, .{});
+    const example_gateway_logger_step = b.step("examples:gateway_logger", "Builds an example gateway bot");
+    example_gateway_logger_step.dependOn(&gateway_logger_artifact.step);
+
     // zig build examples
     const examples_step = b.step("examples", "Builds all examples");
     examples_step.dependOn(example_interaction_step);
@@ -71,4 +83,5 @@ pub fn build(b: *std.Build) !void {
     check_step.dependOn(&check_tests_compile.step);
     check_step.dependOn(&interaction_bot.step);
     check_step.dependOn(&gateway_bot.step);
+    check_step.dependOn(&gateway_logger_bot.step);
 }

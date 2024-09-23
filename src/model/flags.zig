@@ -2,23 +2,29 @@ const std = @import("std");
 
 pub fn PackedFlagsMixin(comptime FlagStruct: type) type {
     if (@typeInfo(FlagStruct) != .Struct or @typeInfo(FlagStruct).Struct.backing_integer == null) {
-        @compileError("FlagEnum must be a packed struct");
+        @compileError("FlagStruct must be a packed struct with a u64 backing integer");
     }
 
-    const BackingInteger = comptime @typeInfo(FlagStruct).Struct.backing_integer orelse @compileError("FlagEnum must be a packed struct");
+    if (@typeInfo(FlagStruct).Struct.backing_integer != u64) {
+        @compileError("FlagStruct must be a packed struct with a u64 backing integer");
+    }
 
     return struct {
         pub fn format(self: FlagStruct, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: anytype) !void {
-            try std.fmt.formatIntValue(@as(BackingInteger, @bitCast(self)), fmt, options, writer);
+            const int: u64 = @bitCast(self);
+            try std.fmt.formatIntValue(int, fmt, options, writer);
         }
         pub fn jsonStringify(self: FlagStruct, jsonWriter: anytype) !void {
-            try jsonWriter.write(@as(BackingInteger, @bitCast(self)));
+            const int: u64 = @bitCast(self);
+            try jsonWriter.write(int);
         }
         pub fn jsonParse(alloc: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !FlagStruct {
-            return @bitCast(try std.json.innerParse(BackingInteger, alloc, source, options));
+            const int: u64 = try std.json.innerParse(u64, alloc, source, options);
+            return @bitCast(int);
         }
         pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, options: std.json.ParseOptions) !FlagStruct {
-            return @bitCast(try std.json.innerParseFromValue(BackingInteger, alloc, source, options));
+            const int: u64 = try std.json.innerParseFromValue(u64, alloc, source, options);
+            return @bitCast(int);
         }
     };
 }

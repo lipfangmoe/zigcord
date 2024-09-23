@@ -107,12 +107,12 @@ pub const Attachment = struct {
     size: u64,
     url: []const u8,
     proxy_url: []const u8,
-    height: jconfig.Omittable(?[]const u8) = .omit,
-    width: jconfig.Omittable(?[]const u8) = .omit,
+    height: jconfig.Omittable(?i64) = .omit,
+    width: jconfig.Omittable(?i64) = .omit,
     ephemeral: jconfig.Omittable(bool) = .omit,
     duration_secs: jconfig.Omittable(f64) = .omit,
     waveform: jconfig.Omittable([]const u8) = .omit,
-    flags: Flags,
+    flags: jconfig.Omittable(Flags) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
@@ -189,6 +189,8 @@ pub const Embed = struct {
         name: []const u8,
         value: []const u8,
         @"inline": jconfig.Omittable(bool) = .omit,
+
+        pub const jsonStringify = jconfig.stringifyWithOmit;
     };
 };
 
@@ -301,9 +303,11 @@ pub const Reference = struct {
     channel_id: jconfig.Omittable(Snowflake) = .omit,
     guild_id: jconfig.Omittable(Snowflake) = .omit,
     fail_if_not_exists: jconfig.Omittable(bool) = .omit,
+
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
-pub const Flags = packed struct {
+pub const Flags = packed struct(u64) {
     crossposted: bool = false,
     is_crosspost: bool = false,
     suppress_embeds: bool = false,
@@ -315,6 +319,7 @@ pub const Flags = packed struct {
     failed_to_mention_some_roles_in_thread: bool = false,
     suppress_notifications: bool = false,
     is_voice_message: bool = false,
+    _overflow: u53 = 0,
 
     pub usingnamespace model.PackedFlagsMixin(@This());
 };
