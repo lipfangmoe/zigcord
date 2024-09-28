@@ -1,11 +1,16 @@
 const std = @import("std");
 
+const version = std.SemanticVersion.parse("0.0.0") catch unreachable; // TODO: get from build.zig.zon
+
 // Although this function looks imperative, note that its job is to
 // declaratively construct a build graph that will be executed by an external
 // runner.
 pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
+
+    var options = b.addOptions();
+    options.addOption(std.SemanticVersion, "version", version);
 
     const weebsocket_dependency = b.dependency("weebsocket", .{});
     const weebsocket_module = weebsocket_dependency.module("weebsocket");
@@ -18,6 +23,7 @@ pub fn build(b: *std.Build) !void {
         .target = target,
         .optimize = optimize,
     });
+    deancord_module.addOptions("build", options);
 
     // zig build test
     const test_runner = b.addTest(.{
@@ -25,6 +31,7 @@ pub fn build(b: *std.Build) !void {
         .target = target,
         .optimize = optimize,
     });
+    test_runner.root_module.addOptions("build", options);
     test_runner.root_module.addImport("weebsocket", weebsocket_module);
     const test_run_artifact = b.addRunArtifact(test_runner);
     const test_step = b.step("test", "Run unit tests");
@@ -78,6 +85,7 @@ pub fn build(b: *std.Build) !void {
         .target = target,
         .optimize = optimize,
     });
+    check_tests_compile.root_module.addOptions("build", options);
     check_tests_compile.root_module.addImport("weebsocket", weebsocket_module);
     const check_step = b.step("check", "Run the compiler without building");
     check_step.dependOn(&check_tests_compile.step);

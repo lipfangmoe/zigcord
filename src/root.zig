@@ -10,7 +10,7 @@ pub const InteractionServer = rest.Server;
 pub const RestClient = rest.Client;
 pub const GatewayClient = gateway.Client;
 
-pub const version = "0.0.0";
+pub const version = @import("build").version;
 
 test {
     std.testing.refAllDeclsRecursive(@This());

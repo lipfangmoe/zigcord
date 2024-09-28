@@ -166,7 +166,7 @@ pub fn deinit(self: *Client) void {
 }
 
 pub const Config = struct {
-    pub const default_user_agent = "DiscordBot (https://dean.day/deancord.zig, " ++ deancord.version ++ ")";
+    pub const default_user_agent = std.fmt.comptimePrint("DiscordBot (https://github.com/deanveloper/deancord.zig, {})", .{deancord.version});
 
     /// 1mb seems fair since all discord api responses should be text, with urls for anything large.
     /// surely they don't respond with more than 1 million characters... Clueless
