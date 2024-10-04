@@ -10,19 +10,23 @@
 //     data: MyUnion,
 //     some_omittable: jconfig.Omittable(i64) = .omit,
 //
-//     pub usingnamespace jconfig.JsonConfigMixin(@This());
+//     pub usingnamespace jconfig.Mixin(@This());
 //
-//     pub const jsonConfig(cfg: *jconfig.Configurator(@This())) void {
-//          cfg.omittableFields();
-//          cfg.alias("some_omittable", "someOmittable"); // declares that the "some_omittable" field will be named "someOmittable" in JSON
-//          cfg.unionTag("data", "type"); // declares that the "data" field's union-tag should be determined by the "type" field
+//     pub const json_config = jconfig.StructConfig{
+//          .omittable_fields = true,
+//          .zigfields_to_jsonprops = std.StaticStringMap([]const u8).initComptime(.{
+//              .{"some_omittable", "someOmittable"}, // declares that the "some_omittable" field will be named "someOmittable" in JSON
+//          }),
+//          .union_tags = std.StaticStringMap([]const u8).initComptime(.{
+//              .{"data", "type"}, // declares that the "data" field's union-tag should be determined by the "type" field
+//          }),
 //     }
 //
 //     pub const MyUnionType = enum(u1) {
 //         foo,
 //         bar,
-//     	   pub const jsonConfig(cfg: *jconfig.Configurator(@This())) void {
-//             cfg.unionAsInt(); // declares that this enum should be an integer when represented in JSON
+//     	   pub const json_config = jconfig.EnumConfig{
+//             .representation = .integer, // declares that this enum should be represented as an integer
 //         }
 //     }
 //     pub const MyUnion = union(MyUnionType) {
