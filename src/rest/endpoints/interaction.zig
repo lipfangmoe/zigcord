@@ -4,29 +4,29 @@ const model = deancord.model;
 const rest = deancord.rest;
 
 pub fn createInteractionResponse(
-    client: *rest.Client,
+    client: *rest.ApiClient,
     interaction_id: model.Snowflake,
     interaction_token: []const u8,
     body: model.interaction.InteractionResponse,
 ) !rest.Client.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.allocator, "/interactions/{}/{s}/callback", .{ interaction_id, interaction_token });
-    defer client.allocator.free(uri_str);
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/interactions/{}/{s}/callback", .{ interaction_id, interaction_token });
+    defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.requestWithValueBody(void, .POST, uri, body, .{});
+    return client.rest_client.requestWithValueBody(void, .POST, uri, body, .{});
 }
 
 pub fn createInteractionResponseMultipart(
-    client: *rest.Client,
+    client: *rest.ApiClient,
     interaction_id: model.Snowflake,
     interaction_token: []const u8,
     form: CreateInteractionResponseFormBody,
 ) !rest.Client.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.allocator, "/interactions/{}/{s}/callback", .{ interaction_id, interaction_token });
-    defer client.allocator.free(uri_str);
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/interactions/{}/{s}/callback", .{ interaction_id, interaction_token });
+    defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    var pending_request = try client.beginMultipartRequest(void, .POST, uri, .chunked, rest.multipart_boundary, null);
+    var pending_request = try client.rest_client.beginMultipartRequest(void, .POST, uri, .chunked, rest.multipart_boundary, null);
     defer pending_request.deinit();
 
     try std.fmt.format(pending_request.writer(), "{form}", .{form});
@@ -35,28 +35,28 @@ pub fn createInteractionResponseMultipart(
 }
 
 pub fn getOriginalInteractionResponse(
-    client: *rest.Client,
+    client: *rest.ApiClient,
     application_id: model.Snowflake,
     interaction_token: []const u8,
 ) !rest.Client.Result(model.Message) {
-    const uri_str = try rest.allocDiscordUriStr(client.allocator, "/webhooks/{}/{s}/messages/@original", .{ application_id, interaction_token });
-    defer client.allocator.free(uri_str);
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{}/{s}/messages/@original", .{ application_id, interaction_token });
+    defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.request(model.Message, .GET, uri);
+    return client.rest_client.request(model.Message, .GET, uri);
 }
 
 pub fn editOriginalInteractionResponse(
-    client: *rest.Client,
+    client: *rest.ApiClient,
     application_id: model.Snowflake,
     interaction_token: []const u8,
     body: rest.endpoints.EditWebhookMessageFormBody,
 ) !rest.Client.Result(model.Message) {
-    const uri_str = try rest.allocDiscordUriStr(client.allocator, "/webhooks/{}/{s}/messages/@original", .{ application_id, interaction_token });
-    defer client.allocator.free(uri_str);
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{}/{s}/messages/@original", .{ application_id, interaction_token });
+    defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    var pending_request = try client.beginMultipartRequest(model.Message, .PATCH, uri, .chunked, rest.multipart_boundary, null);
+    var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .PATCH, uri, .chunked, rest.multipart_boundary, null);
     defer pending_request.deinit();
 
     try std.fmt.format(pending_request.writer(), "{form}", .{body});
@@ -65,19 +65,19 @@ pub fn editOriginalInteractionResponse(
 }
 
 pub fn deleteOriginalInteractionResponse(
-    client: *rest.Client,
+    client: *rest.ApiClient,
     application_id: model.Snowflake,
     interaction_token: []const u8,
 ) !rest.Client.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.allocator, "/webhooks/{}/{s}/messages/@original", .{ application_id, interaction_token });
-    defer client.allocator.free(uri_str);
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{}/{s}/messages/@original", .{ application_id, interaction_token });
+    defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.request(void, .DELETE, uri);
+    return client.rest_client.request(void, .DELETE, uri);
 }
 
 pub fn createFollowupMessage(
-    client: *rest.Client,
+    client: *rest.ApiClient,
     application_id: model.Snowflake,
     interaction_token: []const u8,
     body: rest.endpoints.ExecuteWebhookFormBody,
@@ -86,7 +86,7 @@ pub fn createFollowupMessage(
 }
 
 pub fn getFollowupMessage(
-    client: *rest.Client,
+    client: *rest.ApiClient,
     application_id: model.Snowflake,
     interaction_token: []const u8,
     message_id: model.Snowflake,
@@ -95,7 +95,7 @@ pub fn getFollowupMessage(
 }
 
 pub fn editFollowupMessage(
-    client: *rest.Client,
+    client: *rest.ApiClient,
     application_id: model.Snowflake,
     interaction_token: []const u8,
     message_id: model.Snowflake,
@@ -105,7 +105,7 @@ pub fn editFollowupMessage(
 }
 
 pub fn deleteFollowupMessage(
-    client: *rest.Client,
+    client: *rest.ApiClient,
     application_id: model.Snowflake,
     interaction_token: []const u8,
     message_id: model.Snowflake,

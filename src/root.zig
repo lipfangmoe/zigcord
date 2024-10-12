@@ -6,7 +6,7 @@ pub const rest = @import("./rest.zig");
 pub const gateway = @import("./gateway.zig");
 pub const jconfig = @import("./jconfig.zig");
 
-pub const InteractionServer = rest.Server;
+pub const HttpInteractionServer = rest.HttpInteractionServer;
 pub const RestClient = rest.Client;
 pub const GatewayClient = gateway.Client;
 

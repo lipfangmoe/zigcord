@@ -5,27 +5,27 @@ const rest = deancord.rest;
 const jconfig = deancord.jconfig;
 
 pub fn getInvite(
-    client: *rest.Client,
+    client: *rest.ApiClient,
     code: []const u8,
     query: GetInviteQuery,
 ) !rest.Client.Result(model.Invite) {
-    const uri_str = try rest.allocDiscordUriStr(client.allocator, "/invites/{s}?{query}", .{ code, query });
-    defer client.allocator.free(uri_str);
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/invites/{s}?{query}", .{ code, query });
+    defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.request(model.Invite, .GET, uri);
+    return client.rest_client.request(model.Invite, .GET, uri);
 }
 
 pub fn deleteInvite(
-    client: *rest.Client,
+    client: *rest.ApiClient,
     code: []const u8,
     audit_log_reason: ?[]const u8,
 ) !rest.Client.Result(model.Invite) {
-    const uri_str = try rest.allocDiscordUriStr(client.allocator, "/invites/{s}", .{code});
-    defer client.allocator.free(uri_str);
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/invites/{s}", .{code});
+    defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.requestWithAuditLogReason(model.Invite, .DELETE, uri, audit_log_reason);
+    return client.rest_client.requestWithAuditLogReason(model.Invite, .DELETE, uri, audit_log_reason);
 }
 
 pub const GetInviteQuery = struct {

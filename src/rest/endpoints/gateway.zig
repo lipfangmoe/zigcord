@@ -4,19 +4,19 @@ const model = deancord.model;
 const rest = deancord.rest;
 
 pub fn getGateway(
-    client: *rest.Client,
+    client: *rest.ApiClient,
 ) !rest.Client.Result(GetGatewayResponse) {
     const uri = std.Uri.parse(rest.base_url ++ "/gateway?v=10&encoding=json") catch undefined;
 
-    return try client.request(GetGatewayResponse, .GET, uri);
+    return try client.rest_client.request(GetGatewayResponse, .GET, uri);
 }
 
 pub fn getGatewayBot(
-    client: *rest.Client,
+    client: *rest.ApiClient,
 ) !rest.Client.Result(GetGatewayBotResponse) {
     const uri = std.Uri.parse(rest.base_url ++ "/gateway/bot") catch undefined;
 
-    return try client.request(GetGatewayBotResponse, .GET, uri);
+    return try client.rest_client.request(GetGatewayBotResponse, .GET, uri);
 }
 
 pub const GetGatewayResponse = struct {

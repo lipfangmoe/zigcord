@@ -5,59 +5,59 @@ const rest = deancord.rest;
 const jconfig = deancord.jconfig;
 
 pub fn getSticker(
-    client: *rest.Client,
+    client: *rest.ApiClient,
     sticker_id: model.Snowflake,
 ) !rest.Client.Result(model.Sticker) {
-    const uri_str = try rest.allocDiscordUriStr(client.allocator, "/stickers/{}", .{sticker_id});
-    defer client.allocator.free(uri_str);
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/stickers/{}", .{sticker_id});
+    defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.request(model.Sticker, .GET, uri);
+    return client.rest_client.request(model.Sticker, .GET, uri);
 }
 
 pub fn listStickerPacks(
-    client: *rest.Client,
+    client: *rest.ApiClient,
 ) !rest.Client.Result(ListStickerPacksResponse) {
-    const uri_str = try rest.allocDiscordUriStr(client.allocator, "/sticker-packs", .{});
-    defer client.allocator.free(uri_str);
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/sticker-packs", .{});
+    defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.request(ListStickerPacksResponse, .GET, uri);
+    return client.rest_client.request(ListStickerPacksResponse, .GET, uri);
 }
 
 pub fn listGuildStickers(
-    client: *rest.Client,
+    client: *rest.ApiClient,
     guild_id: model.Snowflake,
 ) !rest.Client.Result([]const model.Sticker) {
-    const uri_str = try rest.allocDiscordUriStr(client.allocator, "/guilds/{}/stickers", .{guild_id});
-    defer client.allocator.free(uri_str);
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/stickers", .{guild_id});
+    defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.request([]const model.Sticker, .GET, uri);
+    return client.rest_client.request([]const model.Sticker, .GET, uri);
 }
 
 pub fn getGuildSticker(
-    client: *rest.Client,
+    client: *rest.ApiClient,
     guild_id: model.Snowflake,
     sticker_id: model.Sticker,
 ) !rest.Client.Result(model.Sticker) {
-    const uri_str = try rest.allocDiscordUriStr(client.allocator, "/guilds/{}/stickers/{}", .{ guild_id, sticker_id });
-    defer client.allocator.free(uri_str);
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/stickers/{}", .{ guild_id, sticker_id });
+    defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.request(model.Sticker, .GET, uri);
+    return client.rest_client.request(model.Sticker, .GET, uri);
 }
 
 pub fn createGuildSticker(
-    client: *rest.Client,
+    client: *rest.ApiClient,
     guild_id: model.Snowflake,
     sticker_id: model.Snowflake,
 ) !rest.Client.Result(model.Sticker) {
-    const uri_str = try rest.allocDiscordUriStr(client.allocator, "/guilds/{}/stickers/{}", .{ guild_id, sticker_id });
-    defer client.allocator.free(uri_str);
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/stickers/{}", .{ guild_id, sticker_id });
+    defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.request(model.Sticker, .GET, uri);
+    return client.rest_client.request(model.Sticker, .GET, uri);
 }
 
 pub const ListStickerPacksResponse = struct {
