@@ -1,7 +1,7 @@
 # deancord (WIP)
 
-> [!WARNING]
-> This project is still a work in progress, and is not functional at the moment. I'm pretty close to completing though so check back in a few weeks (or feel free to contribute!)
+> [!NOTE]
+> This project is still a work in progress, but it should be mostly functional. Please make GitHub issues for anything you might encounter!
 
 A Discord API for the Zig programming language.
 
