@@ -40,4 +40,4 @@ The examples are also runnable with `zig build examples:gateway` and `zig build 
  - HTTP Interaction Server:
    - Standalone HTTPS support (for now, you will need a reverse-proxy to provide HTTPS support)
    - Cloud function support (Cloudflare Workers)
- - Support serverless functions 
+ - Make sure all data types are accurate
