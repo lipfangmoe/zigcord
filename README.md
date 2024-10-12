@@ -38,6 +38,7 @@ The examples are also runnable with `zig build examples:gateway` and `zig build 
 # TODO
 
  - HTTP Interaction Server: Zig does not currently have a std HTTPS library (or even TLS server, which could be used to get "close enough"). I plan to wait for that before implementing the HTTP interaction server. However, the example in [examples/interaction-bot.zig](./examples/interaction_bot.zig) is what it will eventually look like!
+   - Maybe it'd work alongside an HTTPS reverse-proxy but I'm too lazy to test
  - Should probably add a wrapper for `rest.Client` to make calling endpoints a bit more obvious.
    - `rest.Client` -> `rest.Client`
    - `rest.*.endpointName(client, ...)` -> `rest.ApiClient.init(rest.Client); api_client.endpointName(...)`

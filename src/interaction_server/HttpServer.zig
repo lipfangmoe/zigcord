@@ -52,16 +52,14 @@ pub fn receiveInteraction(self: *Server, alloc: std.mem.Allocator) !Request {
             std.log.warn("error occurred while receiving headers: {}", .{err});
             continue;
         };
+        const signature_headers = Request.SignatureHeaders.initFromHttpRequest(&http_req);
 
-        var req = Request.init(&http_req, alloc, self.application_public_key) catch |err| {
+        var req = Request.init(alloc, self.application_public_key, signature_headers, http_req.reader()) catch |err| {
             std.log.warn("error while parsing request: {}", .{err});
             continue;
         };
         if (req.interaction.type == .ping) {
-            req.respond(deancord.model.interaction.InteractionResponse{ .type = .pong }) catch |err| {
-                std.log.warn("error while sending PONG: {}", .{err});
-                continue;
-            };
+            try req.respond(http_req, deancord.model.interaction.InteractionResponse{ .type = .pong });
             continue;
         }
 

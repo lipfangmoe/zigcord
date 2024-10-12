@@ -4,29 +4,52 @@ const model = deancord.model;
 const rest = deancord.rest;
 
 arena: std.heap.ArenaAllocator,
-http_request: *std.http.Server.Request,
 interaction: model.interaction.Interaction,
 
 const Request = @This();
 
-pub fn init(http_request: *std.http.Server.Request, alloc: std.mem.Allocator, application_public_key: std.crypto.sign.Ed25519.PublicKey) !Request {
-    const body = verify(alloc, http_request, application_public_key) catch |err| {
-        switch (err) {
-            error.SignatureVerificationError => {
-                http_request.respond("", .{ .status = .unauthorized }) catch |respond_err| {
-                    std.log.warn("error occurred while responding to unauthorized request: {}", .{respond_err});
-                };
-                return error.ReceivedUnauthorizedRequest;
-            },
-            else => |narrow_err| return narrow_err,
+pub const SignatureHeaders = struct {
+    signature_bytes: [signature_len]u8,
+    timestamp: std.BoundedArray(u8, 64),
+
+    const signature_len = std.crypto.sign.Ed25519.Signature.encoded_length;
+
+    pub fn initFromHttpRequest(http_request: *std.http.Server.Request) error{ InvalidHeader, MissingHeader }!SignatureHeaders {
+        var timestamp = std.BoundedArray(u8, 64){};
+        var signature_buf: [signature_len]u8 = undefined;
+        var signature_set = false;
+
+        var headers = http_request.iterateHeaders();
+        while (headers.next()) |header| {
+            if (std.mem.eql(u8, header.name, "X-Signature-Ed25519")) {
+                const slice = std.fmt.hexToBytes(&signature_buf, header.value) catch return error.InvalidHeader;
+                if (slice.len != signature_len) {
+                    return error.InvalidHeader;
+                }
+                signature_set = true;
+            }
+            if (std.mem.eql(u8, header.name, "X-Signature-Timestamp")) {
+                timestamp.appendSlice(header.value) catch return error.InvalidHeader;
+            }
         }
-    };
-    defer alloc.free(body);
+        if (timestamp.len == 0 or !signature_set) {
+            return error.MissingHeader;
+        }
+        return SignatureHeaders{
+            .signature_bytes = signature_buf,
+            .timestamp = timestamp,
+        };
+    }
+};
+
+pub fn init(alloc: std.mem.Allocator, application_public_key: std.crypto.sign.Ed25519.PublicKey, headers: SignatureHeaders, request_body: std.io.AnyReader) !Request {
+    const request_body_bytes = try verify(alloc, headers, request_body, application_public_key);
+    defer alloc.free(request_body_bytes);
 
     var arena = std.heap.ArenaAllocator.init(alloc);
-    const interaction = try std.json.parseFromSliceLeaky(model.interaction.Interaction, arena.allocator(), body, .{ .allocate = .alloc_always });
+    const interaction = try std.json.parseFromSliceLeaky(model.interaction.Interaction, arena.allocator(), request_body_bytes, .{ .allocate = .alloc_always });
 
-    return Request{ .arena = arena, .http_request = http_request, .interaction = interaction };
+    return Request{ .arena = arena, .interaction = interaction };
 }
 
 pub fn deinit(self: Request) void {
@@ -35,9 +58,9 @@ pub fn deinit(self: Request) void {
 
 /// should be called extremely quickly after receiving the request. if you
 /// need more time to respond, respond quickly with a deferred InteractionResponse type, then use a followup message when you're ready to respond.
-pub fn respond(self: *Request, response: model.interaction.InteractionResponse) !void {
-    const response_json = try std.json.stringifyAlloc(self.arena.allocator(), response, .{});
-    try self.http_request.respond(response_json, .{});
+pub fn respondHttp(self: *Request, http_request: std.http.Server.Request, response_body: model.interaction.InteractionResponse) !void {
+    const response_body_json = try std.json.stringifyAlloc(self.arena.allocator(), response_body, .{});
+    try http_request.respond(response_body_json, .{});
 }
 
 /// send a followup request which edits the original message
@@ -76,37 +99,14 @@ pub fn followupEditNewMessage(
     return try rest.endpoints.editFollowupMessage(client, self.interaction.application_id, self.interaction.token, message_id, body);
 }
 
-fn verify(allocator: std.mem.Allocator, http_req: *std.http.Server.Request, application_public_key: std.crypto.sign.Ed25519.PublicKey) ![]const u8 {
-    const signature_len = std.crypto.sign.Ed25519.Signature.encoded_length;
+fn verify(allocator: std.mem.Allocator, headers: SignatureHeaders, body: std.io.AnyReader, application_public_key: std.crypto.sign.Ed25519.PublicKey) ![]const u8 {
+    const body_bytes = try body.readAllAlloc(allocator, 1024 * 1024);
 
-    var timestamp_buf: [100]u8 = undefined;
-    var timestamp_opt: ?[]const u8 = null;
-    var signature_buf: [signature_len]u8 = undefined;
-    var signature_opt: ?[]const u8 = null;
-
-    var headers = http_req.iterateHeaders();
-    while (headers.next()) |header| {
-        if (std.mem.eql(u8, header.name, "X-Signature-Ed25519")) {
-            signature_opt = std.fmt.hexToBytes(&signature_buf, header.value) catch return error.InvalidHeader;
-        }
-        if (std.mem.eql(u8, header.name, "X-Signature-Timestamp")) {
-            std.mem.copyForwards(u8, &timestamp_buf, header.value);
-            timestamp_opt = timestamp_buf[0..header.value.len];
-        }
-    }
-    const signature_header = signature_opt orelse return error.MissingHeader;
-    const timestamp_header = timestamp_opt orelse return error.MissingHeader;
-
-    const body_reader = try http_req.reader();
-    const body = try body_reader.readAllAlloc(allocator, 1024 * 1024);
-
-    std.log.debug("{s}", .{body});
-
-    const message = try std.mem.concat(allocator, u8, &.{ timestamp_header, body });
+    const message = try std.mem.concat(allocator, u8, &.{ headers.timestamp.constSlice(), body_bytes });
     defer allocator.free(message);
 
-    const signature = std.crypto.sign.Ed25519.Signature.fromBytes(signature_header[0..64].*);
+    const signature = std.crypto.sign.Ed25519.Signature.fromBytes(headers.signature_bytes);
     signature.verify(message, application_public_key) catch return error.SignatureVerificationError;
 
-    return body;
+    return body_bytes;
 }
