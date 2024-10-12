@@ -1,8 +1,10 @@
+//! rest.Client is a wrapper around an HttpClient which contains methods that call Discord API endpoints.
+
 const std = @import("std");
 const builtin = @import("builtin");
 const deancord = @import("../root.zig");
 
-const Client = @This();
+const DiscordClient = @This();
 
 allocator: std.mem.Allocator,
 auth: Authorization,
@@ -12,13 +14,13 @@ config: Config,
 /// Creates a discord http client with default configuration.
 ///
 /// Cannot be used in tests, instead use `initWithConfig` and provide a mock response from the server.
-pub fn init(allocator: std.mem.Allocator, auth: Authorization) Client {
+pub fn init(allocator: std.mem.Allocator, auth: Authorization) DiscordClient {
     const config = Config{};
     return initWithConfig(allocator, auth, config);
 }
 
 /// Creates a discord http client based on a configuration
-pub fn initWithConfig(allocator: std.mem.Allocator, auth: Authorization, config: Config) Client {
+pub fn initWithConfig(allocator: std.mem.Allocator, auth: Authorization, config: Config) DiscordClient {
     const client = std.http.Client{ .allocator = allocator };
     return .{
         .allocator = allocator,
@@ -29,7 +31,7 @@ pub fn initWithConfig(allocator: std.mem.Allocator, auth: Authorization, config:
 }
 
 pub fn beginMultipartRequest(
-    self: *Client,
+    self: *DiscordClient,
     comptime ResponseT: type,
     method: std.http.Method,
     url: std.Uri,
@@ -52,7 +54,7 @@ pub fn beginMultipartRequest(
 }
 
 pub fn beginRequest(
-    self: *Client,
+    self: *DiscordClient,
     comptime ResponseT: type,
     method: std.http.Method,
     url: std.Uri,
@@ -90,7 +92,7 @@ pub fn beginRequest(
 }
 
 /// Sends a request to the Discord REST API with the credentials stored in this context
-pub fn request(self: *Client, comptime ResponseT: type, method: std.http.Method, url: std.Uri) !Result(ResponseT) {
+pub fn request(self: *DiscordClient, comptime ResponseT: type, method: std.http.Method, url: std.Uri) !Result(ResponseT) {
     var pending = try self.beginRequest(ResponseT, method, url, .{ .none = void{} }, null, null);
     defer pending.deinit();
 
@@ -98,7 +100,7 @@ pub fn request(self: *Client, comptime ResponseT: type, method: std.http.Method,
 }
 
 /// Sends a request to the Discord REST API with the credentials stored in this context
-pub fn requestWithAuditLogReason(self: *Client, comptime ResponseT: type, method: std.http.Method, url: std.Uri, audit_log_reason: ?[]const u8) !Result(ResponseT) {
+pub fn requestWithAuditLogReason(self: *DiscordClient, comptime ResponseT: type, method: std.http.Method, url: std.Uri, audit_log_reason: ?[]const u8) !Result(ResponseT) {
     const extra_headers: []const std.http.Header = if (audit_log_reason) |reason|
         &.{std.http.Header{ .name = "X-Audit-Log-Reason", .value = reason }}
     else
@@ -111,7 +113,7 @@ pub fn requestWithAuditLogReason(self: *Client, comptime ResponseT: type, method
 }
 
 /// Sends a request (with a body) to the Discord REST API with the credentials stored in this context.
-pub fn requestWithBody(self: *Client, comptime ResponseT: type, method: std.http.Method, url: std.Uri, body: std.io.AnyReader) !Result(ResponseT) {
+pub fn requestWithBody(self: *DiscordClient, comptime ResponseT: type, method: std.http.Method, url: std.Uri, body: std.io.AnyReader) !Result(ResponseT) {
     var pending = try self.beginRequest(ResponseT, method, url, .{ .chunked = void{} }, null, null);
     defer pending.deinit();
 
@@ -122,7 +124,7 @@ pub fn requestWithBody(self: *Client, comptime ResponseT: type, method: std.http
 }
 
 /// Sends a request (with a body) to the Discord REST API with the credentials stored in this context.
-pub fn requestWithValueBody(self: *Client, comptime ResponseT: type, method: std.http.Method, url: std.Uri, body: anytype, stringifyOptions: std.json.StringifyOptions) !Result(ResponseT) {
+pub fn requestWithValueBody(self: *DiscordClient, comptime ResponseT: type, method: std.http.Method, url: std.Uri, body: anytype, stringifyOptions: std.json.StringifyOptions) !Result(ResponseT) {
     var pending = try self.beginRequest(ResponseT, method, url, .{ .chunked = void{} }, null, null);
     defer pending.deinit();
 
@@ -137,7 +139,7 @@ pub fn requestWithValueBody(self: *Client, comptime ResponseT: type, method: std
 }
 
 pub fn requestWithValueBodyAndAuditLogReason(
-    self: *Client,
+    self: *DiscordClient,
     comptime ResponseT: type,
     method: std.http.Method,
     url: std.Uri,
@@ -161,7 +163,7 @@ pub fn requestWithValueBodyAndAuditLogReason(
     return try pending.waitForResponse();
 }
 
-pub fn deinit(self: *Client) void {
+pub fn deinit(self: *DiscordClient) void {
     self.client.deinit();
 }
 

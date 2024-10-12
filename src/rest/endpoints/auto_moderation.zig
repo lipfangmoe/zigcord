@@ -7,9 +7,9 @@ const Snowflake = model.Snowflake;
 const Omittable = jconfig.Omittable;
 
 pub fn listAutoModerationRulesForGuild(
-    client: *rest.ApiClient,
+    client: *rest.EndpointClient,
     guild_id: Snowflake,
-) !rest.Client.Result([]const model.AutoModerationRule) {
+) !rest.RestClient.Result([]const model.AutoModerationRule) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{d}/auto-moderation/rules", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -18,10 +18,10 @@ pub fn listAutoModerationRulesForGuild(
 }
 
 pub fn getAutoModerationRule(
-    client: *rest.ApiClient,
+    client: *rest.EndpointClient,
     guild_id: Snowflake,
     rule_id: Snowflake,
-) !rest.Client.Result(model.AutoModerationRule) {
+) !rest.RestClient.Result(model.AutoModerationRule) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{d}/auto-moderation/rules/{d}", .{ guild_id, rule_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -30,11 +30,11 @@ pub fn getAutoModerationRule(
 }
 
 pub fn createAutoModerationRule(
-    client: *rest.ApiClient,
+    client: *rest.EndpointClient,
     guild_id: Snowflake,
     body: CreateParams,
     audit_log_reason: ?[]const u8,
-) !rest.Client.Result(model.AutoModerationRule) {
+) !rest.RestClient.Result(model.AutoModerationRule) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{d}/auto-moderation/rules", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -43,12 +43,12 @@ pub fn createAutoModerationRule(
 }
 
 pub fn modifyAutoModerationRule(
-    client: *rest.ApiClient,
+    client: *rest.EndpointClient,
     guild_id: Snowflake,
     rule_id: Snowflake,
     body: ModifyParams,
     audit_log_reason: ?[]const u8,
-) !rest.Client.Result(model.AutoModerationRule) {
+) !rest.RestClient.Result(model.AutoModerationRule) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{d}/auto-moderation/rules/{d}", .{ guild_id, rule_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -57,10 +57,10 @@ pub fn modifyAutoModerationRule(
 }
 
 pub fn deleteAutoModerationRule(
-    client: *rest.ApiClient,
+    client: *rest.EndpointClient,
     guild_id: Snowflake,
     rule_id: Snowflake,
-) !rest.Client.Result(void) {
+) !rest.RestClient.Result(void) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{d}/auto-moderation/rules/{d}", .{ guild_id, rule_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);

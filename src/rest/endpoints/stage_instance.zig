@@ -5,10 +5,10 @@ const rest = deancord.rest;
 const jconfig = deancord.jconfig;
 
 pub fn createStageInstance(
-    client: *rest.ApiClient,
+    client: *rest.EndpointClient,
     body: CreateStageInstanceBody,
     audit_log_reason: ?[]const u8,
-) !rest.Client.Result(model.StageInstance) {
+) !rest.RestClient.Result(model.StageInstance) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/stage-instances", .{});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -17,9 +17,9 @@ pub fn createStageInstance(
 }
 
 pub fn getStageInstance(
-    client: *rest.ApiClient,
+    client: *rest.EndpointClient,
     channel_id: model.Snowflake,
-) !rest.Client.Result(model.StageInstance) {
+) !rest.RestClient.Result(model.StageInstance) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/stage-instances/{}", .{channel_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -28,11 +28,11 @@ pub fn getStageInstance(
 }
 
 pub fn modifyStageInstance(
-    client: *rest.ApiClient,
+    client: *rest.EndpointClient,
     channel_id: model.Snowflake,
     body: ModifyStageInstanceBody,
     audit_log_reason: ?[]const u8,
-) !rest.Client.Result(model.StageInstance) {
+) !rest.RestClient.Result(model.StageInstance) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/stage-instances/{}", .{channel_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -41,9 +41,9 @@ pub fn modifyStageInstance(
 }
 
 pub fn deleteStageInstance(
-    client: *rest.ApiClient,
+    client: *rest.EndpointClient,
     channel_id: model.Snowflake,
-) !rest.Client.Result(void) {
+) !rest.RestClient.Result(void) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/stage-instances/{}", .{channel_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);

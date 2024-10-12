@@ -35,10 +35,10 @@ pub fn main() !void {
     };
     const application_id = deancord.model.Snowflake.fromU64(try std.fmt.parseInt(u64, application_id_str, 10));
 
-    var client = deancord.rest.Client.init(allocator, .{ .token = .{ .bot = token } });
+    var client = deancord.EndpointClient.init(allocator, .{ .token = .{ .bot = token } });
     defer client.deinit();
 
-    var server = try deancord.rest.Server.init(std.net.Address.initIp4(.{ 0, 0, 0, 0 }, port), application_public_key[0..64].*);
+    var server = try deancord.HttpInteractionServer.init(std.net.Address.initIp4(.{ 0, 0, 0, 0 }, port), application_public_key[0..64].*);
 
     const cmd_id = try createTestCommand(&client, application_id);
 
@@ -71,7 +71,7 @@ pub fn main() !void {
                         if (std.mem.eql(u8, str, "quit")) {
                             break;
                         } else {
-                            try req.respond(deancord.model.interaction.InteractionResponse{
+                            try req.respondHttp(deancord.model.interaction.InteractionResponse{
                                 .type = .channel_message_with_source,
                                 .data = .{ .some = .{ .content = .{ .some = str } } },
                             });
@@ -83,10 +83,9 @@ pub fn main() !void {
     }
 }
 
-fn createTestCommand(client: *deancord.rest.Client, application_id: deancord.model.Snowflake) !deancord.model.Snowflake {
+fn createTestCommand(client: *deancord.EndpointClient, application_id: deancord.model.Snowflake) !deancord.model.Snowflake {
     // TODO - this is all way too verbose.
-    const command_result = try deancord.rest.endpoints.createGlobalApplicationCommand(
-        client,
+    const command_result = try client.createGlobalApplicationCommand(
         application_id,
         deancord.rest.endpoints.CreateGlobalApplicationCommandBody{
             .name = "test",

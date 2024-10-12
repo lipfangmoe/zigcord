@@ -5,11 +5,11 @@ const rest = deancord.rest;
 const jconfig = deancord.jconfig;
 
 pub fn createWebhook(
-    client: *rest.ApiClient,
+    client: *rest.EndpointClient,
     channel_id: model.Snowflake,
     body: CreateWebhookBody,
     audit_log_reason: ?[]const u8,
-) !rest.Client.Result(model.Webhook) {
+) !rest.RestClient.Result(model.Webhook) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{}/webhooks", .{channel_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -18,9 +18,9 @@ pub fn createWebhook(
 }
 
 pub fn getChannelWebhooks(
-    client: *rest.ApiClient,
+    client: *rest.EndpointClient,
     channel_id: model.Snowflake,
-) !rest.Client.Result([]const model.Webhook) {
+) !rest.RestClient.Result([]const model.Webhook) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{}/webhooks", .{channel_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -29,9 +29,9 @@ pub fn getChannelWebhooks(
 }
 
 pub fn getGuildWebhooks(
-    client: *rest.ApiClient,
+    client: *rest.EndpointClient,
     guild_id: model.Snowflake,
-) !rest.Client.Result([]const model.Webhook) {
+) !rest.RestClient.Result([]const model.Webhook) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/webhooks", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -40,9 +40,9 @@ pub fn getGuildWebhooks(
 }
 
 pub fn getWebhook(
-    client: *rest.ApiClient,
+    client: *rest.EndpointClient,
     webhook_id: model.Snowflake,
-) !rest.Client.Result(model.Webhook) {
+) !rest.RestClient.Result(model.Webhook) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{}", .{webhook_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -51,10 +51,10 @@ pub fn getWebhook(
 }
 
 pub fn getWebhookWithToken(
-    client: *rest.ApiClient,
+    client: *rest.EndpointClient,
     webhook_id: model.Snowflake,
     webhook_token: []const u8,
-) !rest.Client.Result(model.Webhook) {
+) !rest.RestClient.Result(model.Webhook) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{}/{s}", .{ webhook_id, webhook_token });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -63,11 +63,11 @@ pub fn getWebhookWithToken(
 }
 
 pub fn modifyWebhook(
-    client: *rest.ApiClient,
+    client: *rest.EndpointClient,
     webhook_id: model.Snowflake,
     body: ModifyWebhookBody,
     audit_log_reason: ?[]const u8,
-) !rest.Client.Result(model.Webhook) {
+) !rest.RestClient.Result(model.Webhook) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{}", .{webhook_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -76,12 +76,12 @@ pub fn modifyWebhook(
 }
 
 pub fn modifyWebhookWithToken(
-    client: *rest.ApiClient,
+    client: *rest.EndpointClient,
     webhook_id: model.Snowflake,
     webhook_token: []const u8,
     body: ModifyWebhookBody,
     audit_log_reason: ?[]const u8,
-) !rest.Client.Result(model.Webhook) {
+) !rest.RestClient.Result(model.Webhook) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{}/{s}", .{ webhook_id, webhook_token });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -90,10 +90,10 @@ pub fn modifyWebhookWithToken(
 }
 
 pub fn deleteWebhook(
-    client: *rest.ApiClient,
+    client: *rest.EndpointClient,
     webhook_id: model.Snowflake,
     audit_log_reason: ?[]const u8,
-) !rest.Client.Result(void) {
+) !rest.RestClient.Result(void) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{}", .{webhook_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -102,11 +102,11 @@ pub fn deleteWebhook(
 }
 
 pub fn deleteWebhookWithToken(
-    client: *rest.ApiClient,
+    client: *rest.EndpointClient,
     webhook_id: model.Snowflake,
     webhook_token: []const u8,
     audit_log_reason: ?[]const u8,
-) !rest.Client.Result(void) {
+) !rest.RestClient.Result(void) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{}/{s}", .{ webhook_id, webhook_token });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -115,12 +115,12 @@ pub fn deleteWebhookWithToken(
 }
 
 pub fn executeWebhookWait(
-    client: *rest.ApiClient,
+    client: *rest.EndpointClient,
     webhook_id: model.Snowflake,
     webhook_token: []const u8,
     query: ExecuteWebhookQuery,
     body: ExecuteWebhookFormBody,
-) !rest.Client.Result(model.Message) {
+) !rest.RestClient.Result(model.Message) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{}/{s}?{query}", .{ webhook_id, webhook_token, query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -134,12 +134,12 @@ pub fn executeWebhookWait(
 }
 
 pub fn executeWebhookNoWait(
-    client: *rest.ApiClient,
+    client: *rest.EndpointClient,
     webhook_id: model.Snowflake,
     webhook_token: []const u8,
     query: ExecuteWebhookQuery,
     body: ExecuteWebhookFormBody,
-) !rest.Client.Result(void) {
+) !rest.RestClient.Result(void) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{}/{s}?{query}", .{ webhook_id, webhook_token, query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -155,12 +155,12 @@ pub fn executeWebhookNoWait(
 // is there a point in supporting slack/github compatible webhook endpoints? i don't want to have to build entirely new models just to support them
 
 pub fn getWebhookMessage(
-    client: *rest.ApiClient,
+    client: *rest.EndpointClient,
     webhook_id: model.Snowflake,
     webhook_token: []const u8,
     message_id: model.Snowflake,
     query: PossiblyInThreadQuery,
-) !rest.Client.Result(model.Message) {
+) !rest.RestClient.Result(model.Message) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{}/{s}/messages/{}?{query}", .{ webhook_id, webhook_token, message_id, query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -169,13 +169,13 @@ pub fn getWebhookMessage(
 }
 
 pub fn editWebhookMessage(
-    client: *rest.ApiClient,
+    client: *rest.EndpointClient,
     webhook_id: model.Snowflake,
     webhook_token: []const u8,
     message_id: model.Snowflake,
     query: PossiblyInThreadQuery,
     body: EditWebhookMessageFormBody,
-) !rest.Client.Result(model.Message) {
+) !rest.RestClient.Result(model.Message) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{}/{s}/messages/{}?{query}", .{ webhook_id, webhook_token, message_id, query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -189,12 +189,12 @@ pub fn editWebhookMessage(
 }
 
 pub fn deleteWebhookMessage(
-    client: *rest.ApiClient,
+    client: *rest.EndpointClient,
     webhook_id: model.Snowflake,
     webhook_token: []const u8,
     message_id: model.Snowflake,
     query: PossiblyInThreadQuery,
-) !rest.Client.Result(void) {
+) !rest.RestClient.Result(void) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{}/{s}/messages/{}?{query}", .{ webhook_id, webhook_token, message_id, query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);

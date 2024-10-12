@@ -5,8 +5,8 @@ const http = std.http;
 pub const base_url = "https://discord.com/api/v10";
 
 pub const endpoints = @import("./rest/endpoints.zig");
-pub const Client = @import("./rest/Client.zig");
-pub const ApiClient = @import("./rest/ApiClient.zig");
+pub const RestClient = @import("./rest/RestClient.zig");
+pub const EndpointClient = @import("./rest/EndpointClient.zig");
 pub const HttpInteractionServer = @import("./interaction_server/HttpServer.zig");
 
 const multipart = @import("./rest/multipart.zig");

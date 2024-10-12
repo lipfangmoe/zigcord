@@ -5,10 +5,10 @@ const rest = deancord.rest;
 const jconfig = deancord.jconfig;
 
 pub fn listScheduledEventsForGuild(
-    client: *rest.ApiClient,
+    client: *rest.EndpointClient,
     guild_id: model.Snowflake,
     with_user_count: ?bool,
-) !rest.Client.Result([]model.GuildScheduledEvent) {
+) !rest.RestClient.Result([]model.GuildScheduledEvent) {
     const query = WithUserCountQuery{ .with_user_count = with_user_count };
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/scheduled-events?{query}", .{ guild_id, query });
     defer client.rest_client.allocator.free(uri_str);
@@ -18,11 +18,11 @@ pub fn listScheduledEventsForGuild(
 }
 
 pub fn createGuildScheduledEvent(
-    client: *rest.ApiClient,
+    client: *rest.EndpointClient,
     guild_id: model.Snowflake,
     body: CreateGuildScheduledEventBody,
     audit_log_reason: ?[]const u8,
-) !rest.Client.Result(model.GuildScheduledEvent) {
+) !rest.RestClient.Result(model.GuildScheduledEvent) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/scheduled-events", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -31,11 +31,11 @@ pub fn createGuildScheduledEvent(
 }
 
 pub fn getGuildScheuledEvent(
-    client: *rest.ApiClient,
+    client: *rest.EndpointClient,
     guild_id: model.Snowflake,
     guild_scheduled_Event_id: model.Snowflake,
     with_user_count: ?bool,
-) !rest.Client.Result(model.GuildScheduledEvent) {
+) !rest.RestClient.Result(model.GuildScheduledEvent) {
     const query = WithUserCountQuery{ .with_user_count = with_user_count };
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/scheduled-events/{}?{query}", .{ guild_id, guild_scheduled_Event_id, query });
     defer client.rest_client.allocator.free(uri_str);
@@ -45,12 +45,12 @@ pub fn getGuildScheuledEvent(
 }
 
 pub fn modifyGuildScheduledEvent(
-    client: *rest.ApiClient,
+    client: *rest.EndpointClient,
     guild_id: model.Snowflake,
     guild_scheduled_Event_id: model.Snowflake,
     body: ModifyGuildScheduledEventBody,
     audit_log_reason: ?[]const u8,
-) !rest.Client.Result(model.GuildScheduledEvent) {
+) !rest.RestClient.Result(model.GuildScheduledEvent) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/scheduled-events/{}", .{ guild_id, guild_scheduled_Event_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -59,10 +59,10 @@ pub fn modifyGuildScheduledEvent(
 }
 
 pub fn deleteGuildScheduledEvent(
-    client: *rest.ApiClient,
+    client: *rest.EndpointClient,
     guild_id: model.Snowflake,
     guild_scheduled_Event_id: model.Snowflake,
-) !rest.Client.Result(void) {
+) !rest.RestClient.Result(void) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/scheduled-events/{}", .{ guild_id, guild_scheduled_Event_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -71,11 +71,11 @@ pub fn deleteGuildScheduledEvent(
 }
 
 pub fn getGuildScheuledEventUsers(
-    client: *rest.ApiClient,
+    client: *rest.EndpointClient,
     guild_id: model.Snowflake,
     guild_scheduled_Event_id: model.Snowflake,
     query: GetGuildScheduledEventUsersQuery,
-) !rest.Client.Result([]model.GuildScheduledEvent.EventUser) {
+) !rest.RestClient.Result([]model.GuildScheduledEvent.EventUser) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/scheduled-events/{}/users?{query}", .{ guild_id, guild_scheduled_Event_id, query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);

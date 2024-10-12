@@ -5,10 +5,10 @@ const rest = deancord.rest;
 const jconfig = deancord.jconfig;
 
 pub fn getInvite(
-    client: *rest.ApiClient,
+    client: *rest.EndpointClient,
     code: []const u8,
     query: GetInviteQuery,
-) !rest.Client.Result(model.Invite) {
+) !rest.RestClient.Result(model.Invite) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/invites/{s}?{query}", .{ code, query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -17,10 +17,10 @@ pub fn getInvite(
 }
 
 pub fn deleteInvite(
-    client: *rest.ApiClient,
+    client: *rest.EndpointClient,
     code: []const u8,
     audit_log_reason: ?[]const u8,
-) !rest.Client.Result(model.Invite) {
+) !rest.RestClient.Result(model.Invite) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/invites/{s}", .{code});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);

@@ -7,7 +7,7 @@ pub const gateway = @import("./gateway.zig");
 pub const jconfig = @import("./jconfig.zig");
 
 pub const HttpInteractionServer = rest.HttpInteractionServer;
-pub const RestClient = rest.Client;
+pub const EndpointClient = rest.EndpointClient;
 pub const GatewayClient = gateway.Client;
 
 pub const version = @import("build").version;

@@ -6,9 +6,9 @@ const Snowflake = model.Snowflake;
 const ApplicationRoleConnectionMetadata = model.ApplicationRoleConnectionMetadata;
 
 pub fn getApplicationRoleConnectionMetadataRecords(
-    client: *rest.ApiClient,
+    client: *rest.EndpointClient,
     application_id: Snowflake,
-) !rest.Client.Result([]ApplicationRoleConnectionMetadata) {
+) !rest.RestClient.Result([]ApplicationRoleConnectionMetadata) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/applications/{d}/role-connections/metadata", .{application_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -17,10 +17,10 @@ pub fn getApplicationRoleConnectionMetadataRecords(
 }
 
 pub fn updateApplicationRoleConnectionMetadataRecords(
-    client: *rest.ApiClient,
+    client: *rest.EndpointClient,
     application_id: Snowflake,
     new_records: []const ApplicationRoleConnectionMetadata,
-) !rest.Client.Result([]ApplicationRoleConnectionMetadata) {
+) !rest.RestClient.Result([]ApplicationRoleConnectionMetadata) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/applications/{d}/role-connections/metadata", .{application_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);

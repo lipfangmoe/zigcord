@@ -17,17 +17,17 @@ state: State,
 write_message_mutex: std.Thread.Mutex,
 
 /// Initializes a Gateway Client
-pub fn init(allocator: std.mem.Allocator, auth: rest.Client.Authorization) !Client {
-    var rest_client = rest.Client.init(allocator, auth);
-    defer rest_client.deinit();
+pub fn init(allocator: std.mem.Allocator, auth: rest.RestClient.Authorization) !Client {
+    var api_client = deancord.EndpointClient.init(allocator, auth);
+    defer api_client.deinit();
 
-    return try initWithRestClient(allocator, &rest_client);
+    return try initWithRestClient(allocator, &api_client);
 }
 
 /// Initializes a Gateway Client from an existing Rest Client. The rest client only needs to live as long as this method call, but the
 /// allocator should live as long as the returned Gateway Client.
-pub fn initWithRestClient(allocator: std.mem.Allocator, rest_client: *rest.Client) !Client {
-    const gateway_resp = try rest.endpoints.getGateway(rest_client);
+pub fn initWithRestClient(allocator: std.mem.Allocator, client: *deancord.EndpointClient) !Client {
+    const gateway_resp = try client.getGateway();
     defer gateway_resp.deinit();
 
     const url = switch (gateway_resp.value()) {
@@ -40,11 +40,11 @@ pub fn initWithRestClient(allocator: std.mem.Allocator, rest_client: *rest.Clien
 
     std.log.info("attempting connection to {s}", .{url});
 
-    return try initWithUri(allocator, rest_client.auth, url);
+    return try initWithUri(allocator, client.rest_client.auth, url);
 }
 
 /// Initializes a Gateway Client from an existing Rest Client. The provided URI is copied by the allocator.
-pub fn initWithUri(allocator: std.mem.Allocator, auth: rest.Client.Authorization, uri: []const u8) !Client {
+pub fn initWithUri(allocator: std.mem.Allocator, auth: rest.RestClient.Authorization, uri: []const u8) !Client {
     const dupe_url = try allocator.dupe(u8, uri);
     errdefer allocator.free(dupe_url);
 
