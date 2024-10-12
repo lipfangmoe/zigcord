@@ -5,15 +5,15 @@ const rest = deancord.rest;
 
 arena: std.heap.ArenaAllocator,
 interaction: model.interaction.Interaction,
-request: std.http.Server.Request,
+http_request: std.http.Server.Request,
 
 const InteractionRequest = @This();
 
-pub fn init(alloc: std.mem.Allocator, body: []const u8, request: std.http.Server.Request) !InteractionRequest {
+pub fn init(alloc: std.mem.Allocator, body: []const u8, http_request: std.http.Server.Request) !InteractionRequest {
     var arena = std.heap.ArenaAllocator.init(alloc);
     const interaction = try std.json.parseFromSliceLeaky(model.interaction.Interaction, arena.allocator(), body, .{ .allocate = .alloc_always });
 
-    return InteractionRequest{ .arena = arena, .interaction = interaction, .request = request };
+    return InteractionRequest{ .arena = arena, .interaction = interaction, .http_request = http_request };
 }
 
 pub fn deinit(self: InteractionRequest) void {

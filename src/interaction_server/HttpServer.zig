@@ -90,7 +90,7 @@ pub fn receiveInteraction(self: *Server, alloc: std.mem.Allocator) !InteractionR
             }
         };
 
-        var req = InteractionRequest.init(alloc, body) catch |err| {
+        var req = InteractionRequest.init(alloc, body, http_req) catch |err| {
             std.log.err("error while parsing interaction: {}", .{err});
             return error.InteractionParseError;
         };

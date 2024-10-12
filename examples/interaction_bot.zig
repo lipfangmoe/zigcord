@@ -71,7 +71,7 @@ pub fn main() !void {
                         if (std.mem.eql(u8, str, "quit")) {
                             break;
                         } else {
-                            try req.respondHttp(deancord.model.interaction.InteractionResponse{
+                            try req.respond(deancord.model.interaction.InteractionResponse{
                                 .type = .channel_message_with_source,
                                 .data = .{ .some = .{ .content = .{ .some = str } } },
                             });
