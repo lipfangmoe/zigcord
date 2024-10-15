@@ -35,7 +35,7 @@ pub fn main() !void {
     };
     const application_id = deancord.model.Snowflake.fromU64(try std.fmt.parseInt(u64, application_id_str, 10));
 
-    var client = deancord.EndpointClient.init(allocator, .{ .token = .{ .bot = token } });
+    var client = deancord.EndpointClient.init(allocator, deancord.Authorization{ .bot = token });
     defer client.deinit();
 
     var server = try deancord.HttpInteractionServer.init(std.net.Address.initIp4(.{ 0, 0, 0, 0 }, port), application_public_key[0..64].*);

@@ -7,20 +7,20 @@ const deancord = @import("../root.zig");
 const DiscordClient = @This();
 
 allocator: std.mem.Allocator,
-auth: Authorization,
+auth: deancord.Authorization,
 client: std.http.Client,
 config: Config,
 
 /// Creates a discord http client with default configuration.
 ///
 /// Cannot be used in tests, instead use `initWithConfig` and provide a mock response from the server.
-pub fn init(allocator: std.mem.Allocator, auth: Authorization) DiscordClient {
+pub fn init(allocator: std.mem.Allocator, auth: deancord.Authorization) DiscordClient {
     const config = Config{};
     return initWithConfig(allocator, auth, config);
 }
 
 /// Creates a discord http client based on a configuration
-pub fn initWithConfig(allocator: std.mem.Allocator, auth: Authorization, config: Config) DiscordClient {
+pub fn initWithConfig(allocator: std.mem.Allocator, auth: deancord.Authorization, config: Config) DiscordClient {
     const client = std.http.Client{ .allocator = allocator };
     return .{
         .allocator = allocator,
@@ -176,17 +176,6 @@ pub const Config = struct {
 
     /// Allows customizing the user agent string. You are advised to keep the default value as a prefix (see https://discord.com/developers/docs/reference#user-agent)
     user_agent: []const u8 = default_user_agent,
-};
-
-pub const Authorization = struct {
-    token: union(enum) { bot: []const u8, bearer: []const u8 },
-
-    pub fn format(self: Authorization, comptime _: []const u8, _: std.fmt.FormatOptions, writer: anytype) !void {
-        switch (self.token) {
-            .bot => |token| try writer.print("Bot {s}", .{token}),
-            .bearer => |token| try writer.print("Bearer {s}", .{token}),
-        }
-    }
 };
 
 pub fn PendingRequest(comptime T: type) type {
@@ -449,7 +438,7 @@ test "request parses response body" {
     });
     defer test_server.destroy();
 
-    var client = init(allocator, .{ .token = .{ .bot = "sometoken" } });
+    var client = init(allocator, .{ .bot = "sometoken" });
     defer client.deinit();
 
     const url = std.Uri{
@@ -492,7 +481,7 @@ test "requestWithValueBody stringifies struct request body" {
         .num = 42,
     };
 
-    var client = init(allocator, .{ .token = .{ .bot = "sometoken" } });
+    var client = init(allocator, .{ .bot = "sometoken" });
     defer client.deinit();
 
     const url = std.Uri{

@@ -17,7 +17,7 @@ state: State,
 write_message_mutex: std.Thread.Mutex,
 
 /// Initializes a Gateway Client
-pub fn init(allocator: std.mem.Allocator, auth: rest.RestClient.Authorization) !Client {
+pub fn init(allocator: std.mem.Allocator, auth: deancord.Authorization) !Client {
     var api_client = deancord.EndpointClient.init(allocator, auth);
     defer api_client.deinit();
 
@@ -44,7 +44,7 @@ pub fn initWithRestClient(allocator: std.mem.Allocator, client: *deancord.Endpoi
 }
 
 /// Initializes a Gateway Client from an existing Rest Client. The provided URI is copied by the allocator.
-pub fn initWithUri(allocator: std.mem.Allocator, auth: rest.RestClient.Authorization, uri: []const u8) !Client {
+pub fn initWithUri(allocator: std.mem.Allocator, auth: deancord.Authorization, uri: []const u8) !Client {
     const dupe_url = try allocator.dupe(u8, uri);
     errdefer allocator.free(dupe_url);
 

@@ -17,7 +17,7 @@ pub fn main() !void {
     };
     defer allocator.free(token);
 
-    var gateway_client = try deancord.gateway.Client.init(allocator, .{ .token = .{ .bot = token } });
+    var gateway_client = try deancord.gateway.Client.init(allocator, deancord.Authorization{ .bot = token });
     defer gateway_client.deinit();
 
     {

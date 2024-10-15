@@ -1,8 +1,6 @@
 //! Server which listens for Discord Interactions.
 //! Only need to call `deinit()` if created via `init(Address)`.
 //! If you have an existing `std.net.Address`, it is okay to create this struct via struct initialization.
-//!
-//! Currently does not really work since zig does not have a standard HTTPS library yet, and I don't like the pattern that current libraries use.
 
 const std = @import("std");
 const deancord = @import("../root.zig");
