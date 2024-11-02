@@ -669,7 +669,7 @@ pub const GetEmojiQuery = struct {
 pub const EditMessageFormBody = struct {
     content: ?[]const u8 = null,
     embeds: ?[]const model.Message.Embed = null,
-    flags: ?[]model.Message.Flags = null,
+    flags: ?model.Message.Flags = null,
     allowed_mentions: ?model.Message.AllowedMentions = null,
     /// set a file to `null` to not affect it
     files: ?[]const ?std.io.AnyReader = null,
