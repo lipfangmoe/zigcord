@@ -2,7 +2,7 @@ const deancord = @import("../../root.zig");
 const std = @import("std");
 const model = deancord.model;
 const rest = deancord.rest;
-const deanson = model.deanson;
+const jconfig = deancord.jconfig;
 
 pub fn getCurrentUser(
     client: *rest.ApiClient,
@@ -108,11 +108,11 @@ pub fn updateCurrentUserApplicationRoleConnection(
 }
 
 pub const ModifyCurrentUserBody = struct {
-    username: deanson.Omittable([]const u8) = .omit,
-    avatar: deanson.Omittable(?model.ImageData) = .omit,
-    banner: deanson.Omittable(?model.ImageData) = .omit,
+    username: jconfig.Omittable([]const u8) = .omit,
+    avatar: jconfig.Omittable(?model.ImageData) = .omit,
+    banner: jconfig.Omittable(?model.ImageData) = .omit,
 
-    pub const jsonStringify = deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const GetCurrentUserGuildsQuery = struct {
@@ -134,9 +134,9 @@ pub const CreateGroupDmBody = struct {
 };
 
 pub const UpdateCurrentUserApplicationRoleConnectionBody = struct {
-    platform_name: deanson.Omittable(?[]const u8) = .omit,
-    platform_username: deanson.Omittable(?[]const u8) = .omit,
-    metadata: deanson.Omittable(std.json.ArrayHashMap([]const u8)) = .omit,
+    platform_name: jconfig.Omittable(?[]const u8) = .omit,
+    platform_username: jconfig.Omittable(?[]const u8) = .omit,
+    metadata: jconfig.Omittable(std.json.ArrayHashMap([]const u8)) = .omit,
 
-    pub const jsonStringify = deanson.stringifyWithOmit;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };

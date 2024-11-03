@@ -90,7 +90,7 @@ fn createTestCommand(client: *deancord.EndpointClient, application_id: deancord.
         deancord.rest.endpoints.CreateGlobalApplicationCommandBody{
             .name = "test",
             .type = .{ .some = .chat_input },
-            .description = "test",
+            .description = .{ .some = "test" },
             .options = .{ .some = &.{deancord.model.interaction.command_option.ApplicationCommandOption.new(
                 .{ .string = deancord.model.interaction.command_option.StringOptionBuilder{ .name = "weee", .description = "wowie!" } },
             )} },

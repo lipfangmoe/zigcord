@@ -34,7 +34,6 @@ pub fn InlineUnionJsonMixin(comptime T: type) type {
             switch (self) {
                 inline else => |value| {
                     if (@TypeOf(value) == void) {
-                        std.log.warn("tried to stringify a void type... replacing with null", .{});
                         try jw.write(null);
                     } else {
                         try jw.write(value);
@@ -57,7 +56,6 @@ pub fn InlineUnionJsonMixin(comptime T: type) type {
                     return @unionInit(T, union_field.name, value);
                 } else |_| {}
             } else {
-                std.log.err("invalid format for type '{s}', provided json: {s}", .{ @typeName(T), std.json.fmt(source, .{}) });
                 return error.InvalidEnumTag;
             }
         }

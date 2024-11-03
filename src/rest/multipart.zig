@@ -1,6 +1,6 @@
 const std = @import("std");
 const deancord = @import("../root.zig");
-const deanson = deancord.jconfig;
+const jconfig = deancord.jconfig;
 
 pub const boundary = "f89767726a7827c6f785b40aee1ca2ade74d951d6a2d50e27cc0f0e5072a12b2";
 

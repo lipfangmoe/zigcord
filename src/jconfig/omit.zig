@@ -35,7 +35,6 @@ pub fn Omittable(comptime T: type) type {
 
         pub fn jsonParseFromValue(allocator: std.mem.Allocator, source: std.json.Value, options: std.json.ParseOptions) !Omittable(T) {
             const inner_value = std.json.innerParseFromValue(T, allocator, source, options) catch |err| {
-                std.log.err("Error occurred while parsing {s}: {}", .{ @typeName(Omittable(T)), err });
                 return err;
             };
             return .{ .some = inner_value };
