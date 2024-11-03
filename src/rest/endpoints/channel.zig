@@ -76,7 +76,7 @@ pub fn createMessage(
 
     const uri = try std.Uri.parse(uri_str);
 
-    var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .PATCH, uri, .chunked, rest.multipart_boundary, null);
+    var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .POST, uri, .chunked, rest.multipart_boundary, null);
     defer pending_request.deinit();
 
     try std.fmt.format(pending_request.writer(), "{form}", .{body});
