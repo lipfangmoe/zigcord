@@ -13,7 +13,7 @@ pub const Interaction = struct {
     application_id: Snowflake,
     type: InteractionType,
     data: jconfig.Omittable(InteractionData) = .omit,
-    guild: jconfig.Omittable(model.guild.Guild) = .omit,
+    guild: jconfig.Omittable(model.guild.PartialGuild) = .omit,
     guild_id: jconfig.Omittable(Snowflake) = .omit,
     channel: jconfig.Omittable(jconfig.Partial(model.Channel)) = .omit,
     channel_id: jconfig.Omittable(Snowflake) = .omit,
