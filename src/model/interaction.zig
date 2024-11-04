@@ -156,6 +156,8 @@ pub const InteractionResponse = struct {
         application_command_autocomplete_result = 8,
         modal = 9,
         premium_required = 10,
+
+        pub const jsonStringify = jconfig.stringifyEnumAsInt;
     };
 };
 
