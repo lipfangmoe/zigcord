@@ -97,4 +97,6 @@ pub const InstallParams = struct {
 pub const IntegrationType = enum {
     guild_install,
     user_install,
+
+    pub const jsonStringify = jconfig.stringifyEnumAsInt;
 };
