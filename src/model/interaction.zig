@@ -175,7 +175,7 @@ pub const InteractionCallbackData = struct {
 };
 
 pub const Context = enum(u2) {
-    guil = 0,
+    guild = 0,
     bot_dm = 1,
     private_channel = 2,
 

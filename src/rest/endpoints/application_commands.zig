@@ -181,9 +181,13 @@ pub const CreateGlobalApplicationCommandBody = struct {
     description: Omittable([]const u8) = .omit,
     description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     options: Omittable([]const ApplicationCommandOption) = .omit,
-    default_member_permissions: Omittable(?[]const u8) = .omit,
+    default_member_permissions: Omittable(?model.Permissions) = .omit,
+    /// Deprecated (use contexts instead);
     dm_permission: Omittable(?bool) = .omit,
+    /// Replaced by default_member_permissions and will be deprecated in the future
     default_permission: Omittable(bool) = .omit,
+    integration_types: Omittable([]model.Application.IntegrationType) = .omit,
+    contexts: Omittable([]model.interaction.Context) = .omit,
     type: Omittable(ApplicationCommandType) = .omit,
     nsfw: Omittable(bool) = .omit,
 
@@ -199,6 +203,8 @@ pub const EditGlobalApplicationCommandBody = struct {
     default_member_permissions: Omittable(?[]const u8) = .omit,
     dm_permission: Omittable(?bool) = .omit,
     default_permission: Omittable(bool) = .omit,
+    integration_types: Omittable([]model.Application.IntegrationType) = .omit,
+    contexts: Omittable([]model.interaction.Context) = .omit,
     nsfw: Omittable(bool) = .omit,
 
     pub const jsonStringify = stringifyWithOmit;
