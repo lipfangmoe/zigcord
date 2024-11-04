@@ -203,8 +203,8 @@ pub const EditGlobalApplicationCommandBody = struct {
     default_member_permissions: Omittable(?[]const u8) = .omit,
     dm_permission: Omittable(?bool) = .omit,
     default_permission: Omittable(bool) = .omit,
-    integration_types: Omittable([]model.Application.IntegrationType) = .omit,
-    contexts: Omittable([]model.interaction.Context) = .omit,
+    integration_types: Omittable([]const model.Application.IntegrationType) = .omit,
+    contexts: Omittable([]const model.interaction.Context) = .omit,
     nsfw: Omittable(bool) = .omit,
 
     pub const jsonStringify = stringifyWithOmit;
