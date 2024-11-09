@@ -15,6 +15,8 @@ ws_client: *ws.Client,
 ws_conn: *ws.Connection,
 state: State,
 write_message_mutex: std.Thread.Mutex,
+is_closing: std.Thread.ResetEvent,
+is_closed: std.Thread.ResetEvent,
 
 /// Initializes a Gateway Client
 pub fn init(allocator: std.mem.Allocator, auth: deancord.Authorization) !Client {
@@ -56,6 +58,8 @@ pub fn initWithUri(allocator: std.mem.Allocator, auth: deancord.Authorization, u
         .ws_client = try allocator.create(ws.Client),
         .ws_conn = try allocator.create(ws.Connection),
         .write_message_mutex = std.Thread.Mutex{},
+        .is_closing = std.Thread.ResetEvent{},
+        .is_closed = std.Thread.ResetEvent{},
     };
     errdefer {
         allocator.destroy(client.ws_client);
@@ -74,6 +78,11 @@ pub fn initWithUri(allocator: std.mem.Allocator, auth: deancord.Authorization, u
 }
 
 pub fn deinit(self: *Client) void {
+    // first, stop heartbeat thread
+    self.is_closing.set();
+    self.is_closed.wait();
+
+    // now we can do our normal deiniting stuff
     self.ws_conn.deinit(null);
     self.ws_client.deinit();
     self.allocator.destroy(self.ws_client);
@@ -158,21 +167,30 @@ fn defaultHeartbeatHandler(self: *Client, interval: u64) !void {
     var prng = std.Random.DefaultPrng.init(@bitCast(std.time.milliTimestamp()));
     const interval_with_jitter = prng.random().intRangeAtMostBiased(u64, 0, interval / 5);
 
-    std.time.sleep(interval_with_jitter * std.time.ns_per_ms);
+    self.is_closing.timedWait(interval_with_jitter * std.time.ns_per_ms) catch |err| switch (err) {
+        error.Timeout => {
+            self.is_closed.set();
+            return;
+        },
+    };
 
     var buf: [8096]u8 = undefined;
     var buf_allocator = std.heap.FixedBufferAllocator.init(&buf);
-    while (self.state != .closing) {
+    while (true) {
         const sequence = switch (self.state) {
             .running => |state| state.sequence,
-            .closing => unreachable,
         };
         const heartbeat = gateway.SendEvent.heartbeat(sequence);
 
         try self.writeEvent(heartbeat);
         buf_allocator.reset();
 
-        std.time.sleep(interval * std.time.ns_per_ms);
+        self.is_closing.timedWait(interval * std.time.ns_per_ms) catch |err| switch (err) {
+            error.Timeout => {
+                self.is_closed.set();
+                return;
+            },
+        };
     }
 }
 
@@ -180,5 +198,4 @@ pub const State = union(enum) {
     running: struct {
         sequence: ?i64 = null,
     },
-    closing: struct {},
 };
