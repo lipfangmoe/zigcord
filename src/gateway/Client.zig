@@ -167,12 +167,14 @@ fn defaultHeartbeatHandler(self: *Client, interval: u64) !void {
     var prng = std.Random.DefaultPrng.init(@bitCast(std.time.milliTimestamp()));
     const interval_with_jitter = prng.random().intRangeAtMostBiased(u64, 0, interval / 5);
 
-    self.is_closing.timedWait(interval_with_jitter * std.time.ns_per_ms) catch |err| switch (err) {
-        error.Timeout => {
+    {
+        // expect a timeout
+        const timeout = self.is_closing.timedWait(interval_with_jitter * std.time.ns_per_ms);
+        if (timeout != error.Timeout) {
             self.is_closed.set();
             return;
-        },
-    };
+        }
+    }
 
     var buf: [8096]u8 = undefined;
     var buf_allocator = std.heap.FixedBufferAllocator.init(&buf);
@@ -185,12 +187,12 @@ fn defaultHeartbeatHandler(self: *Client, interval: u64) !void {
         try self.writeEvent(heartbeat);
         buf_allocator.reset();
 
-        self.is_closing.timedWait(interval * std.time.ns_per_ms) catch |err| switch (err) {
-            error.Timeout => {
-                self.is_closed.set();
-                return;
-            },
-        };
+        // expect a timeout
+        const timeout = self.is_closing.timedWait(interval * std.time.ns_per_ms);
+        if (timeout != error.Timeout) {
+            self.is_closed.set();
+            return;
+        }
     }
 }
 
