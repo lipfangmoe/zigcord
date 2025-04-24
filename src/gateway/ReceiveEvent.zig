@@ -86,7 +86,7 @@ pub fn jsonStringify(self: ReceiveEvent, jw: anytype) !void {
 fn getDataFromTag(alloc: std.mem.Allocator, d_value: std.json.Value, t: []const u8, options: std.json.ParseOptions) std.json.ParseFromValueError!event_data.AnyReceiveEvent {
     const enum_tag_str = try snakeToTitleCase(t);
 
-    const enum_tag = std.meta.stringToEnum(@typeInfo(event_data.AnyReceiveEvent).Union.tag_type orelse unreachable, enum_tag_str.constSlice()) orelse return std.json.ParseFromValueError.InvalidEnumTag;
+    const enum_tag = std.meta.stringToEnum(@typeInfo(event_data.AnyReceiveEvent).@"union".tag_type orelse unreachable, enum_tag_str.constSlice()) orelse return std.json.ParseFromValueError.InvalidEnumTag;
     switch (enum_tag) {
         inline else => |tag| {
             const typ = @field(event_data.receive_events, @tagName(tag));

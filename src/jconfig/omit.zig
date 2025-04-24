@@ -24,7 +24,7 @@ pub fn Omittable(comptime T: type) type {
         /// Returns true if either `self` is omitted, or if `self` is null.
         pub fn isNothing(self: Omittable(T)) bool {
             return switch (self) {
-                .some => |some| if (@typeInfo(T) == .Optional) some == null else false,
+                .some => |some| if (@typeInfo(T) == .optional) some == null else false,
                 .omit => true,
             };
         }
@@ -48,7 +48,7 @@ pub fn Omittable(comptime T: type) type {
 
 pub fn OmittableFieldsMixin(comptime T: type) type {
     return struct {
-        pub fn jsonStringify(self: T, json_writer: anytype) @typeInfo(@TypeOf(json_writer)).Pointer.child.Error!void {
+        pub fn jsonStringify(self: T, json_writer: anytype) @typeInfo(@TypeOf(json_writer)).pointer.child.Error!void {
             return stringifyWithOmit(self, json_writer);
         }
     };
@@ -57,17 +57,17 @@ pub fn OmittableFieldsMixin(comptime T: type) type {
 /// Utility function to enable `Omittable` to work on structs.
 ///
 /// Intended usage: add a declaration in your container as `pub const jsonStringify = stringifyWithOmit`.
-pub fn stringifyWithOmit(self: anytype, json_writer: anytype) @typeInfo(@TypeOf(json_writer)).Pointer.child.Error!void {
+pub fn stringifyWithOmit(self: anytype, json_writer: anytype) @typeInfo(@TypeOf(json_writer)).pointer.child.Error!void {
     const struct_info: std.builtin.Type.Struct = comptime blk: {
         const self_typeinfo = @typeInfo(@TypeOf(self));
         switch (self_typeinfo) {
-            .Pointer => |ptr| {
-                if (@typeInfo(ptr.child) != .Struct) {
+            .pointer => |ptr| {
+                if (@typeInfo(ptr.child) != .@"struct") {
                     @compileError("stringifyWithOmit may only be called on structs and pointers to structs. Found \"" ++ @typeName(@TypeOf(self)) ++ "\"");
                 }
-                break :blk @typeInfo(ptr.child).Struct;
+                break :blk @typeInfo(ptr.child).@"struct";
             },
-            .Struct => |strct| {
+            .@"struct" => |strct| {
                 break :blk strct;
             },
             else => @compileError("stringifyWithOmit may only be called on structs and pointers to structs. Found \"" ++ @typeName(@TypeOf(self)) ++ "\""),
@@ -85,7 +85,7 @@ pub fn stringifyWithOmit(self: anytype, json_writer: anytype) @typeInfo(@TypeOf(
 }
 
 pub fn writePossiblyOmittableFieldToStream(field: std.builtin.Type.StructField, value: anytype, json_writer: anytype) !void {
-    if (@typeInfo(field.type) != .Union) {
+    if (@typeInfo(field.type) != .@"union") {
         try json_writer.objectField(field.name);
         try json_writer.write(value);
         return;

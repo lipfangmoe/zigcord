@@ -25,7 +25,7 @@
 //     pub const MyUnionType = enum(u1) {
 //         foo,
 //         bar,
-//     	   pub const json_config = jconfig.EnumConfig{
+//         pub const json_config = jconfig.EnumConfig{
 //             .representation = .integer, // declares that this enum should be represented as an integer
 //         }
 //     }

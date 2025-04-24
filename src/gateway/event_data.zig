@@ -5,7 +5,7 @@ pub const send_events = @import("./event_data/send_events.zig");
 pub const receive_events = @import("./event_data/receive_events.zig");
 
 fn AnyNamespaceDecl(namespace: type) type {
-    const module_decls = @typeInfo(namespace).Struct.decls;
+    const module_decls = @typeInfo(namespace).@"struct".decls;
 
     const Enum = std.meta.DeclEnum(namespace);
 
@@ -19,7 +19,7 @@ fn AnyNamespaceDecl(namespace: type) type {
         };
     }
 
-    return @Type(std.builtin.Type{ .Union = std.builtin.Type.Union{
+    return @Type(std.builtin.Type{ .@"union" = std.builtin.Type.Union{
         .tag_type = Enum,
         .fields = &union_fields,
         .layout = .auto,

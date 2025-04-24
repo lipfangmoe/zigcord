@@ -73,7 +73,7 @@ pub const Flags = packed struct(u64) {
     pub usingnamespace model.PackedFlagsMixin(Flags);
 
     test "sanity tests" {
-        const FlagsBackingT = @typeInfo(Flags).Struct.backing_integer orelse unreachable;
+        const FlagsBackingT = @typeInfo(Flags).@"struct".backing_integer orelse unreachable;
         try std.testing.expectEqual(
             @as(FlagsBackingT, 1 << 6),
             @as(FlagsBackingT, @bitCast(Flags{ .application_auto_moderation_rule_create_badge = true })),

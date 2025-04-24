@@ -4,13 +4,13 @@ const std = @import("std");
 pub fn stringifyEnumAsInt(self: anytype, json_writer: anytype) !void {
     comptime {
         const self_typeinfo = @typeInfo(@TypeOf(self));
-        if (self_typeinfo != .Pointer) {
+        if (self_typeinfo != .pointer) {
             @compileError("stringifyEnumAsInt may only be called on *const <enumT>, found \"" ++ @typeName(@TypeOf(self)) ++ "\"");
         }
-        if (!self_typeinfo.Pointer.is_const) {
+        if (!self_typeinfo.pointer.is_const) {
             @compileError("stringifyEnumAsInt may only be called on *const <enumT>, found \"" ++ @typeName(@TypeOf(self)) ++ "\"");
         }
-        if (@typeInfo(self_typeinfo.Pointer.child) != .Enum) {
+        if (@typeInfo(self_typeinfo.pointer.child) != .@"enum") {
             @compileError("stringifyEnumAsInt may only be called on *const <enumT>, found \"" ++ @typeName(@TypeOf(self)) ++ "\"");
         }
     }
