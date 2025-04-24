@@ -33,7 +33,7 @@ pub fn InlineSingleStructFieldMixin(comptime T: type, comptime inline_field: []c
                             const field_value = try std.json.innerParseFromValue(field.type, allocator, value, options);
                             break :blk field_value;
                         } else {
-                            if (field.default_value) |default_value| {
+                            if (field.default_value_ptr) |default_value| {
                                 break :blk @as(*const field.type, @alignCast(@ptrCast(default_value))).*;
                             } else {
                                 return error.MissingField;
@@ -80,7 +80,7 @@ fn InlineFieldsJsonWriteStream(UnderlyingWriteStream: type) type {
 
         const Self = @This();
 
-        pub const Error = @typeInfo(UnderlyingWriteStream).Pointer.child.Error;
+        pub const Error = @typeInfo(UnderlyingWriteStream).pointer.child.Error;
 
         // changed methods
         pub fn beginObject(self: *Self) !void {

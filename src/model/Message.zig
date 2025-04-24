@@ -73,7 +73,7 @@ pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, opti
             if (object.get(field.name)) |field_value| {
                 @field(message, field.name) = try std.json.innerParseFromValue(field.type, alloc, field_value, options);
             } else {
-                const default_opt: ?*const field.type = @alignCast(@ptrCast(field.default_value));
+                const default_opt: ?*const field.type = @alignCast(@ptrCast(field.default_value_ptr));
                 if (default_opt) |default| {
                     @field(message, field.name) = default.*;
                 } else {

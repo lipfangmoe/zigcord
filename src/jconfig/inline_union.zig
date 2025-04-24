@@ -4,8 +4,8 @@ const std = @import("std");
 pub fn stringifyUnionInline(self: anytype, json_writer: anytype) !void {
     const self_typeinfo = @typeInfo(@TypeOf(self));
     switch (self_typeinfo) {
-        .Pointer => |ptr| {
-            if (@typeInfo(ptr.child) != .Union) {
+        .pointer => |ptr| {
+            if (@typeInfo(ptr.child) != .@"union") {
                 @compileError("stringifyUnionInline may only be called with a union type, or a pointer to a union type. Found '" ++ @typeName(@TypeOf(self)) ++ "'");
             }
 
@@ -13,7 +13,7 @@ pub fn stringifyUnionInline(self: anytype, json_writer: anytype) !void {
                 inline else => |value| try json_writer.write(value),
             }
         },
-        .Union => {
+        .@"union" => {
             switch (self) {
                 inline else => |value| try json_writer.write(value),
             }
@@ -25,7 +25,7 @@ pub fn stringifyUnionInline(self: anytype, json_writer: anytype) !void {
 /// Mixin which means "any of the following". Stringifies by just stringifying the target value. Parses by trying to parse each union field in declared order.
 pub fn InlineUnionJsonMixin(comptime T: type) type {
     switch (@typeInfo(T)) {
-        .Union => {},
+        .@"union" => {},
         else => @compileError("InlineUnionJsonMixin may only be used on a union type. Found: '" ++ @typeName(T) ++ "'"),
     }
 

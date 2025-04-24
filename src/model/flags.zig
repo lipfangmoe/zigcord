@@ -1,11 +1,11 @@
 const std = @import("std");
 
 pub fn PackedFlagsMixin(comptime FlagStruct: type) type {
-    if (@typeInfo(FlagStruct) != .Struct or @typeInfo(FlagStruct).Struct.backing_integer == null) {
+    if (@typeInfo(FlagStruct) != .@"struct" or @typeInfo(FlagStruct).@"struct".backing_integer == null) {
         @compileError("FlagStruct must be a packed struct with a u64 backing integer");
     }
 
-    if (@typeInfo(FlagStruct).Struct.backing_integer != u64) {
+    if (@typeInfo(FlagStruct).@"struct".backing_integer != u64) {
         @compileError("FlagStruct must be a packed struct with a u64 backing integer");
     }
 

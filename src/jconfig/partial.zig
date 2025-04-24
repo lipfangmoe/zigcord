@@ -7,7 +7,7 @@ const jconfig = @import("../jconfig.zig");
 /// actual partial struct.
 pub fn Partial(comptime T: type) type {
     const PartialType = switch (@typeInfo(T)) {
-        .Struct => PartialStruct(T),
+        .@"struct" => PartialStruct(T),
         else => @compileError("Only structs may be passed to Partial(T)"),
     };
     return struct {
@@ -34,7 +34,7 @@ fn PartialStruct(comptime T: type) type {
     var new_fields: [fields.len]std.builtin.Type.StructField = undefined;
     inline for (0.., fields) |idx, field| {
         new_fields[idx] = switch (@typeInfo(field.type)) {
-            .Union => blk: {
+            .@"union" => blk: {
                 const field_names = std.meta.fieldNames(field.type);
                 if (field_names.len == 2 and std.mem.eql(u8, field_names[0], "some") and std.mem.eql(u8, field_names[1], "omit")) {
                     break :blk field;
@@ -45,7 +45,7 @@ fn PartialStruct(comptime T: type) type {
                     .type = OmittableType,
                     .alignment = @alignOf(OmittableType),
                     .is_comptime = false,
-                    .default_value = &@as(OmittableType, .omit),
+                    .default_value_ptr = &@as(OmittableType, .omit),
                 };
             },
             else => blk: {
@@ -55,16 +55,16 @@ fn PartialStruct(comptime T: type) type {
                     .type = OmittableType,
                     .alignment = @alignOf(OmittableType),
                     .is_comptime = false,
-                    .default_value = &@as(OmittableType, .omit),
+                    .default_value_ptr = &@as(OmittableType, .omit),
                 };
             },
         };
     }
 
-    return @Type(.{ .Struct = std.builtin.Type.Struct{
+    return @Type(.{ .@"struct" = std.builtin.Type.Struct{
         .layout = .auto,
         .backing_integer = null,
-        .is_tuple = @typeInfo(T).Struct.is_tuple,
+        .is_tuple = @typeInfo(T).@"struct".is_tuple,
         .fields = &new_fields,
         .decls = &.{},
     } });

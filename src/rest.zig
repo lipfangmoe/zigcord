@@ -50,7 +50,7 @@ pub fn QueryStringFormatMixin(comptime T: type) type {
                 const raw_value = @field(self, field.name);
 
                 const value_nullable = switch (field_type_info) {
-                    .Optional => raw_value,
+                    .optional => raw_value,
                     else => @as(?field.type, raw_value),
                 };
                 if (value_nullable) |value| {

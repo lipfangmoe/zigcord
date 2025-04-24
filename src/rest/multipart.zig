@@ -18,7 +18,7 @@ pub fn writeMultipartFormDataBody(value: anytype, comptime upload_field_name: []
 fn printUpload(value: anytype, field_name: []const u8, writer: anytype) !void {
     // check a couple recursive cases
     switch (@typeInfo(@TypeOf(value))) {
-        .Optional => {
+        .optional => {
             if (value) |nn_value| {
                 try printUpload(nn_value, field_name, writer);
                 return;
@@ -26,9 +26,9 @@ fn printUpload(value: anytype, field_name: []const u8, writer: anytype) !void {
                 return;
             }
         },
-        .Pointer => |ptr| {
+        .pointer => |ptr| {
             switch (ptr.size) {
-                .Slice => {
+                .slice => {
                     for (0.., value) |idx, each_value| {
                         var buf: [100]u8 = undefined;
                         const field_name_with_idx = std.fmt.bufPrint(&buf, "{s}[{d}]", .{ field_name, idx }) catch return error.UnexpectedWriteFailure;
@@ -62,7 +62,7 @@ fn printPayloadJson(value: anytype, comptime upload_field_name: []const u8, writ
         }
         const field_value = @field(value, field.name);
         switch (@typeInfo(field.type)) {
-            .Optional => {
+            .optional => {
                 if (field_value) |nn_value| {
                     try json_writer.objectField(field.name);
                     try json_writer.write(nn_value);

@@ -6,8 +6,8 @@
 
     .dependencies = .{
         .weebsocket = .{
-            .url = "git+https://codeberg.org/lipfang/weebsocket.git#b8def4c29a1a2c43e02c31454f904042a6307125",
-            .hash = "weebsocket-0.2.0-MTp5t8EbAQB2cENoOcx1pgeuIDyNRBppu-2azGvIw7Dp",
+            .url = "git+https://codeberg.org/lipfang/weebsocket.git#6e2b6832285b1886c1a3eb68d13729081b7d6154",
+            .hash = "weebsocket-0.2.1-MTp5t3scAQAasjjM28TaSfZ731NGRsfBsjkkW-ye7vy_",
         },
     },
 
