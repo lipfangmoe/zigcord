@@ -3,7 +3,7 @@
 //! If you have an existing `std.net.Address`, it is okay to create this struct via struct initialization.
 
 const std = @import("std");
-const deancord = @import("../root.zig");
+const zigcord = @import("../root.zig");
 const Server = @This();
 const InteractionRequest = @import("./InteractionRequest.zig");
 const verify = @import("./verify.zig");
@@ -93,7 +93,7 @@ pub fn receiveInteraction(self: *Server, alloc: std.mem.Allocator) !InteractionR
             return error.InteractionParseError;
         };
         if (req.interaction.type == .ping) {
-            try req.respond(deancord.model.interaction.InteractionResponse{ .type = .pong });
+            try req.respond(zigcord.model.interaction.InteractionResponse{ .type = .pong });
             continue;
         }
 

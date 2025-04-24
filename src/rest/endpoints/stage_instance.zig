@@ -1,8 +1,8 @@
-const deancord = @import("../../root.zig");
+const zigcord = @import("../../root.zig");
 const std = @import("std");
-const model = deancord.model;
-const rest = deancord.rest;
-const jconfig = deancord.jconfig;
+const model = zigcord.model;
+const rest = zigcord.rest;
+const jconfig = zigcord.jconfig;
 
 pub fn createStageInstance(
     client: *rest.EndpointClient,

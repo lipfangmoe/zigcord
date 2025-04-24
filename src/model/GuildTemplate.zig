@@ -1,6 +1,6 @@
 const std = @import("std");
-const deancord = @import("../root.zig");
-const model = deancord.model;
+const zigcord = @import("../root.zig");
+const model = zigcord.model;
 
 code: []const u8,
 name: []const u8,

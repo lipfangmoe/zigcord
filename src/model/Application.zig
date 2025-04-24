@@ -1,7 +1,7 @@
 const std = @import("std");
-const deancord = @import("../root.zig");
+const zigcord = @import("../root.zig");
 const jconfig = @import("../root.zig").jconfig;
-const model = deancord.model;
+const model = zigcord.model;
 
 id: model.Snowflake,
 name: []const u8,

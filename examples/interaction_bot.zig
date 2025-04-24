@@ -1,5 +1,5 @@
 const std = @import("std");
-const deancord = @import("deancord");
+const zigcord = @import("zigcord");
 
 pub const std_options: std.Options = .{ .log_level = switch (@import("builtin").mode) {
     .Debug => .debug,
@@ -33,12 +33,12 @@ pub fn main() !void {
         std.log.err("environment variable PORT must be a number", .{});
         return error.InvalidEnv;
     };
-    const application_id = deancord.model.Snowflake.fromU64(try std.fmt.parseInt(u64, application_id_str, 10));
+    const application_id = zigcord.model.Snowflake.fromU64(try std.fmt.parseInt(u64, application_id_str, 10));
 
-    var client = deancord.EndpointClient.init(allocator, deancord.Authorization{ .bot = token });
+    var client = zigcord.EndpointClient.init(allocator, zigcord.Authorization{ .bot = token });
     defer client.deinit();
 
-    var server = try deancord.HttpInteractionServer.init(std.net.Address.initIp4(.{ 0, 0, 0, 0 }, port), application_public_key[0..64].*);
+    var server = try zigcord.HttpInteractionServer.init(std.net.Address.initIp4(.{ 0, 0, 0, 0 }, port), application_public_key[0..64].*);
 
     const cmd_id = try createTestCommand(&client, application_id);
 
@@ -71,7 +71,7 @@ pub fn main() !void {
                         if (std.mem.eql(u8, str, "quit")) {
                             break;
                         } else {
-                            try req.respond(deancord.model.interaction.InteractionResponse{
+                            try req.respond(zigcord.model.interaction.InteractionResponse{
                                 .type = .channel_message_with_source,
                                 .data = .{ .some = .{ .content = .{ .some = str } } },
                             });
@@ -83,16 +83,16 @@ pub fn main() !void {
     }
 }
 
-fn createTestCommand(client: *deancord.EndpointClient, application_id: deancord.model.Snowflake) !deancord.model.Snowflake {
+fn createTestCommand(client: *zigcord.EndpointClient, application_id: zigcord.model.Snowflake) !zigcord.model.Snowflake {
     // TODO - this is all way too verbose.
     const command_result = try client.createGlobalApplicationCommand(
         application_id,
-        deancord.rest.endpoints.CreateGlobalApplicationCommandBody{
+        zigcord.rest.endpoints.CreateGlobalApplicationCommandBody{
             .name = "test",
             .type = .{ .some = .chat_input },
             .description = .{ .some = "test" },
-            .options = .{ .some = &.{deancord.model.interaction.command_option.ApplicationCommandOption.new(
-                .{ .string = deancord.model.interaction.command_option.StringOptionBuilder{ .name = "weee", .description = "wowie!" } },
+            .options = .{ .some = &.{zigcord.model.interaction.command_option.ApplicationCommandOption.new(
+                .{ .string = zigcord.model.interaction.command_option.StringOptionBuilder{ .name = "weee", .description = "wowie!" } },
             )} },
         },
     );

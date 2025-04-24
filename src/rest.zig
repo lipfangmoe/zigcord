@@ -1,5 +1,5 @@
 const std = @import("std");
-const model = @import("deancord").model;
+const model = @import("zigcord").model;
 const http = std.http;
 
 pub const base_url = "https://discord.com/api/v10";

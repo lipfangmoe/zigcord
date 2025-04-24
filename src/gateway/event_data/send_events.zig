@@ -1,7 +1,7 @@
-const deancord = @import("../../root.zig");
-const model = deancord.model;
-const jconfig = deancord.jconfig;
-const receive_events = deancord.gateway.event_data.receive_events;
+const zigcord = @import("../../root.zig");
+const model = zigcord.model;
+const jconfig = zigcord.jconfig;
+const receive_events = zigcord.gateway.event_data.receive_events;
 
 pub const Identify = struct {
     token: []const u8,
