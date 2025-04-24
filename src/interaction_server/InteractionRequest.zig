@@ -1,7 +1,7 @@
 const std = @import("std");
-const deancord = @import("../root.zig");
-const model = deancord.model;
-const rest = deancord.rest;
+const zigcord = @import("../root.zig");
+const model = zigcord.model;
+const rest = zigcord.rest;
 
 arena: std.heap.ArenaAllocator,
 interaction: model.interaction.Interaction,
@@ -31,7 +31,7 @@ pub fn respond(self: *InteractionRequest, response_body: model.interaction.Inter
 /// send a followup request which edits the original message
 pub fn followupEditOriginal(
     self: InteractionRequest,
-    client: *deancord.EndpointClient,
+    client: *zigcord.EndpointClient,
     body: rest.endpoints.EditWebhookMessageFormBody,
 ) !rest.RestClient.Result(model.Message) {
     return try client.editOriginalInteractionResponse(self.interaction.application_id, self.interaction.token, body);
@@ -40,7 +40,7 @@ pub fn followupEditOriginal(
 /// send a followup request which deletes the original message
 pub fn followupDeleteOriginal(
     self: InteractionRequest,
-    client: *deancord.EndpointClient,
+    client: *zigcord.EndpointClient,
 ) !rest.RestClient.Result(void) {
     return try client.deleteOriginalInteractionResponse(self.interaction.application_id, self.interaction.token);
 }
@@ -48,7 +48,7 @@ pub fn followupDeleteOriginal(
 /// send a followup request which sends a new message
 pub fn followupNewMessage(
     self: InteractionRequest,
-    client: *deancord.EndpointClient,
+    client: *zigcord.EndpointClient,
     body: rest.endpoints.ExecuteWebhookFormBody,
 ) !rest.RestClient.Result(model.Message) {
     return try client.createFollowupMessage(self.interaction.application_id, self.interaction.token, body);
@@ -57,7 +57,7 @@ pub fn followupNewMessage(
 /// send a followup request which edits a message that was previously sent with followupNewMessage()
 pub fn followupEditNewMessage(
     self: InteractionRequest,
-    client: *deancord.EndpointClient,
+    client: *zigcord.EndpointClient,
     message_id: model.Snowflake,
     body: rest.endpoints.EditWebhookMessageFormBody,
 ) !rest.RestClient.Result(model.Message) {

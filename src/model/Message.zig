@@ -1,7 +1,7 @@
 const std = @import("std");
-const deancord = @import("../root.zig");
-const model = deancord.model;
-const jconfig = deancord.jconfig;
+const zigcord = @import("../root.zig");
+const model = zigcord.model;
+const jconfig = zigcord.jconfig;
 const Snowflake = model.Snowflake;
 
 const Message = @This();

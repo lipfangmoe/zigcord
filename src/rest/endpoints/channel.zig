@@ -1,9 +1,9 @@
 const std = @import("std");
-const deancord = @import("../../root.zig");
-const model = deancord.model;
-const rest = deancord.rest;
+const zigcord = @import("../../root.zig");
+const model = zigcord.model;
+const rest = zigcord.rest;
 const Snowflake = model.Snowflake;
-const jconfig = deancord.jconfig;
+const jconfig = zigcord.jconfig;
 const Channel = model.Channel;
 
 pub fn getChannel(client: *rest.EndpointClient, channel_id: Snowflake) !rest.RestClient.Result(Channel) {

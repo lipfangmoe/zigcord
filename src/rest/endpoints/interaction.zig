@@ -1,7 +1,7 @@
 const std = @import("std");
-const deancord = @import("../../root.zig");
-const model = deancord.model;
-const rest = deancord.rest;
+const zigcord = @import("../../root.zig");
+const model = zigcord.model;
+const rest = zigcord.rest;
 
 pub fn createInteractionResponse(
     client: *rest.EndpointClient,

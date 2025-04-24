@@ -135,7 +135,7 @@ pub const ApplicationRoleConnection = struct {
 
 test "idk some websocket response" {
     const str =
-        \\{"verified":true,"username":"deancord.zig test bot","mfa_enabled":true,"id":"1277009867730845787","global_name":null,"flags":0,"email":null,"discriminator":"0175","clan":null,"bot":true,"avatar":"be737e5512e505a791c5437f9a3d2c29"}
+        \\{"verified":true,"username":"zigcord test bot","mfa_enabled":true,"id":"1277009867730845787","global_name":null,"flags":0,"email":null,"discriminator":"0175","clan":null,"bot":true,"avatar":"be737e5512e505a791c5437f9a3d2c29"}
     ;
     const value = try std.json.parseFromSlice(User, std.testing.allocator, str, .{ .ignore_unknown_fields = true });
     defer value.deinit();

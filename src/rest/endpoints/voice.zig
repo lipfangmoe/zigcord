@@ -1,7 +1,7 @@
-const deancord = @import("../../root.zig");
+const zigcord = @import("../../root.zig");
 const std = @import("std");
-const model = deancord.model;
-const rest = deancord.rest;
+const model = zigcord.model;
+const rest = zigcord.rest;
 
 pub fn listVoiceRegions(
     client: *rest.EndpointClient,

@@ -1,11 +1,11 @@
 .{
-    .name = "deancord",
+    .name = "zigcord",
     .version = "0.0.0",
     .minimum_zig_version = "0.13.0",
 
     .dependencies = .{
         .weebsocket = .{
-            .url = "git+https://github.com/deanveloper/weebsocket?ref=v0.1.6#fb9853e27c58cb13bfd08f425167b97c49f3832d",
+            .url = "git+https://codeberg.org/lipfang/weebsocket#fb9853e27c58cb13bfd08f425167b97c49f3832d",
             .hash = "1220baedb21771f329bad5f3ee8cd822c83ad82594846d867e0aeda651d9d6a50045",
         },
     },

@@ -1,9 +1,9 @@
 const std = @import("std");
 const ws = @import("weebsocket");
-const deancord = @import("../root.zig");
-const rest = deancord.rest;
-const gateway = deancord.gateway;
-const model = deancord.model;
+const zigcord = @import("../root.zig");
+const rest = zigcord.rest;
+const gateway = zigcord.gateway;
+const model = zigcord.model;
 const send_events = gateway.event_data.send_events;
 const receive_events = gateway.event_data.receive_events;
 const Client = @This();
@@ -19,8 +19,8 @@ is_closing: std.Thread.ResetEvent,
 is_closed: std.Thread.ResetEvent,
 
 /// Initializes a Gateway Client
-pub fn init(allocator: std.mem.Allocator, auth: deancord.Authorization) !Client {
-    var api_client = deancord.EndpointClient.init(allocator, auth);
+pub fn init(allocator: std.mem.Allocator, auth: zigcord.Authorization) !Client {
+    var api_client = zigcord.EndpointClient.init(allocator, auth);
     defer api_client.deinit();
 
     return try initWithRestClient(allocator, &api_client);
@@ -28,7 +28,7 @@ pub fn init(allocator: std.mem.Allocator, auth: deancord.Authorization) !Client 
 
 /// Initializes a Gateway Client from an existing Rest Client. The rest client only needs to live as long as this method call, but the
 /// allocator should live as long as the returned Gateway Client.
-pub fn initWithRestClient(allocator: std.mem.Allocator, client: *deancord.EndpointClient) !Client {
+pub fn initWithRestClient(allocator: std.mem.Allocator, client: *zigcord.EndpointClient) !Client {
     const gateway_resp = try client.getGateway();
     defer gateway_resp.deinit();
 
@@ -46,7 +46,7 @@ pub fn initWithRestClient(allocator: std.mem.Allocator, client: *deancord.Endpoi
 }
 
 /// Initializes a Gateway Client from an existing Rest Client. The provided URI is copied by the allocator.
-pub fn initWithUri(allocator: std.mem.Allocator, auth: deancord.Authorization, uri: []const u8) !Client {
+pub fn initWithUri(allocator: std.mem.Allocator, auth: zigcord.Authorization, uri: []const u8) !Client {
     const dupe_url = try allocator.dupe(u8, uri);
     errdefer allocator.free(dupe_url);
 
@@ -132,7 +132,7 @@ pub fn authenticate(self: *Client, token: []const u8, intents: model.Intents) !s
 pub fn waitUntilReady(self: *Client, token: []const u8, intents: model.Intents) !std.json.Parsed(gateway.ReceiveEvent) {
     const identify_event = gateway.SendEvent.identify(gateway.event_data.send_events.Identify{
         .token = token,
-        .properties = .{ .browser = "deancord.zig", .device = "deancord.zig", .os = @tagName(@import("builtin").os.tag) },
+        .properties = .{ .browser = "zigcord", .device = "zigcord", .os = @tagName(@import("builtin").os.tag) },
         .intents = intents,
     });
     try self.writeEvent(identify_event);

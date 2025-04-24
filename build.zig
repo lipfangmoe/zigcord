@@ -15,7 +15,7 @@ pub fn build(b: *std.Build) !void {
     const weebsocket_dependency = b.dependency("weebsocket", .{});
     const weebsocket_module = weebsocket_dependency.module("weebsocket");
 
-    const deancord_module = b.addModule("deancord", .{
+    const zigcord_module = b.addModule("zigcord", .{
         .root_source_file = b.path("./src/root.zig"),
         .imports = &.{
             .{ .name = "weebsocket", .module = weebsocket_module },
@@ -23,7 +23,7 @@ pub fn build(b: *std.Build) !void {
         .target = target,
         .optimize = optimize,
     });
-    deancord_module.addOptions("build", options);
+    zigcord_module.addOptions("build", options);
 
     // zig build test
     const test_runner = b.addTest(.{
@@ -44,7 +44,7 @@ pub fn build(b: *std.Build) !void {
         .target = target,
         .root_source_file = b.path("./examples/interaction_bot.zig"),
     });
-    interaction_bot.root_module.addImport("deancord", deancord_module);
+    interaction_bot.root_module.addImport("zigcord", zigcord_module);
     const interaction_artifact = b.addInstallArtifact(interaction_bot, .{});
     const example_interaction_step = b.step("examples:interaction", "Builds an example interaction bot");
     example_interaction_step.dependOn(&interaction_artifact.step);
@@ -56,7 +56,7 @@ pub fn build(b: *std.Build) !void {
         .target = target,
         .root_source_file = b.path("./examples/gateway_bot.zig"),
     });
-    gateway_bot.root_module.addImport("deancord", deancord_module);
+    gateway_bot.root_module.addImport("zigcord", zigcord_module);
     const gateway_artifact = b.addInstallArtifact(gateway_bot, .{});
     const example_gateway_step = b.step("examples:gateway", "Builds an example gateway bot");
     example_gateway_step.dependOn(&gateway_artifact.step);
@@ -68,7 +68,7 @@ pub fn build(b: *std.Build) !void {
         .target = target,
         .root_source_file = b.path("./examples/gateway_logger_bot.zig"),
     });
-    gateway_logger_bot.root_module.addImport("deancord", deancord_module);
+    gateway_logger_bot.root_module.addImport("zigcord", zigcord_module);
     const gateway_logger_artifact = b.addInstallArtifact(gateway_logger_bot, .{});
     const example_gateway_logger_step = b.step("examples:gateway_logger", "Builds an example gateway bot");
     example_gateway_logger_step.dependOn(&gateway_logger_artifact.step);
@@ -81,7 +81,7 @@ pub fn build(b: *std.Build) !void {
     // zig build check
     const check_tests_compile = b.addTest(.{
         .root_source_file = b.path("./src/root.zig"),
-        .name = "deancord",
+        .name = "zigcord",
         .target = target,
         .optimize = optimize,
     });

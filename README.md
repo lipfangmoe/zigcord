@@ -1,4 +1,4 @@
-# deancord (WIP)
+# zigcord (WIP)
 
 > [!NOTE]
 > This project is still a work in progress, but it should be mostly functional. Please make GitHub issues for anything you might encounter!
@@ -11,21 +11,21 @@ on a more recent patch of Zig, please create an issue!
 To include this in your zig project, use the Zig Package Manager:
 
 ```sh
-zig fetch --save 'git+https://github.com/deanveloper/deancord.zig#main'
+zig fetch --save 'git+https://codeberg.org/lipfang/zigcord#main'
 ```
 
 Then, make sure something similar to the following is in your `build.zig`:
 
 ```rs
-	const deancord_dependency = b.dependency("deancord");
-	const deancord_module = deancord_dependency.module("deancord");
+	const zigcord_dependency = b.dependency("zigcord");
+	const zigcord_module = zigcord_dependency.module("zigcord");
     const my_bot = b.addExecutable(.{
         .name = "my-bot",
         .optimize = optimize,
         .target = target,
         .root_source_file = b.path("./src/main.zig"),
     });
-    gateway_bot.root_module.addImport("deancord", deancord_module);
+    gateway_bot.root_module.addImport("zigcord", zigcord_module);
 	b.installArtifact(gateway_bot);
 ```
 

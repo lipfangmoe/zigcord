@@ -1,5 +1,5 @@
 const std = @import("std");
-const deancord = @import("deancord");
+const zigcord = @import("zigcord");
 
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{ .stack_trace_frames = if (std.debug.sys_can_stack_trace) 100 else 0 }){};
@@ -17,11 +17,11 @@ pub fn main() !void {
     };
     defer allocator.free(token);
 
-    var gateway_client = try deancord.gateway.Client.init(allocator, deancord.Authorization{ .bot = token });
+    var gateway_client = try zigcord.gateway.Client.init(allocator, zigcord.Authorization{ .bot = token });
     defer gateway_client.deinit();
 
     {
-        const ready_event = try gateway_client.authenticate(token, deancord.model.Intents{ .guild_messages = true, .message_content = true });
+        const ready_event = try gateway_client.authenticate(token, zigcord.model.Intents{ .guild_messages = true, .message_content = true });
         defer ready_event.deinit();
         std.log.info("authenticated as user {}", .{ready_event.value.d.?.Ready.user.id});
     }
