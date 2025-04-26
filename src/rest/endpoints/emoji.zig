@@ -67,6 +67,43 @@ pub fn deleteGuildEmoji(
     return client.rest_client.requestWithAuditLogReason(void, .DELETE, uri, audit_log_reason);
 }
 
+pub fn listApplicationEmojis(client: *rest.EndpointClient, application_id: model.Snowflake) !rest.RestClient.Result(ListApplicationEmojiResponse) {
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/applications/{}/emojis", .{application_id});
+    defer client.rest_client.allocator.free(uri_str);
+    const uri = try std.Uri.parse(uri_str);
+
+    return client.rest_client.request(ListApplicationEmojiResponse, .GET, uri);
+}
+
+pub fn getApplicationEmoji(client: *rest.EndpointClient, application_id: model.Snowflake, emoji_id: model.Snowflake) !rest.RestClient.Result(model.Emoji) {
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/applications/{}/emojis/{}", .{ application_id, emoji_id });
+    defer client.rest_client.allocator.free(uri_str);
+    const uri = try std.Uri.parse(uri_str);
+
+    return client.rest_client.request(model.Emoji, .GET, uri);
+}
+
+pub fn modifyApplicationEmoji(
+    client: *rest.EndpointClient,
+    application_id: model.Snowflake,
+    emoji_id: model.Snowflake,
+    body: ModifyApplicationEmojiBody,
+) !rest.RestClient.Result(model.Emoji) {
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/applications/{}/emojis/{}", .{ application_id, emoji_id });
+    defer client.rest_client.allocator.free(uri_str);
+    const uri = try std.Uri.parse(uri_str);
+
+    return client.rest_client.requestWithValueBody(model.Emoji, .PATCH, uri, body, .{});
+}
+
+pub fn deleteApplicationEmoji(client: *rest.EndpointClient, application_id: model.Snowflake, emoji_id: model.Snowflake) !rest.RestClient.Result(void) {
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/applications/{}/emojis/{}", .{ application_id, emoji_id });
+    defer client.rest_client.allocator.free(uri_str);
+    const uri = try std.Uri.parse(uri_str);
+
+    return client.rest_client.request(model.Emoji, .DELETE, uri);
+}
+
 pub const CreateGuildEmojiBody = struct {
     name: []const u8,
     /// https://discord.com/developers/docs/reference#image-data
@@ -77,6 +114,23 @@ pub const CreateGuildEmojiBody = struct {
 pub const ModifyGuildEmojiBody = struct {
     name: jconfig.Omittable([]const u8) = .omit,
     roles: jconfig.Omittable(?[]const model.Snowflake) = .omit,
+
+    pub const jsonStringify = jconfig.stringifyWithOmit;
+};
+
+pub const ListApplicationEmojiResponse = struct {
+    items: []const model.Emoji,
+};
+
+pub const AuthoredEmoji = struct {
+    emoji: model.Emoji,
+    user: model.User,
+
+    pub usingnamespace jconfig.InlineSingleStructFieldMixin(AuthoredEmoji, "emoji");
+};
+
+pub const ModifyApplicationEmojiBody = struct {
+    name: jconfig.Omittable([]const u8) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };

@@ -26,7 +26,7 @@ pub const Interaction = struct {
     locale: jconfig.Omittable([]const u8) = .omit,
     guild_locale: jconfig.Omittable([]const u8) = .omit,
     entitlements: []const model.Entitlement,
-    authorizing_integration_owners: std.json.Value, // TODO: https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-object-authorizing-integration-owners-object
+    authorizing_integration_owners: std.json.ArrayHashMap(model.Snowflake),
     context: jconfig.Omittable(Context) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;

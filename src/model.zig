@@ -77,7 +77,11 @@ pub const Permissions = packed struct(u64) {
     create_events: bool = false,
     use_external_sounds: bool = false,
     send_voice_messages: bool = false, // 1 << 46
-    _unknown: u17 = 0,
+    _unknown: u2,
+    send_polls: bool = false, // 1 << 49
+    use_external_apps: bool = false, // 1 << 50
+
+    _unknown2: u13 = 0,
 
     pub fn fromU64(int: u64) Permissions {
         return @bitCast(int);
@@ -112,6 +116,7 @@ pub const Permissions = packed struct(u64) {
         try std.testing.expectEqual(1 << 30, (Permissions{ .manage_guild_expressions = true }).asU64());
         try std.testing.expectEqual(1 << 40, (Permissions{ .moderate_members = true }).asU64());
         try std.testing.expectEqual(1 << 46, (Permissions{ .send_voice_messages = true }).asU64());
+        try std.testing.expectEqual(1 << 50, (Permissions{ .use_external_apps = true }).asU64());
     }
 };
 
