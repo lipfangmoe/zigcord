@@ -16,3 +16,5 @@ pub usingnamespace @import("./endpoints/sticker.zig");
 pub usingnamespace @import("./endpoints/voice.zig");
 pub usingnamespace @import("./endpoints/webhook.zig");
 pub usingnamespace @import("./endpoints/gateway.zig");
+pub usingnamespace @import("./endpoints/sku.zig");
+pub usingnamespace @import("./endpoints/subscription.zig");

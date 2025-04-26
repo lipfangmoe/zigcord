@@ -28,6 +28,8 @@ pub const Poll = @import("./model/Poll.zig");
 pub const Webhook = @import("./model/Webhook.zig");
 pub const Activity = @import("./model/Activity.zig");
 pub const IsoTime = @import("./model/IsoTime.zig");
+pub const Sku = @import("./model/Sku.zig");
+pub const Subscription = @import("./model/Subscription.zig");
 
 pub const Permissions = packed struct(u64) {
     create_instant_invite: bool = false, // 1 << 0
@@ -77,7 +79,7 @@ pub const Permissions = packed struct(u64) {
     create_events: bool = false,
     use_external_sounds: bool = false,
     send_voice_messages: bool = false, // 1 << 46
-    _unknown: u2,
+    _unknown: u2 = 0,
     send_polls: bool = false, // 1 << 49
     use_external_apps: bool = false, // 1 << 50
 
