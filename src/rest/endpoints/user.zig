@@ -109,8 +109,8 @@ pub fn updateCurrentUserApplicationRoleConnection(
 
 pub const ModifyCurrentUserBody = struct {
     username: jconfig.Omittable([]const u8) = .omit,
-    avatar: jconfig.Omittable(?model.ImageData) = .omit,
-    banner: jconfig.Omittable(?model.ImageData) = .omit,
+    avatar: jconfig.Omittable(?model.DataUri) = .omit,
+    banner: jconfig.Omittable(?model.DataUri) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };

@@ -204,14 +204,14 @@ pub fn deleteWebhookMessage(
 
 pub const CreateWebhookBody = struct {
     name: []const u8,
-    avatar: jconfig.Omittable(?model.ImageData) = .omit,
+    avatar: jconfig.Omittable(?model.DataUri) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const ModifyWebhookBody = struct {
     name: jconfig.Omittable([]const u8) = .omit,
-    avatar: jconfig.Omittable(?model.ImageData) = .omit,
+    avatar: jconfig.Omittable(?model.DataUri) = .omit,
     channel_id: jconfig.Omittable(model.Snowflake) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
@@ -258,6 +258,7 @@ pub const EditWebhookMessageFormBody = struct {
     components: ?[]const model.MessageComponent = null,
     files: ?[]const ?std.io.AnyReader = null,
     attachments: ?[]const jconfig.Partial(model.Message.Attachment) = null,
+    poll: ?model.Poll = null, // Polls can only be added when editing a deferred interaction response.
 
     pub fn format(self: EditWebhookMessageFormBody, comptime fmt: []const u8, _: std.fmt.FormatOptions, writer: anytype) !void {
         if (comptime !std.mem.eql(u8, fmt, "form")) {
