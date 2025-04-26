@@ -37,7 +37,7 @@ pub const InteractionType = enum(u8) {
     message_component = 3,
     application_command_autocomplete = 4,
     modal_submit = 5,
-    ping = 1, // see InteractionData.ping as to why this is at the end
+    ping = 1, // `ping` at the end because otherwise InlineUnionMixin will always deserialize into `void`
 
     pub const jsonStringify = jconfig.stringifyEnumAsInt;
 };
@@ -47,7 +47,7 @@ pub const InteractionData = union(InteractionType) {
     message_component: MessageComponentData,
     application_command_autocomplete: ApplicationCommandAutocompleteInteractionData,
     modal_submit: ModalSubmitData,
-    ping: void, // ping at the end because otherwise InlineUnionMixin will always deserialize into `void`
+    ping: void, // `ping` at the end because otherwise InlineUnionMixin will always deserialize into `void`
 
     pub usingnamespace jconfig.InlineUnionMixin(@This());
 };
@@ -156,6 +156,7 @@ pub const InteractionResponse = struct {
         application_command_autocomplete_result = 8,
         modal = 9,
         premium_required = 10,
+        launch_activity = 12,
 
         pub const jsonStringify = jconfig.stringifyEnumAsInt;
     };
