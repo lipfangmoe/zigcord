@@ -574,33 +574,6 @@ pub fn modifyGuildOnboarding(
     return client.rest_client.requestWithValueBodyAndAuditLogReason(model.guild.Onboarding, .PUT, uri, body, .{}, audit_log_reason);
 }
 
-pub fn modifyCurrentUserVoiceState(
-    client: *rest.EndpointClient,
-    guild_id: model.Snowflake,
-    body: ModifyCurrentUserVoiceStateBody,
-    audit_log_reason: ?[]const u8,
-) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/voice-states/@me", .{guild_id});
-    defer client.rest_client.allocator.free(uri_str);
-    const uri = try std.Uri.parse(uri_str);
-
-    return client.rest_client.requestWithValueBodyAndAuditLogReason(void, .PATCH, uri, body, .{}, audit_log_reason);
-}
-
-pub fn modifyUserVoiceState(
-    client: *rest.EndpointClient,
-    guild_id: model.Snowflake,
-    user_id: model.Snowflake,
-    body: ModifyUserVoiceStateBody,
-    audit_log_reason: ?[]const u8,
-) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/voice-states/{}", .{ guild_id, user_id });
-    defer client.rest_client.allocator.free(uri_str);
-    const uri = try std.Uri.parse(uri_str);
-
-    return client.rest_client.requestWithValueBodyAndAuditLogReason(void, .PATCH, uri, body, .{}, audit_log_reason);
-}
-
 // BODY / QUERY CONTRACTS
 
 pub const CreateGuildBody = struct {
@@ -866,19 +839,4 @@ pub const ModifyGuildOnboardingBody = struct {
     default_channel_ids: []const model.Snowflake,
     enabled: bool,
     mode: model.guild.Onboarding.Mode,
-};
-
-pub const ModifyCurrentUserVoiceStateBody = struct {
-    channel_id: Omittable(model.Snowflake) = .omit,
-    suppress: Omittable(bool) = .omit,
-    request_to_speak_timestamp: Omittable(?[]const u8) = .omit,
-
-    pub const jsonStringify = jconfig.stringifyWithOmit;
-};
-
-pub const ModifyUserVoiceStateBody = struct {
-    channel_id: model.Snowflake,
-    suppress: Omittable(bool) = .omit,
-
-    pub const jsonStringify = jconfig.stringifyWithOmit;
 };

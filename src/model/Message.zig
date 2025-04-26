@@ -29,7 +29,7 @@ application: jconfig.Omittable(jconfig.Partial(model.Application)) = .omit,
 application_id: jconfig.Omittable(Snowflake) = .omit,
 flags: jconfig.Omittable(Flags) = .omit,
 message_reference: jconfig.Omittable(Reference) = .omit,
-message_snapshots: jconfig.Omittable([]const jconfig.Partial(Message)) = .omit,
+message_snapshots: jconfig.Omittable(std.json.Value) = .omit, // TODO - can't use jconfig.Partial(?*const Message) because i get the compile error "struct 'model.Message' depends on itself"
 referenced_message: jconfig.Omittable(?*const Message) = .omit,
 interaction_metadata: jconfig.Omittable(InteractionMetadata) = .omit,
 thread: jconfig.Omittable(model.Channel) = .omit,
@@ -309,10 +309,10 @@ pub const Reference = struct {
     pub const jsonStringify = jconfig.stringifyWithOmit;
 
     pub const Type = enum(u2) {
-        default,
-        forward,
+        default = 0,
+        forward = 1,
 
-        pub usingnamespace jconfig.InlineUnionMixin(Reference.Type);
+        pub const jsonStringify = jconfig.stringifyEnumAsInt;
     };
 };
 

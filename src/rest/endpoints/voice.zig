@@ -13,7 +13,7 @@ pub fn listVoiceRegions(
 }
 
 pub fn getCurrentUserVoiceState(client: *rest.EndpointClient, guild_id: model.Snowflake) !rest.RestClient.Result(model.voice.VoiceState) {
-    const url_str = rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/voice-states/@me", .{guild_id});
+    const url_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/voice-states/@me", .{guild_id});
     defer client.rest_client.allocator.free(url_str);
     const url = try std.Uri.parse(url_str);
 
@@ -21,7 +21,7 @@ pub fn getCurrentUserVoiceState(client: *rest.EndpointClient, guild_id: model.Sn
 }
 
 pub fn getUserVoiceState(client: *rest.EndpointClient, guild_id: model.Snowflake, user_id: model.Snowflake) !rest.RestClient.Result(model.voice.VoiceState) {
-    const url_str = rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/voice-states/{}", .{ guild_id, user_id });
+    const url_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/voice-states/{}", .{ guild_id, user_id });
     defer client.rest_client.allocator.free(url_str);
     const url = try std.Uri.parse(url_str);
 
@@ -33,7 +33,7 @@ pub fn modifyCurrentUserVoiceState(
     guild_id: model.Snowflake,
     body: ModifyCurrentUserVoiceStateBody,
 ) !rest.RestClient.Result(void) {
-    const url_str = rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/voice-states/@me", .{guild_id});
+    const url_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/voice-states/@me", .{guild_id});
     defer client.rest_client.allocator.free(url_str);
     const url = try std.Uri.parse(url_str);
 
@@ -46,7 +46,7 @@ pub fn modifyUserVoiceState(
     user_id: model.Snowflake,
     body: ModifyCurrentUserVoiceStateBody,
 ) !rest.RestClient.Result(void) {
-    const url_str = rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/voice-states/{}", .{ guild_id, user_id });
+    const url_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/voice-states/{}", .{ guild_id, user_id });
     defer client.rest_client.allocator.free(url_str);
     const url = try std.Uri.parse(url_str);
 
@@ -57,6 +57,13 @@ pub const ModifyCurrentUserVoiceStateBody = struct {
     channel_id: jconfig.Omittable(model.Snowflake) = .omit,
     suppress: jconfig.Omittable(bool) = .omit,
     request_to_speak_timestamp: jconfig.Omittable(?model.IsoTime) = .omit,
+
+    pub usingnamespace jconfig.OmittableFieldsMixin(ModifyCurrentUserVoiceStateBody);
+};
+
+pub const ModifyUserVoiceStateBody = struct {
+    channel_id: jconfig.Omittable(model.Snowflake) = .omit,
+    suppress: jconfig.Omittable(bool) = .omit,
 
     pub usingnamespace jconfig.OmittableFieldsMixin(ModifyCurrentUserVoiceStateBody);
 };

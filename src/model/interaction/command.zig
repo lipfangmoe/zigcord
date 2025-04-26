@@ -8,7 +8,6 @@ const Permissions = model.Permissions;
 
 // TODO - sometimes this contains name_localized and description_localized fields.
 // See https://discord.com/developers/docs/interactions/application-commands#retrieving-localized-commands
-// TODO - translate to use Omittable
 pub const ApplicationCommand = struct {
     id: Snowflake,
     type: ApplicationCommandType, // documentation says this is omittable but REST api seems to disagree
@@ -24,6 +23,7 @@ pub const ApplicationCommand = struct {
     default_permission: Omittable(?bool) = .omit,
     nsfw: Omittable(bool) = .omit,
     version: Snowflake,
+    handler: Omittable(HandlerType) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
@@ -32,6 +32,7 @@ pub const ApplicationCommandType = enum(u8) {
     chat_input = 1,
     user = 2,
     message = 3,
+    primary_entry_point = 4,
 
     pub const jsonStringify = jconfig.stringifyEnumAsInt;
 };
@@ -54,5 +55,14 @@ pub const ApplicationCommandPermission = struct {
         role = 1,
         user = 2,
         channel = 3,
+
+        pub const jsonStringify = jconfig.stringifyEnumAsInt;
     };
+};
+
+pub const HandlerType = enum(u8) {
+    app_handler = 1,
+    discord_launch_activity = 2,
+
+    pub const jsonStringify = jconfig.stringifyEnumAsInt;
 };

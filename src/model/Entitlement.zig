@@ -8,8 +8,8 @@ application_id: model.Snowflake,
 user_id: jconfig.Omittable(model.Snowflake) = .omit,
 type: Type,
 deleted: bool,
-starts_at: jconfig.Omittable([]const u8) = .omit,
-ends_at: jconfig.Omittable([]const u8) = .omit,
+starts_at: ?model.IsoTime,
+ends_at: ?model.IsoTime, // note - probably null!
 guild_id: jconfig.Omittable(model.Snowflake) = .omit,
 consumed: jconfig.Omittable(bool) = .omit,
 
