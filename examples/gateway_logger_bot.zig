@@ -17,21 +17,19 @@ pub fn main() !void {
     };
     defer allocator.free(token);
 
-    var gateway_client = try zigcord.gateway.Client.init(allocator, zigcord.Authorization{ .bot = token });
+    var gateway_client = try zigcord.gateway.Client.init(
+        allocator,
+        token,
+        zigcord.model.Intents{ .guild_messages = true, .message_content = true },
+    );
     defer gateway_client.deinit();
-
-    {
-        const ready_event = try gateway_client.authenticate(token, zigcord.model.Intents{ .guild_messages = true, .message_content = true });
-        defer ready_event.deinit();
-        std.log.info("authenticated as user {}", .{ready_event.value.d.?.Ready.user.id});
-    }
+    std.log.info("authenticated as user {}", .{gateway_client.json_ws_client.ready_event.?.event.user.id});
 
     while (true) {
-        const parsed = try gateway_client.readEvent();
-        defer parsed.deinit();
-        const event = parsed.value;
+        const event = try gateway_client.readEvent();
+        defer event.deinit();
 
-        switch (event.d orelse continue) {
+        switch (event.event orelse continue) {
             inline else => |event_data| {
                 std.log.info("{}", .{std.json.fmt(event_data, .{})});
             },

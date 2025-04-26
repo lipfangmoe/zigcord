@@ -20,8 +20,9 @@ pub fn init(allocator: std.mem.Allocator, token: []const u8, intents: zigcord.mo
     const json_ws_client = try allocator.create(zigcord.gateway.JsonWSClient);
     errdefer allocator.destroy(json_ws_client);
 
-    try json_ws_client.init(allocator, .{ .bot = token });
-    try json_ws_client.authenticate(token, intents);
+    json_ws_client.* = zigcord.gateway.JsonWSClient.init(allocator, .{ .bot = token }) catch return error.AuthError;
+
+    json_ws_client.authenticate(token, intents) catch return error.AuthError;
 
     return Client{
         .allocator = allocator,
@@ -31,8 +32,13 @@ pub fn init(allocator: std.mem.Allocator, token: []const u8, intents: zigcord.mo
     };
 }
 
+/// Gets the ready event that initialized this bot
+pub fn getReadyEvent(self: Client) zigcord.gateway.event_data.receive_events.Ready {
+    return self.json_ws_client.ready_event.?.event;
+}
+
 pub const ReadEvent = struct {
-    value: zigcord.gateway.ReadEventData,
+    event: ?zigcord.gateway.ReadEventData,
     json_parsed_value: std.json.Parsed(zigcord.gateway.ReceiveEvent),
 
     pub fn deinit(self: ReadEvent) void {
@@ -40,44 +46,79 @@ pub const ReadEvent = struct {
     }
 };
 
-pub fn readEvent(self: *Client) error{ WebsocketError, JsonError }!ReadEvent {
+/// Reads an event over the gateway.
+pub fn readEvent(self: *Client) error{ Disconnected, JsonError }!ReadEvent {
     const json_parsed_value = self.json_ws_client.readEvent() catch |err| {
-        const new_client = self.reconnect() catch return err;
-        self.deinit();
-        self.* = new_client;
-        return try self.readEvent();
+        switch (err) {
+            error.JsonError => return error.JsonError,
+            error.WebsocketError => {
+                self.reconnect() catch return error.Disconnected;
+                return try self.readEvent();
+            },
+        }
     };
 
+    if (json_parsed_value.value.op == .heartbeat) {
+        defer json_parsed_value.deinit();
+        self.writeEvent(zigcord.gateway.SendEvent.heartbeat(self.json_ws_client.sequence)) catch |err| switch (err) {
+            error.JsonError => return error.JsonError,
+            error.WebsocketError => {
+                self.reconnect() catch return error.Disconnected;
+                return try self.readEvent();
+            },
+        };
+        return try self.readEvent();
+    }
+
     return ReadEvent{
-        .value = json_parsed_value.value.d,
+        .event = json_parsed_value.value.d,
         .json_parsed_value = json_parsed_value,
     };
 }
 
+/// Sends an event over the gateway. This functionality is rarely needed.
 pub fn writeEvent(self: *Client, event: zigcord.gateway.SendEvent) error{ WebsocketError, JsonError }!void {
     try self.json_ws_client.writeEvent(event);
 }
 
-pub fn deinit(self: *Client) void {
+/// Destroys the client.
+pub fn deinit(self: Client) void {
     self.allocator.destroy(self.json_ws_client);
 }
 
-fn reconnect(self: Client) error{TooManyReconnects}!Client {
-    var reconnects = self.reconnects + 1;
-    var oldest_reconnect = self.oldest_tracked_reconnect;
-    if (self.oldest_tracked_reconnect) |oldest| {
+const ReinitError = error{ NotResumable, AuthError, WebsocketError, JsonError } || std.mem.Allocator.Error;
+pub fn reinit(self: *Client) ReinitError!void {
+    const ready = self.json_ws_client.ready_event orelse {
+        return error.NotResumable;
+    };
+    const sequence = self.json_ws_client.sequence orelse {
+        return error.NotResumable;
+    };
+
+    self.json_ws_client.ready_event = null; // keep `ready_event` from getting deinit'd
+    self.json_ws_client.deinit();
+
+    const json_ws_client = try self.allocator.create(zigcord.gateway.JsonWSClient);
+    errdefer self.allocator.destroy(json_ws_client);
+
+    json_ws_client.* = zigcord.gateway.JsonWSClient.initWithUri(self.allocator, .{ .bot = self.token }, ready.event.resume_gateway_url) catch return error.AuthError;
+
+    json_ws_client.@"resume"(self.token, sequence, ready) catch return error.AuthError;
+}
+
+fn reconnect(self: *Client) !void {
+    self.reconnects += 1;
+    if (self.oldest_reconnect) |oldest| {
         const now = std.time.timestamp();
         if (oldest < now - 60) {
-            oldest_reconnect = now;
-            reconnects = 1;
+            self.oldest_reconnect = now;
+            self.reconnects = 1;
         }
     }
 
-    if (reconnects > 5) {
+    if (self.reconnects > 5) {
         return error.TooManyReconnects;
     }
 
-    var client = try Client.init(self.allocator, self.token, self.intents);
-    client.reconnects = reconnects;
-    client.oldest_reconnect = oldest_reconnect;
+    try self.reinit();
 }
