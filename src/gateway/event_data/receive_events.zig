@@ -119,6 +119,10 @@ pub const EntitlementUpdate = model.Entitlement;
 
 pub const EntitlementDelete = model.Entitlement;
 
+// TODO subscription events
+
+// TODO soundboard events
+
 pub const GuildCreate = model.guild.MaybeAvailable(struct {
     guild: model.guild.AvailableGuild,
 

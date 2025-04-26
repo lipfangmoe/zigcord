@@ -89,7 +89,7 @@ pub fn deleteGuildTemplate(
 
 pub const CreateGuildFromGuildTemplateBody = struct {
     name: []const u8,
-    icon: jconfig.Omittable(model.ImageData) = .omit,
+    icon: jconfig.Omittable(model.DataUri) = .omit,
 
     pub usingnamespace jconfig.OmittableFieldsMixin(@This());
 };

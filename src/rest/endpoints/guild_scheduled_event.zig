@@ -110,7 +110,7 @@ pub const ModifyGuildScheduledEventBody = struct {
     description: jconfig.Omittable(?[]const u8) = .omit,
     entity_type: jconfig.Omittable(model.GuildScheduledEvent.EntityType) = .omit,
     status: jconfig.Omittable(model.GuildScheduledEvent.EventStatus) = .omit,
-    image: jconfig.Omittable(model.ImageData) = .omit,
+    image: jconfig.Omittable(model.DataUri) = .omit,
 
     pub usingnamespace jconfig.OmittableFieldsMixin(@This());
 };

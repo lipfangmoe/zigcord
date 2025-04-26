@@ -18,3 +18,4 @@ pub usingnamespace @import("./endpoints/webhook.zig");
 pub usingnamespace @import("./endpoints/gateway.zig");
 pub usingnamespace @import("./endpoints/sku.zig");
 pub usingnamespace @import("./endpoints/subscription.zig");
+pub usingnamespace @import("./endpoints/soundboard.zig");
