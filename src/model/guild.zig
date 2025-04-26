@@ -287,30 +287,34 @@ pub const Integration = struct {
 };
 
 pub const Member = struct {
-    /// The User object for this guild member
+    /// the user this guild member represents
     user: jconfig.Omittable(model.User) = .omit,
-    /// The nickname this user uses in this guild
+    /// this user's guild nickname
     nick: jconfig.Omittable(?[]const u8) = .omit,
-    /// A guild-specific avatar hash
+    /// the member's guild avatar hash
     avatar: jconfig.Omittable(?[]const u8) = .omit,
-    /// The role ids that this user has
+    /// the member's guild banner hash
+    banner: jconfig.Omittable(?[]const u8) = .omit,
+    /// array of role object ids
     roles: []Snowflake,
     /// when the user joined the guild
     joined_at: model.IsoTime,
     /// when the user started boosting the guild
     premium_since: jconfig.Omittable(?model.IsoTime) = .omit,
-    /// true if this user is deafened in voice channels
+    /// whether the user is deafened in voice channels
     deaf: bool,
-    /// true if this user is muted in voice channels
+    /// whether the user is muted in voice channels
     mute: bool,
-    /// guild member flags
+    /// guild member flags represented as a bit set, defaults to 0
     flags: Flags,
-    /// true if the user has not passed the guild's membership screening requirements
+    /// whether the user has not yet passed the guild's Membership Screening requirements
     pending: jconfig.Omittable(bool) = .omit,
-    /// returned inside of interaction objects, permissions of the member in the interacted channel
+    /// total permissions of the member in the channel, including overwrites, returned when in the interaction object
     permissions: jconfig.Omittable([]const u8) = .omit,
-    /// when the user's timeout will expire. may be in the past; if so, the user is not timed out.
+    /// when the user's timeout will expire and the user will be able to communicate in the guild again, null or a time in the past if the user is not timed out
     communication_disabled_until: jconfig.Omittable(?model.IsoTime) = .omit,
+    /// data for the member's guild avatar decoration
+    avatar_decoration_data: jconfig.Omittable(?model.User.AvatarDecorationData) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 

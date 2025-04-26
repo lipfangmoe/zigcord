@@ -27,8 +27,9 @@ type: Type,
 activity: jconfig.Omittable(Activity) = .omit,
 application: jconfig.Omittable(jconfig.Partial(model.Application)) = .omit,
 application_id: jconfig.Omittable(Snowflake) = .omit,
-message_reference: jconfig.Omittable(Reference) = .omit,
 flags: jconfig.Omittable(Flags) = .omit,
+message_reference: jconfig.Omittable(Reference) = .omit,
+message_snapshots: jconfig.Omittable([]const jconfig.Partial(Message)) = .omit,
 referenced_message: jconfig.Omittable(?*const Message) = .omit,
 interaction_metadata: jconfig.Omittable(InteractionMetadata) = .omit,
 thread: jconfig.Omittable(model.Channel) = .omit,
@@ -299,12 +300,20 @@ pub const Activity = struct {
 };
 
 pub const Reference = struct {
+    type: jconfig.Omittable(Reference.Type) = .omit,
     message_id: jconfig.Omittable(Snowflake) = .omit,
     channel_id: jconfig.Omittable(Snowflake) = .omit,
     guild_id: jconfig.Omittable(Snowflake) = .omit,
     fail_if_not_exists: jconfig.Omittable(bool) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
+
+    pub const Type = enum(u2) {
+        default,
+        forward,
+
+        pub usingnamespace jconfig.InlineUnionMixin(Reference.Type);
+    };
 };
 
 pub const Flags = packed struct(u64) {
@@ -327,8 +336,7 @@ pub const Flags = packed struct(u64) {
 pub const InteractionMetadata = struct {
     id: Snowflake,
     type: model.interaction.InteractionType,
-    user: model.User,
-    authorizing_integration_owners: std.json.Value, // TODO: https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-object-authorizing-integration-owners-object
+    authorizing_integration_owners: std.json.ArrayHashMap(model.Snowflake),
     original_response_message_id: jconfig.Omittable(Snowflake) = .omit,
     interacted_message_id: jconfig.Omittable(Snowflake) = .omit,
     triggering_interaction_metadata: jconfig.Omittable(?*const InteractionMetadata) = .omit,

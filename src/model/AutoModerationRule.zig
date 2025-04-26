@@ -21,6 +21,7 @@ pub const TriggerType = enum(u8) {
     spam = 3,
     keyword_preset = 4,
     mention_spam = 5,
+    member_profile = 6,
 
     pub const jsonStringify = jconfig.stringifyEnumAsInt;
 };
