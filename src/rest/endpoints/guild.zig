@@ -6,16 +6,6 @@ const jconfig = zigcord.jconfig;
 const Omittable = jconfig.Omittable;
 const Guild = model.guild.Guild;
 
-pub fn createGuild(
-    client: *rest.EndpointClient,
-    body: CreateGuildBody,
-) !rest.RestClient.Result(model.guild.Guild) {
-    const uri_str = rest.base_url ++ "/guilds";
-    const uri = try std.Uri.parse(uri_str);
-
-    return client.rest_client.requestWithValueBody(model.guild.Guild, .POST, uri, body, .{});
-}
-
 pub fn getGuild(
     client: *rest.EndpointClient,
     guild_id: model.Snowflake,
@@ -575,23 +565,6 @@ pub fn modifyGuildOnboarding(
 }
 
 // BODY / QUERY CONTRACTS
-
-pub const CreateGuildBody = struct {
-    name: []const u8,
-    region: jconfig.Omittable(?[]const u8) = .omit,
-    icon: Omittable(?model.DataUri) = .omit,
-    verification_level: Omittable(model.guild.VerificationLevel) = .omit,
-    default_message_notifications: Omittable(model.guild.MessageNotificationLevel) = .omit,
-    explicit_content_Filter: Omittable(model.guild.ExplicitContentFilterLevel) = .omit,
-    roles: Omittable([]const model.Role) = .omit,
-    channels: Omittable([]const jconfig.Partial(model.Channel)) = .omit,
-    afk_channel_id: Omittable(model.Snowflake) = .omit,
-    afk_timeout: Omittable(model.Snowflake) = .omit,
-    system_channel_id: Omittable(model.Snowflake) = .omit,
-    system_channel_flags: Omittable(model.guild.SystemChannelFlags) = .omit,
-
-    pub const jsonStringify = jconfig.stringifyWithOmit;
-};
 
 pub const ModifyGuildBody = struct {
     name: Omittable([]const u8) = .omit,
