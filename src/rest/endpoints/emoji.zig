@@ -101,7 +101,7 @@ pub fn deleteApplicationEmoji(client: *rest.EndpointClient, application_id: mode
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.request(model.Emoji, .DELETE, uri);
+    return client.rest_client.request(void, .DELETE, uri);
 }
 
 pub const CreateGuildEmojiBody = struct {

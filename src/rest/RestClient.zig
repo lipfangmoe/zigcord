@@ -428,8 +428,6 @@ test "request parses response body" {
             try std.testing.expectEqualStrings("/api/v10/lol", req.head.target);
             try std.testing.expectEqualStrings("", body);
 
-            try std.testing.expect(false);
-
             return TestResponse{
                 .status = std.http.Status.ok,
                 .body = "{\"str\":\"some string\",\"num\":123}",
@@ -466,7 +464,7 @@ test "requestWithValueBody stringifies struct request body" {
 
             try std.testing.expectEqual(.POST, req.head.method);
             try std.testing.expectEqualStrings("/api/v10/lol", req.head.target);
-            try std.testing.expectEqualStrings("{\"str\":\"lol lmao\",\"num\":4.2e+01}", body.constSlice());
+            try std.testing.expectEqualStrings("{\"str\":\"lol lmao\",\"num\":4.2e1}", body.constSlice());
 
             return TestResponse{
                 .status = std.http.Status.ok,

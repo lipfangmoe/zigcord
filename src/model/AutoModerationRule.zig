@@ -26,7 +26,6 @@ pub const TriggerType = enum(u8) {
     pub const jsonStringify = jconfig.stringifyEnumAsInt;
 };
 
-// TODO https://discord.com/developers/docs/resources/auto-moderation#auto-moderation-rule-object-trigger-metadata
 pub const TriggerMetadata = union(TriggerType) {
     keyword: struct {
         keyword_filter: []const []const u8,
@@ -41,6 +40,11 @@ pub const TriggerMetadata = union(TriggerType) {
     mention_spam: struct {
         mention_total_limit: i64,
         mention_raid_protection_enabled: bool,
+    },
+    member_profile: struct {
+        keyword_filter: []const []const u8,
+        regex_patterns: []const []const u8,
+        allow_list: []const []const u8,
     },
 
     pub usingnamespace jconfig.InlineUnionMixin(@This());
