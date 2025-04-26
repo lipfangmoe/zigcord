@@ -1,5 +1,6 @@
 const model = @import("../root.zig").model;
 const jconfig = @import("../root.zig").jconfig;
+
 pub const VoiceState = struct {
     guild_id: jconfig.Omittable(model.Snowflake) = .omit,
     channel_id: ?model.Snowflake,
