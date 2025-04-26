@@ -9,7 +9,7 @@ user_id: jconfig.Omittable(model.Snowflake) = .omit,
 type: Type,
 deleted: bool,
 starts_at: ?model.IsoTime,
-ends_at: ?model.IsoTime, // note - probably null!
+ends_at: ?model.IsoTime,
 guild_id: jconfig.Omittable(model.Snowflake) = .omit,
 consumed: jconfig.Omittable(bool) = .omit,
 
