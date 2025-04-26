@@ -99,9 +99,9 @@ pub fn deinit(self: *JsonWSClient) void {
 
 pub fn readEvent(self: *JsonWSClient) error{ WebsocketError, JsonError }!std.json.Parsed(gateway.ReceiveEvent) {
     var message = self.ws_conn.readMessage() catch return error.WebsocketError;
-    const payload_data = message.payloadReader().readAllAlloc(self.allocator, 1_000_000);
+    const payload_data = message.payloadReader().readAllAlloc(self.allocator, 1_000_000) catch return error.JsonError;
     const payload_json_parsed = std.json.parseFromSlice(gateway.ReceiveEvent, self.allocator, payload_data, .{ .ignore_unknown_fields = true }) catch {
-        std.log.err("json deserialization error for input: {}", .{payload_data});
+        std.log.err("json deserialization error for input: {s}", .{payload_data});
         return error.JsonError;
     };
     if (payload_json_parsed.value.s) |sequence| {
