@@ -52,6 +52,7 @@ pub fn jsonParse(alloc: std.mem.Allocator, source: anytype, options: std.json.Pa
     );
 }
 
+// custom parser is needed because parsing of `author` depends on the value of `webhook_id`
 pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, options: std.json.ParseOptions) std.json.ParseFromValueError!Message {
     const object = switch (source) {
         .object => |obj| obj,
@@ -317,20 +318,27 @@ pub const Reference = struct {
 };
 
 pub const Flags = packed struct(u64) {
-    crossposted: bool = false,
-    is_crosspost: bool = false,
-    suppress_embeds: bool = false,
-    source_message_deleted: bool = false,
-    urgent: bool = false,
-    has_thread: bool = false,
-    ephemeral: bool = false,
-    loading: bool = false,
-    failed_to_mention_some_roles_in_thread: bool = false,
-    suppress_notifications: bool = false,
-    is_voice_message: bool = false,
-    _overflow: u53 = 0,
+    crossposted: bool = false, // 1 << 0
+    is_crosspost: bool = false, // 1 << 1
+    suppress_embeds: bool = false, // 1 << 2
+    source_message_deleted: bool = false, // 1 << 3
+    urgent: bool = false, // 1 << 4
+    has_thread: bool = false, // 1 << 5
+    ephemeral: bool = false, // 1 << 6
+    loading: bool = false, // 1 << 7
+    failed_to_mention_some_roles_in_thread: bool = false, // 1 << 8
+    _unknown: u3 = 0,
+    suppress_notifications: bool = false, // 1 << 12
+    is_voice_message: bool = false, // 1 << 13
+    has_snapshot: bool = false, // 1 << 14
+    is_components_v2: bool = false, // 1 << 15
+    _unknown2: u48 = 0,
 
     pub usingnamespace model.PackedFlagsMixin(@This());
+
+    test "sanity" {
+        try std.testing.expectEqual(Flags{ .is_components_v2 = true }, @as(Flags, @bitCast(@as(u64, 1 << 15))));
+    }
 };
 
 pub const InteractionMetadata = struct {
