@@ -86,7 +86,7 @@ pub const ApplicationCommandInteractionDataOption = struct {
 pub const MessageComponentData = struct {
     custom_id: []const u8,
     component_type: model.MessageComponent.Type,
-    values: jconfig.Omittable(model.MessageComponent.TypedProps.StringSelect.Option) = .omit,
+    values: jconfig.Omittable(model.MessageComponent.StringSelect.Option) = .omit,
     resolved: jconfig.Omittable(ResolvedData) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;

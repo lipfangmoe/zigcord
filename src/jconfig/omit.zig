@@ -85,14 +85,15 @@ pub fn stringifyWithOmit(self: anytype, json_writer: anytype) @typeInfo(@TypeOf(
 }
 
 pub fn writePossiblyOmittableFieldToStream(field: std.builtin.Type.StructField, value: anytype, json_writer: anytype) !void {
-    if (@typeInfo(field.type) != .@"union") {
-        try json_writer.objectField(field.name);
-        try json_writer.write(value);
-        return;
-    }
+    const is_omittable = comptime blk: {
+        if (@typeInfo(field.type) != .@"union") {
+            break :blk false;
+        }
+        const field_names = std.meta.fieldNames(field.type);
+        break :blk field_names.len == 2 and std.mem.eql(u8, field_names[0], "some") and std.mem.eql(u8, field_names[1], "omit");
+    };
 
-    const field_names = comptime std.meta.fieldNames(field.type);
-    if (comptime field_names.len == 2 and std.mem.eql(u8, field_names[0], "some") and std.mem.eql(u8, field_names[1], "omit")) {
+    if (is_omittable) {
         switch (value) {
             .some => |some| {
                 try json_writer.objectField(field.name);
