@@ -90,7 +90,11 @@ fn getDataFromTag(alloc: std.mem.Allocator, d_value: std.json.Value, t: []const 
     switch (enum_tag) {
         inline else => |tag| {
             const typ = @field(event_data.receive_events, @tagName(tag));
-            return @unionInit(event_data.AnyReceiveEvent, @tagName(tag), try std.json.innerParseFromValue(typ, alloc, d_value, options));
+            if (typ == u0) {
+                return @unionInit(event_data.AnyReceiveEvent, @tagName(tag), 0);
+            } else {
+                return @unionInit(event_data.AnyReceiveEvent, @tagName(tag), try std.json.innerParseFromValue(typ, alloc, d_value, options));
+            }
         },
     }
 }
@@ -114,4 +118,13 @@ fn snakeToTitleCase(source: []const u8) !std.BoundedArray(u8, 100) {
     }
 
     return output;
+}
+
+test "resumed event" {
+    const input =
+        \\{"t":"RESUMED","s":78,"op":0,"d":{"_trace":["[\"gateway-prd-us-east1-b-xhnb\",{\"micros\":536,\"calls\":[\"id_created\",{\"micros\":0,\"calls\":[]},\"session_lookup_time\",{\"micros\":258,\"calls\":[]},\"session_lookup_finished\",{\"micros\":16,\"calls\":[]},\"discord-sessions-prd-2-46\",{\"micros\":18}]}]"]}}
+    ;
+
+    const parsed = try std.json.parseFromSlice(ReceiveEvent, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
+    parsed.deinit();
 }
