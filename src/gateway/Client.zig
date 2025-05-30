@@ -73,6 +73,7 @@ pub fn readEvent(self: *Client) error{ Disconnected, JsonError }!ReadEvent {
     if (json_parsed_value.value.op == .reconnect) {
         defer json_parsed_value.deinit();
         self.reconnect() catch return error.Disconnected;
+        return try self.readEvent();
     }
 
     return ReadEvent{
