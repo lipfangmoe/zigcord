@@ -73,7 +73,7 @@ pub fn beginRequest(
         defaulted_headers.content_type = .{ .override = "application/json" };
     }
 
-    var server_header_buffer: [2048]u8 = undefined;
+    var server_header_buffer: [4096]u8 = undefined;
     var req = try self.client.open(method, url, std.http.Client.RequestOptions{
         .server_header_buffer = &server_header_buffer,
         .headers = defaulted_headers,
