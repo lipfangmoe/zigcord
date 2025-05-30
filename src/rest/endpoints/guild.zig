@@ -508,7 +508,7 @@ pub fn getGuildWidgetImage(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    var server_header_buffer: [4098]u8 = undefined;
+    var server_header_buffer: [4096]u8 = undefined;
     var request = try client.rest_client.client.open(.GET, uri, .{ .server_header_buffer = &server_header_buffer });
     try request.send();
     try request.wait();
