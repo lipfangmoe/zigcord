@@ -124,7 +124,7 @@ pub fn authenticate(self: *JsonWSClient, token: []const u8, intents: model.Inten
         const event = try self.readEvent();
         defer event.deinit();
 
-        switch (event.value.d orelse continue) {
+        switch (event.value.d) {
             .Hello => |hello| break hello.heartbeat_interval,
             else => {
                 std.log.warn("unexpected event while waiting for ready: {}", .{event});
@@ -148,7 +148,7 @@ pub fn authenticate(self: *JsonWSClient, token: []const u8, intents: model.Inten
         const event = try self.readEvent();
         errdefer event.deinit();
 
-        switch (event.value.d orelse continue) {
+        switch (event.value.d) {
             .Ready => |ready| {
                 self.ready_event = .{
                     .json_parsed = event,
@@ -172,7 +172,7 @@ pub fn @"resume"(self: *JsonWSClient, token: []const u8, seq: i64, ready: ReadyE
         const event = try self.readEvent();
         defer event.deinit();
 
-        switch (event.value.d orelse continue) {
+        switch (event.value.d) {
             .Hello => |hello| break hello.heartbeat_interval,
             else => {
                 std.log.warn("unexpected event while waiting for ready: {}", .{event});
@@ -196,7 +196,7 @@ pub fn @"resume"(self: *JsonWSClient, token: []const u8, seq: i64, ready: ReadyE
         const event = try self.readEvent();
         errdefer event.deinit();
 
-        switch (event.value.d orelse continue) {
+        switch (event.value.d) {
             .Resumed => {
                 event.deinit();
                 return;
