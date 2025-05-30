@@ -4,7 +4,7 @@ const jconfig = @import("../root.zig").jconfig;
 const ReceiveEvent = @This();
 
 op: event_data.Opcode,
-d: ?event_data.AnyReceiveEvent,
+d: event_data.AnyReceiveEvent,
 s: ?i64,
 t: ?[]const u8,
 
@@ -47,16 +47,16 @@ pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, opti
         };
     } else null;
 
-    const d: ?event_data.AnyReceiveEvent = if (root.get("d")) |d_value| blk: {
-        break :blk switch (op) {
-            .dispatch => try getDataFromTag(alloc, d_value, t orelse return std.json.ParseFromValueError.MissingField, options),
-            .reconnect => event_data.AnyReceiveEvent{ .Reconnect = try std.json.innerParseFromValue(event_data.receive_events.Reconnect, alloc, d_value, options) },
-            .invalid_session => .{ .InvalidSession = try std.json.innerParseFromValue(event_data.receive_events.InvalidSession, alloc, d_value, options) },
-            .hello => .{ .Hello = try std.json.innerParseFromValue(event_data.receive_events.Hello, alloc, d_value, options) },
-            .heartbeat_ack => null,
-            else => return std.json.ParseFromValueError.UnexpectedToken,
-        };
-    } else null;
+    const d_as_null: std.json.Value = root.get("d") orelse std.json.Value.null;
+
+    const d: event_data.AnyReceiveEvent = switch (op) {
+        .dispatch => try getDataFromTag(alloc, d_as_null, t, options),
+        .reconnect => event_data.AnyReceiveEvent{ .Reconnect = null },
+        .invalid_session => .{ .InvalidSession = try std.json.innerParseFromValue(event_data.receive_events.InvalidSession, alloc, d_as_null, options) },
+        .hello => .{ .Hello = try std.json.innerParseFromValue(event_data.receive_events.Hello, alloc, d_as_null, options) },
+        .heartbeat_ack => event_data.AnyReceiveEvent{ .HeartbeatACK = null },
+        else => return std.json.ParseFromValueError.UnexpectedToken,
+    };
 
     return ReceiveEvent{
         .op = op,
@@ -83,18 +83,14 @@ pub fn jsonStringify(self: ReceiveEvent, jw: anytype) !void {
     try jw.endObject();
 }
 
-fn getDataFromTag(alloc: std.mem.Allocator, d_value: std.json.Value, t: []const u8, options: std.json.ParseOptions) std.json.ParseFromValueError!event_data.AnyReceiveEvent {
-    const enum_tag_str = try snakeToTitleCase(t);
+fn getDataFromTag(alloc: std.mem.Allocator, d: std.json.Value, t: ?[]const u8, options: std.json.ParseOptions) std.json.ParseFromValueError!event_data.AnyReceiveEvent {
+    const enum_tag_str = try snakeToTitleCase(t orelse "UNDOCUMENTED");
 
-    const enum_tag = std.meta.stringToEnum(@typeInfo(event_data.AnyReceiveEvent).@"union".tag_type orelse unreachable, enum_tag_str.constSlice()) orelse return std.json.ParseFromValueError.InvalidEnumTag;
+    const enum_tag = std.meta.stringToEnum(@typeInfo(event_data.AnyReceiveEvent).@"union".tag_type orelse unreachable, enum_tag_str.constSlice()) orelse .Undocumented;
     switch (enum_tag) {
         inline else => |tag| {
             const typ = @field(event_data.receive_events, @tagName(tag));
-            if (typ == u0) {
-                return @unionInit(event_data.AnyReceiveEvent, @tagName(tag), 0);
-            } else {
-                return @unionInit(event_data.AnyReceiveEvent, @tagName(tag), try std.json.innerParseFromValue(typ, alloc, d_value, options));
-            }
+            return @unionInit(event_data.AnyReceiveEvent, @tagName(tag), try std.json.innerParseFromValue(typ, alloc, d, options));
         },
     }
 }
@@ -122,9 +118,28 @@ fn snakeToTitleCase(source: []const u8) !std.BoundedArray(u8, 100) {
 
 test "resumed event" {
     const input =
-        \\{"t":"RESUMED","s":78,"op":0,"d":{"_trace":["[\"gateway-prd-us-east1-b-xhnb\",{\"micros\":536,\"calls\":[\"id_created\",{\"micros\":0,\"calls\":[]},\"session_lookup_time\",{\"micros\":258,\"calls\":[]},\"session_lookup_finished\",{\"micros\":16,\"calls\":[]},\"discord-sessions-prd-2-46\",{\"micros\":18}]}]"]}}
+        \\{"t":"RESUMED","s":78,"op":0,"d":{"_trace":["snip"]}}
     ;
 
     const parsed = try std.json.parseFromSlice(ReceiveEvent, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
+    parsed.deinit();
+}
+
+test "reconnect event" {
+    const input =
+        \\{"t":null,"s":null,"op":7,"d":null}
+    ;
+
+    const parsed = try std.json.parseFromSlice(ReceiveEvent, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
+    parsed.deinit();
+}
+
+test "undocumented event" {
+    const input =
+        \\{"t":"SOME_KIND_OF_UNDOCUMENTED_EVENT","s":119,"op":0,"d":{"user_id":"0","pause_ends_at":null,"id":"0","guild_id":"0","ended":false}}
+    ;
+    const parsed = try std.json.parseFromSlice(ReceiveEvent, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
+    const user_id = parsed.value.d.Undocumented.object.get("user_id") orelse unreachable;
+    try std.testing.expectEqualStrings("0", user_id.string);
     parsed.deinit();
 }

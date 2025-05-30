@@ -24,11 +24,11 @@ pub const Ready = struct {
     };
 };
 
-pub const Resumed = u0;
+pub const Resumed = ?struct {}; // should be ?noreturn or @TypeOf(null)
 
-pub const Reconnect = u0;
+pub const Reconnect = ?struct {}; // should be ?noreturn or @TypeOf(null)
 
-pub const HeartbeatACK = u0;
+pub const HeartbeatACK = ?struct {}; // should be ?noreturn or @TypeOf(null)
 
 pub const InvalidSession = bool;
 
@@ -484,3 +484,5 @@ pub const MessagePollVoteRemove = struct {
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
+
+pub const Undocumented = std.json.Value;

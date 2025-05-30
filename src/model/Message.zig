@@ -15,7 +15,7 @@ edited_timestamp: ?model.IsoTime,
 tts: bool,
 mention_everyone: bool,
 mentions: []const model.User,
-mention_roles: []const model.Role,
+mention_roles: []const model.Snowflake,
 mention_channels: jconfig.Omittable([]const ChannelMention) = .omit,
 attachments: []const Attachment,
 embeds: []const Embed,
@@ -73,7 +73,7 @@ pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, opti
             @field(message, "author") = author;
         } else {
             if (object.get(field.name)) |field_value| {
-                @field(message, field.name) = try std.json.innerParseFromValue(field.type, alloc, field_value, options);
+                @field(message, field.name) = std.json.innerParseFromValue(field.type, alloc, field_value, options) catch std.debug.panic("{s}", .{field.name});
             } else {
                 const default_opt: ?*const field.type = @alignCast(@ptrCast(field.default_value_ptr));
                 if (default_opt) |default| {
