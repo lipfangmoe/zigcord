@@ -52,13 +52,20 @@ pub fn readEvent(self: *Client) error{ Disconnected, JsonError }!ReadEvent {
         switch (err) {
             error.JsonError => return error.JsonError,
             error.WebsocketError => {
+                zigcord.logger.err("WebsocketError encountered", .{});
+                if (@errorReturnTrace()) |trace| {
+                    zigcord.logger.err("{}", .{trace});
+                }
+                zigcord.logger.info("Reconnecting...", .{});
                 self.reconnect() catch return error.Disconnected;
+                zigcord.logger.info("Successfully reconnected! Re-reading event", .{});
                 return try self.readEvent();
             },
         }
     };
 
     if (json_parsed_value.value.op == .heartbeat) {
+        zigcord.logger.info("Received heartbeat event", .{});
         defer json_parsed_value.deinit();
         self.writeEvent(zigcord.gateway.SendEvent.heartbeat(self.json_ws_client.sequence)) catch |err| switch (err) {
             error.JsonError => return error.JsonError,

@@ -79,7 +79,7 @@ pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, opti
                 if (default_opt) |default| {
                     @field(message, field.name) = default.*;
                 } else {
-                    std.log.err("Missing field: {s}", .{field.name});
+                    zigcord.logger.err("Missing field: {s}", .{field.name});
                     return error.MissingField;
                 }
             }

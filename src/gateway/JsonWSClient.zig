@@ -44,12 +44,12 @@ pub fn initWithRestClient(allocator: std.mem.Allocator, client: *zigcord.Endpoin
     const url = switch (gateway_resp.value()) {
         .ok => |value| value.url,
         .err => |err| {
-            std.log.err("Error while opening gateway response: {}", .{err});
+            zigcord.logger.err("Error while opening gateway response: {}", .{err});
             return error.GetGatwayError;
         },
     };
 
-    std.log.info("attempting connection to {s}", .{url});
+    zigcord.logger.info("attempting connection to {s}", .{url});
 
     return try initWithUri(allocator, client.rest_client.auth, url);
 }
@@ -101,7 +101,7 @@ pub fn readEvent(self: *JsonWSClient) error{ WebsocketError, JsonError }!std.jso
     var message = self.ws_conn.readMessage() catch return error.WebsocketError;
     const payload_data = message.payloadReader().readAllAlloc(self.allocator, 1_000_000) catch return error.JsonError;
     const payload_json_parsed = std.json.parseFromSlice(gateway.ReceiveEvent, self.allocator, payload_data, .{ .ignore_unknown_fields = true }) catch {
-        std.log.err("json deserialization error for input: {s}", .{payload_data});
+        zigcord.logger.err("json deserialization error for input: {s}", .{payload_data});
         return error.JsonError;
     };
     if (payload_json_parsed.value.s) |sequence| {
@@ -127,7 +127,7 @@ pub fn authenticate(self: *JsonWSClient, token: []const u8, intents: model.Inten
         switch (event.value.d) {
             .Hello => |hello| break hello.heartbeat_interval,
             else => {
-                std.log.warn("unexpected event while waiting for ready: {}", .{event});
+                zigcord.logger.warn("unexpected event while waiting for hello: {}", .{event});
                 continue;
             },
         }
@@ -158,7 +158,7 @@ pub fn authenticate(self: *JsonWSClient, token: []const u8, intents: model.Inten
             },
             else => {
                 event.deinit();
-                std.log.warn("unexpected event while waiting for ready: {}", .{event});
+                zigcord.logger.warn("unexpected event while waiting for ready: {}", .{event});
                 continue;
             },
         }
@@ -175,7 +175,7 @@ pub fn @"resume"(self: *JsonWSClient, token: []const u8, seq: i64, ready: ReadyE
         switch (event.value.d) {
             .Hello => |hello| break hello.heartbeat_interval,
             else => {
-                std.log.warn("unexpected event while waiting for ready: {}", .{event});
+                zigcord.logger.warn("unexpected event while waiting for hello event: {}", .{event});
                 continue;
             },
         }
@@ -191,23 +191,6 @@ pub fn @"resume"(self: *JsonWSClient, token: []const u8, seq: i64, ready: ReadyE
         .seq = seq,
     });
     try self.writeEvent(resume_event);
-
-    while (true) {
-        const event = try self.readEvent();
-        errdefer event.deinit();
-
-        switch (event.value.d) {
-            .Resumed => {
-                event.deinit();
-                return;
-            },
-            else => {
-                event.deinit();
-                std.log.warn("unexpected event while waiting for resumed: {}", .{event});
-                continue;
-            },
-        }
-    }
 }
 
 pub fn startHeartbeatThread(self: *JsonWSClient, heartbeat_interval: u64) !void {

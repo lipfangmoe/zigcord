@@ -37,34 +37,34 @@ pub fn receiveInteraction(self: *Server, alloc: std.mem.Allocator) !InteractionR
 
     while (true) {
         const conn = self.net_server.accept() catch |err| {
-            std.log.warn("error occurred while accepting request: {}", .{err});
+            zigcord.logger.warn("error occurred while accepting request: {}", .{err});
             continue;
         };
 
         var http_server = std.http.Server.init(conn, &buf);
         var http_req = http_server.receiveHead() catch |err| {
-            std.log.warn("error occurred while receiving headers: {}", .{err});
+            zigcord.logger.warn("error occurred while receiving headers: {}", .{err});
             continue;
         };
         const signature_headers = verify.SignatureHeaders.initFromHttpRequest(&http_req) catch |err| {
-            std.log.warn("error occurred while looking for signature headers: {}", .{err});
+            zigcord.logger.warn("error occurred while looking for signature headers: {}", .{err});
             http_req.respond("", .{ .status = .unauthorized }) catch |respond_err| {
-                std.log.warn("IO error occurred while writing error response: {}", .{respond_err});
+                zigcord.logger.warn("IO error occurred while writing error response: {}", .{respond_err});
             };
             continue;
         };
 
         const body_reader = http_req.reader() catch |err| {
-            std.log.err("http error occurred while writing a response to 100-continue: {}", .{err});
+            zigcord.logger.err("http error occurred while writing a response to 100-continue: {}", .{err});
             http_req.respond("", .{ .status = .expectation_failed }) catch |respond_err| {
-                std.log.warn("IO error occurred while writing error response: {}", .{respond_err});
+                zigcord.logger.warn("IO error occurred while writing error response: {}", .{respond_err});
             };
             return error.HttpError;
         };
         const body = body_reader.readAllAlloc(alloc, 1024 * 1024) catch |err| {
-            std.log.err("error occurred while reading request body: {}", .{err});
+            zigcord.logger.err("error occurred while reading request body: {}", .{err});
             http_req.respond("", .{ .status = .internal_server_error }) catch |respond_err| {
-                std.log.warn("IO error occurred while writing error response: {}", .{respond_err});
+                zigcord.logger.warn("IO error occurred while writing error response: {}", .{respond_err});
             };
             return error.BodyReadError;
         };
@@ -72,16 +72,16 @@ pub fn receiveInteraction(self: *Server, alloc: std.mem.Allocator) !InteractionR
         verify.verify(signature_headers, body, self.application_public_key) catch |err| {
             switch (err) {
                 error.InvalidPublicKey => {
-                    std.log.err("Application Public Key is invalid: {}", .{self.application_public_key});
+                    zigcord.logger.err("Application Public Key is invalid: {}", .{self.application_public_key});
                     http_req.respond("", .{ .status = .internal_server_error }) catch |respond_err| {
-                        std.log.warn("IO error occurred while writing error response: {}", .{respond_err});
+                        zigcord.logger.warn("IO error occurred while writing error response: {}", .{respond_err});
                     };
                     return error.InvalidPublicKey;
                 },
                 error.SignatureVerificationError => {
-                    std.log.warn("Signature verification failed, responding with 401", .{});
+                    zigcord.logger.warn("Signature verification failed, responding with 401", .{});
                     http_req.respond("", .{ .status = .unauthorized }) catch |respond_err| {
-                        std.log.warn("IO error occurred while writing error response: {}", .{respond_err});
+                        zigcord.logger.warn("IO error occurred while writing error response: {}", .{respond_err});
                     };
                     continue;
                 },
@@ -89,7 +89,7 @@ pub fn receiveInteraction(self: *Server, alloc: std.mem.Allocator) !InteractionR
         };
 
         var req = InteractionRequest.init(alloc, body, http_req) catch |err| {
-            std.log.err("error while parsing interaction: {}", .{err});
+            zigcord.logger.err("error while parsing interaction: {}", .{err});
             return error.InteractionParseError;
         };
         if (req.interaction.type == .ping) {
