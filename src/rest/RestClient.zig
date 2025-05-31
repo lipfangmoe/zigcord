@@ -133,7 +133,7 @@ pub fn requestWithValueBody(self: *DiscordClient, comptime ResponseT: type, meth
     try std.json.stringify(body, stringifyOptions, buffered_body_writer.writer());
     try buffered_body_writer.flush();
 
-    std.log.debug("sending JSON request to path '{}':\n{}", .{ url, std.json.fmt(body, stringifyOptions) });
+    zigcord.logger.debug("sending JSON request to path '{}':\n{}", .{ url, std.json.fmt(body, stringifyOptions) });
 
     return try pending.waitForResponse();
 }
