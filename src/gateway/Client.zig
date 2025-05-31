@@ -56,7 +56,6 @@ pub fn readEvent(self: *Client) error{ Disconnected, JsonError }!ReadEvent {
                 if (@errorReturnTrace()) |trace| {
                     zigcord.logger.err("{}", .{trace});
                 }
-                zigcord.logger.info("Reconnecting...", .{});
                 self.reconnect() catch return error.Disconnected;
                 zigcord.logger.info("Successfully reconnected! Re-reading event", .{});
                 return try self.readEvent();
@@ -65,7 +64,6 @@ pub fn readEvent(self: *Client) error{ Disconnected, JsonError }!ReadEvent {
     };
 
     if (json_parsed_value.value.op == .heartbeat) {
-        zigcord.logger.info("Received heartbeat event", .{});
         defer json_parsed_value.deinit();
         self.writeEvent(zigcord.gateway.SendEvent.heartbeat(self.json_ws_client.sequence)) catch |err| switch (err) {
             error.JsonError => return error.JsonError,
@@ -115,11 +113,16 @@ pub fn reinit(self: *Client) ReinitError!void {
     errdefer self.allocator.destroy(json_ws_client);
 
     json_ws_client.* = zigcord.gateway.JsonWSClient.initWithUri(self.allocator, .{ .bot = self.token }, ready.event.resume_gateway_url) catch return error.AuthError;
+    errdefer json_ws_client.deinit();
 
     json_ws_client.@"resume"(self.token, sequence, ready) catch return error.AuthError;
+
+    self.json_ws_client = json_ws_client;
 }
 
 fn reconnect(self: *Client) !void {
+    zigcord.logger.info("Reconnecting...", .{});
+
     self.reconnects += 1;
     if (self.oldest_reconnect) |oldest| {
         const now = std.time.timestamp();
@@ -134,4 +137,6 @@ fn reconnect(self: *Client) !void {
     }
 
     try self.reinit();
+
+    zigcord.logger.info("Reconnected!", .{});
 }
