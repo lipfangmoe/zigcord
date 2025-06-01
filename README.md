@@ -5,12 +5,15 @@
 
 A Discord API for the Zig programming language.
 
-Currently built off of Zig Version `0.14.0`. If you notice that it is broken
+Currently built off of Zig Version `0.14.1`. If you notice that it is broken
 on a more recent patch of Zig, please create an issue!
+
+# Including in your project
 
 To include this in your zig project, use the Zig Package Manager:
 
 ```sh
+# you can get a specific version by replacing "main" with the version number, ie #v0.2.3
 zig fetch --save 'git+https://codeberg.org/lipfang/zigcord#main'
 ```
 
