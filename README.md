@@ -22,13 +22,8 @@ Then, make sure something similar to the following is in your `build.zig`:
 ```rs
 	const zigcord_dependency = b.dependency("zigcord");
 	const zigcord_module = zigcord_dependency.module("zigcord");
-    const my_bot = b.addExecutable(.{
-        .name = "my-bot",
-        .optimize = optimize,
-        .target = target,
-        .root_source_file = b.path("./src/main.zig"),
-    });
-    gateway_bot.root_module.addImport("zigcord", zigcord_module);
+    const my_bot = b.addExecutable(.{ ... });
+    my_bot.root_module.addImport("zigcord", zigcord_module);
 	b.installArtifact(gateway_bot);
 ```
 
