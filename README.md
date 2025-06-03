@@ -1,12 +1,9 @@
-# zigcord (WIP)
-
-> [!NOTE]
-> This project is still a work in progress, but it should be mostly functional. Please make GitHub issues for anything you might encounter!
+# zigcord
 
 A Discord API for the Zig programming language.
 
 Currently built off of Zig Version `0.14.1`. If you notice that it is broken
-on a more recent patch of Zig, please create an issue!
+on a more recent patch of Zig, please create an [issue](https://codeberg.org/lipfang/zigcord/issues)!
 
 # Including in your project
 
@@ -27,6 +24,14 @@ Then, make sure something similar to the following is in your `build.zig`:
 	b.installArtifact(gateway_bot);
 ```
 
+# Feature Support
+
+ - All Discord API features up to June 2025
+ - [User-installable Apps](https://discord.com/developers/docs/tutorials/developing-a-user-installable-app#developing-a-userinstallable-app)
+ - [Components V2](https://discord.com/developers/docs/components/overview)
+ - WebSocket Gateway
+ - Interaction Server
+
 # Basic Usage
 
 The best way to look at examples is to look at the [examples](./examples/) directory.
@@ -37,5 +42,5 @@ The examples are also runnable with `zig build examples:gateway` and `zig build 
 
  - HTTP Interaction Server:
    - Standalone HTTPS support (for now, you will need a reverse-proxy to provide HTTPS support)
-   - Cloud function support (Cloudflare Workers)
+   - Cloud function support (i.e. Cloudflare Workers)
  - Make sure all data types are accurate
