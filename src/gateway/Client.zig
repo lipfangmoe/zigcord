@@ -15,7 +15,7 @@ reconnects: u5 = 0,
 
 const InitError = error{AuthError} || std.mem.Allocator.Error;
 
-/// Create a Discord Websocket Client. the `token` must live as long as the struct is initialized.
+/// Create a Discord Websocket Client. The `token` string must live as for as long as this bot is active.
 pub fn init(allocator: std.mem.Allocator, token: []const u8, intents: zigcord.model.Intents) InitError!Client {
     const json_ws_client = try allocator.create(zigcord.gateway.JsonWSClient);
     errdefer allocator.destroy(json_ws_client);
@@ -32,7 +32,7 @@ pub fn init(allocator: std.mem.Allocator, token: []const u8, intents: zigcord.mo
     };
 }
 
-/// Gets the ready event that initialized this bot
+/// Gets the ready event which initialized this bot
 pub fn getReadyEvent(self: Client) zigcord.gateway.event_data.receive_events.Ready {
     return self.json_ws_client.ready_event.?.event;
 }
@@ -46,7 +46,7 @@ pub const ReadEvent = struct {
     }
 };
 
-/// Reads an event over the gateway.
+/// Reads an event from the gateway. The returned object is owned by the caller, so remember to call `.deinit()` on the event.
 pub fn readEvent(self: *Client) error{ Disconnected, JsonError }!ReadEvent {
     const json_parsed_value = self.json_ws_client.readEvent() catch |err| {
         switch (err) {
@@ -87,7 +87,7 @@ pub fn readEvent(self: *Client) error{ Disconnected, JsonError }!ReadEvent {
     };
 }
 
-/// Sends an event over the gateway. This functionality is rarely needed.
+/// Sends an event over the gateway. This functionality is rarely needed, you may be looking for REST API (located under `zigcord.rest`).
 pub fn writeEvent(self: *Client, event: zigcord.gateway.SendEvent) error{ WebsocketError, JsonError }!void {
     try self.json_ws_client.writeEvent(event);
 }
@@ -97,7 +97,8 @@ pub fn deinit(self: Client) void {
     self.allocator.destroy(self.json_ws_client);
 }
 
-const ReinitError = error{ NotResumable, AuthError, WebsocketError, JsonError } || std.mem.Allocator.Error;
+pub const ReinitError = error{ NotResumable, AuthError, WebsocketError, JsonError } || std.mem.Allocator.Error;
+/// Reconnects the websocket connection, following the RESUME flow if able.
 pub fn reinit(self: *Client) ReinitError!void {
     const ready = self.json_ws_client.ready_event orelse {
         return error.NotResumable;
