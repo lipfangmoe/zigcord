@@ -73,7 +73,10 @@ pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, opti
             @field(message, "author") = author;
         } else {
             if (object.get(field.name)) |field_value| {
-                @field(message, field.name) = std.json.innerParseFromValue(field.type, alloc, field_value, options) catch std.debug.panic("{s}", .{field.name});
+                @field(message, field.name) = std.json.innerParseFromValue(field.type, alloc, field_value, options) catch |err| {
+                    zigcord.logger.err("json parsing error while parsing Message field \"{}\": {}", .{ field.name, err });
+                    return err;
+                };
             } else {
                 const default_opt: ?*const field.type = @alignCast(@ptrCast(field.default_value_ptr));
                 if (default_opt) |default| {
