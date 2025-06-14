@@ -63,8 +63,18 @@ pub fn readEvent(self: *Client) error{ Disconnected, JsonError }!ReadEvent {
         }
     };
 
+    // if self_owned, we should not call json_parsed_value.deinit() because we will call `.deinit()` in a `defer` instead of this `errdefer`
+    var self_owned: bool = false;
+    errdefer {
+        if (!self_owned) {
+            json_parsed_value.deinit();
+        }
+    }
+
     if (json_parsed_value.value.op == .heartbeat) {
         defer json_parsed_value.deinit();
+        self_owned = true;
+
         self.writeEvent(zigcord.gateway.SendEvent.heartbeat(self.json_ws_client.sequence)) catch |err| switch (err) {
             error.JsonError => return error.JsonError,
             error.WebsocketError => {
@@ -77,6 +87,8 @@ pub fn readEvent(self: *Client) error{ Disconnected, JsonError }!ReadEvent {
 
     if (json_parsed_value.value.op == .reconnect) {
         defer json_parsed_value.deinit();
+        self_owned = true;
+
         self.reconnect() catch return error.Disconnected;
         return try self.readEvent();
     }
@@ -94,6 +106,7 @@ pub fn writeEvent(self: *Client, event: zigcord.gateway.SendEvent) error{ Websoc
 
 /// Destroys the client.
 pub fn deinit(self: Client) void {
+    self.json_ws_client.deinit();
     self.allocator.destroy(self.json_ws_client);
 }
 
