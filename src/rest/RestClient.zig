@@ -3,7 +3,7 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const zigcord = @import("../root.zig");
-const Code = @import("./JsonErrorCodes.zig").Code;
+const ErrorCode = @import("./JsonErrorCodes.zig").ErrorCode;
 
 const RestClient = @This();
 
@@ -278,12 +278,12 @@ pub fn Result(T: type) type {
 }
 
 pub const DiscordError = struct {
-    code: u64 = 0,
+    code: Code = .general_error,
     message: []const u8 = "unknown message",
     errors: std.json.Value = std.json.Value{ .null = void{} },
     other_fields: std.json.ArrayHashMap(std.json.Value) = .{},
 
-    pub const Code = RestClient.Code;
+    pub const Code = ErrorCode;
 
     pub fn jsonStringify(self: DiscordError, jw: anytype) !void {
         try jw.beginObject();
@@ -316,7 +316,7 @@ pub const DiscordError = struct {
             switch (token) {
                 inline .string, .allocated_string => |k| {
                     if (std.mem.eql(u8, k, "code")) {
-                        discord_error.code = try std.json.innerParse(u64, alloc, source, options);
+                        discord_error.code = try std.json.innerParse(Code, alloc, source, options);
                     } else if (std.mem.eql(u8, k, "message")) {
                         discord_error.message = try std.json.innerParse([]const u8, alloc, source, options);
                     } else if (std.mem.eql(u8, k, "errors")) {
@@ -342,7 +342,7 @@ pub const DiscordError = struct {
         var json_fields = obj.iterator();
         while (json_fields.next()) |json_field| {
             if (std.mem.eql(u8, json_field.key_ptr.*, "code")) {
-                discord_error.code = try std.json.innerParseFromValue(u64, alloc, source, options);
+                discord_error.code = try std.json.innerParseFromValue(Code, alloc, source, options);
             } else if (std.mem.eql(u8, json_field.key_ptr.*, "message")) {
                 discord_error.message = try std.json.innerParseFromValue([]const u8, alloc, source, options);
             } else if (std.mem.eql(u8, json_field.key_ptr.*, "errors")) {
