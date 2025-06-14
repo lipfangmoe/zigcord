@@ -3,8 +3,9 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const zigcord = @import("../root.zig");
+const Code = @import("./JsonErrorCodes.zig").Code;
 
-const DiscordClient = @This();
+const RestClient = @This();
 
 allocator: std.mem.Allocator,
 auth: zigcord.Authorization,
@@ -14,13 +15,13 @@ config: Config,
 /// Creates a discord http client with default configuration.
 ///
 /// Cannot be used in tests, instead use `initWithConfig` and provide a mock response from the server.
-pub fn init(allocator: std.mem.Allocator, auth: zigcord.Authorization) DiscordClient {
+pub fn init(allocator: std.mem.Allocator, auth: zigcord.Authorization) RestClient {
     const config = Config{};
     return initWithConfig(allocator, auth, config);
 }
 
 /// Creates a discord http client based on a configuration
-pub fn initWithConfig(allocator: std.mem.Allocator, auth: zigcord.Authorization, config: Config) DiscordClient {
+pub fn initWithConfig(allocator: std.mem.Allocator, auth: zigcord.Authorization, config: Config) RestClient {
     const client = std.http.Client{ .allocator = allocator };
     return .{
         .allocator = allocator,
@@ -31,7 +32,7 @@ pub fn initWithConfig(allocator: std.mem.Allocator, auth: zigcord.Authorization,
 }
 
 pub fn beginMultipartRequest(
-    self: *DiscordClient,
+    self: *RestClient,
     comptime ResponseT: type,
     method: std.http.Method,
     url: std.Uri,
@@ -54,7 +55,7 @@ pub fn beginMultipartRequest(
 }
 
 pub fn beginRequest(
-    self: *DiscordClient,
+    self: *RestClient,
     comptime ResponseT: type,
     method: std.http.Method,
     url: std.Uri,
@@ -92,7 +93,7 @@ pub fn beginRequest(
 }
 
 /// Sends a request to the Discord REST API with the credentials stored in this context
-pub fn request(self: *DiscordClient, comptime ResponseT: type, method: std.http.Method, url: std.Uri) !Result(ResponseT) {
+pub fn request(self: *RestClient, comptime ResponseT: type, method: std.http.Method, url: std.Uri) !Result(ResponseT) {
     var pending = try self.beginRequest(ResponseT, method, url, .{ .none = void{} }, null, null);
     defer pending.deinit();
 
@@ -100,7 +101,7 @@ pub fn request(self: *DiscordClient, comptime ResponseT: type, method: std.http.
 }
 
 /// Sends a request to the Discord REST API with the credentials stored in this context
-pub fn requestWithAuditLogReason(self: *DiscordClient, comptime ResponseT: type, method: std.http.Method, url: std.Uri, audit_log_reason: ?[]const u8) !Result(ResponseT) {
+pub fn requestWithAuditLogReason(self: *RestClient, comptime ResponseT: type, method: std.http.Method, url: std.Uri, audit_log_reason: ?[]const u8) !Result(ResponseT) {
     const extra_headers: []const std.http.Header = if (audit_log_reason) |reason|
         &.{std.http.Header{ .name = "X-Audit-Log-Reason", .value = reason }}
     else
@@ -113,7 +114,7 @@ pub fn requestWithAuditLogReason(self: *DiscordClient, comptime ResponseT: type,
 }
 
 /// Sends a request (with a body) to the Discord REST API with the credentials stored in this context.
-pub fn requestWithBody(self: *DiscordClient, comptime ResponseT: type, method: std.http.Method, url: std.Uri, body: std.io.AnyReader) !Result(ResponseT) {
+pub fn requestWithBody(self: *RestClient, comptime ResponseT: type, method: std.http.Method, url: std.Uri, body: std.io.AnyReader) !Result(ResponseT) {
     var pending = try self.beginRequest(ResponseT, method, url, .{ .chunked = void{} }, null, null);
     defer pending.deinit();
 
@@ -124,7 +125,7 @@ pub fn requestWithBody(self: *DiscordClient, comptime ResponseT: type, method: s
 }
 
 /// Sends a request (with a body) to the Discord REST API with the credentials stored in this context.
-pub fn requestWithValueBody(self: *DiscordClient, comptime ResponseT: type, method: std.http.Method, url: std.Uri, body: anytype, stringifyOptions: std.json.StringifyOptions) !Result(ResponseT) {
+pub fn requestWithValueBody(self: *RestClient, comptime ResponseT: type, method: std.http.Method, url: std.Uri, body: anytype, stringifyOptions: std.json.StringifyOptions) !Result(ResponseT) {
     var pending = try self.beginRequest(ResponseT, method, url, .{ .chunked = void{} }, null, null);
     defer pending.deinit();
 
@@ -139,7 +140,7 @@ pub fn requestWithValueBody(self: *DiscordClient, comptime ResponseT: type, meth
 }
 
 pub fn requestWithValueBodyAndAuditLogReason(
-    self: *DiscordClient,
+    self: *RestClient,
     comptime ResponseT: type,
     method: std.http.Method,
     url: std.Uri,
@@ -163,7 +164,7 @@ pub fn requestWithValueBodyAndAuditLogReason(
     return try pending.waitForResponse();
 }
 
-pub fn deinit(self: *DiscordClient) void {
+pub fn deinit(self: *RestClient) void {
     self.client.deinit();
 }
 
@@ -281,6 +282,8 @@ pub const DiscordError = struct {
     message: []const u8 = "unknown message",
     errors: std.json.Value = std.json.Value{ .null = void{} },
     other_fields: std.json.ArrayHashMap(std.json.Value) = .{},
+
+    pub const Code = RestClient.Code;
 
     pub fn jsonStringify(self: DiscordError, jw: anytype) !void {
         try jw.beginObject();
