@@ -14,7 +14,7 @@
 // console.log(str)
 
 /// A non-exhautive enum of discord error codes.
-pub const Code = enum(u64) {
+pub const ErrorCode = enum(u64) {
     general_error = 0,
     unknown_account = 10001,
     unknown_application = 10002,
