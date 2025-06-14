@@ -33,24 +33,20 @@ fn PartialStruct(comptime T: type) type {
     const fields: []const std.builtin.Type.StructField = std.meta.fields(T);
     var new_fields: [fields.len]std.builtin.Type.StructField = undefined;
     inline for (0.., fields) |idx, field| {
-        new_fields[idx] = switch (@typeInfo(field.type)) {
-            .@"union" => blk: {
+        new_fields[idx] = swatch: switch (@typeInfo(field.type)) {
+            .@"union" => prong: {
+                // we should avoid making an Omittable(Omittable(T))
                 const field_names = std.meta.fieldNames(field.type);
                 if (field_names.len == 2 and std.mem.eql(u8, field_names[0], "some") and std.mem.eql(u8, field_names[1], "omit")) {
-                    break :blk field;
+                    break :prong field;
                 }
-                const OmittableType = jconfig.Omittable(field.type);
-                break :blk std.builtin.Type.StructField{
-                    .name = field.name,
-                    .type = OmittableType,
-                    .alignment = @alignOf(OmittableType),
-                    .is_comptime = false,
-                    .default_value_ptr = &@as(OmittableType, .omit),
-                };
+
+                // all other unions should be treated normally
+                continue :swatch .@"struct";
             },
-            else => blk: {
+            else => prong: {
                 const OmittableType = jconfig.Omittable(field.type);
-                break :blk std.builtin.Type.StructField{
+                break :prong std.builtin.Type.StructField{
                     .name = field.name,
                     .type = OmittableType,
                     .alignment = @alignOf(OmittableType),

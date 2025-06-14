@@ -112,7 +112,7 @@ pub const Button = struct {
     custom_id: jconfig.Omittable([]const u8) = .omit,
     style: ButtonStyle,
     label: jconfig.Omittable([]const u8) = .omit,
-    emoji: jconfig.Omittable(model.Emoji) = .omit,
+    emoji: jconfig.Omittable(jconfig.Partial(model.Emoji)) = .omit,
     sku_id: jconfig.Omittable(model.Snowflake) = .omit,
     url: jconfig.Omittable([]const u8) = .omit,
     disabled: jconfig.Omittable(bool) = .omit,
