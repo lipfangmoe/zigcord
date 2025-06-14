@@ -100,10 +100,14 @@ pub fn deinit(self: *JsonWSClient) void {
 pub fn readEvent(self: *JsonWSClient) error{ WebsocketError, JsonError }!std.json.Parsed(gateway.ReceiveEvent) {
     var message = self.ws_conn.readMessage() catch return error.WebsocketError;
     const payload_data = message.payloadReader().readAllAlloc(self.allocator, 1_000_000) catch return error.JsonError;
-    const payload_json_parsed = std.json.parseFromSlice(gateway.ReceiveEvent, self.allocator, payload_data, .{ .ignore_unknown_fields = true }) catch {
+    defer self.allocator.free(payload_data);
+
+    const payload_json_parsed = std.json.parseFromSlice(gateway.ReceiveEvent, self.allocator, payload_data, .{ .ignore_unknown_fields = true, .allocate = .alloc_always }) catch {
         zigcord.logger.err("json deserialization error for input: {s}", .{payload_data});
         return error.JsonError;
     };
+    errdefer payload_json_parsed.deinit();
+
     if (payload_json_parsed.value.s) |sequence| {
         self.sequence = sequence;
     }
