@@ -145,9 +145,14 @@ test "undocumented event" {
 }
 
 test "update message" {
-    const input =
-        \\{"t":"MESSAGE_UPDATE","s":207,"op":0,"d":{"webhook_id":"0","type":0,"tts":false,"timestamp":"2025-01-01T00:00:00.000000+00:00","position":0,"pinned":false,"mentions":[],"mention_roles":[],"mention_everyone":false,"member":{"roles":["0","2"],"premium_since":null,"pending":false,"nick":null,"mute":false,"joined_at":"2025-01-01T00:00:00.000000+00:00","flags":0,"deaf":false,"communication_disabled_until":null,"banner":null,"avatar":null},"interaction_metadata":{"user":{"username":"redacted","public_flags":0,"primary_guild":null,"id":"0","global_name":"redacted","discriminator":"0","collectibles":{"nameplate":{"sku_id":"0","palette":"bubble_gum","label":"COLLECTIBLES_NAMEPLATES_ANGELS_A11Y","expires_at":null,"asset":"nameplates/nameplates/angels/"}},"clan":null,"avatar_decoration_data":{"sku_id":"0","expires_at":null,"asset":"something"},"avatar":"avatar"},"type":2,"name":"favs","id":"0","command_type":1,"authorizing_integration_owners":{"0":"0"}},"interaction":{"user":{"username":"redacted","public_flags":0,"primary_guild":null,"id":"0","global_name":"redacted","discriminator":"0","collectibles":{"nameplate":{"sku_id":"0","palette":"bubble_gum","label":"COLLECTIBLES_NAMEPLATES_ANGELS_A11Y","expires_at":null,"asset":"nameplates/nameplates/angels/"}},"clan":null,"avatar_decoration_data":{"sku_id":"0","expires_at":null,"asset":"asset"},"avatar":"avatar"},"type":2,"name":"favs","member":{"roles":["0","1"],"premium_since":"2025-01-01T00:00:00.000000+00:00","pending":false,"nick":"redacted","mute":false,"joined_at":"2025-01-01T00:00:00.000000+00:00","flags":0,"deaf":false,"communication_disabled_until":null,"banner":"banner","avatar":"avatar"},"id":"0"},"id":"0","flags":0,"embeds":[{"type":"rich","thumbnail":{"width":625,"url":"https://example.com/","proxy_url":"https://example.com/","placeholder_version":1,"placeholder":"placeholder","height":0,"flags":0,"content_type":"image/jpeg"},"footer":{"text":"footer","proxy_icon_url":"https://example.com/","icon_url":"https://example.com/"},"description":"description","author":{"url":"https://example.com/","proxy_icon_url":"https://example.com/","name":"name","icon_url":"https://example.com/"}}],"edited_timestamp":"2025-01-01T00:00:00.000000+00:00","content":"","components":[{"type":1,"id":1,"components":[{"type":2,"style":1,"id":2,"emoji":{"name":"➡"},"custom_id":"➡"}]}],"channel_type":0,"channel_id":"0","author":{"username":"username","public_flags":0,"primary_guild":null,"id":"0","global_name":null,"discriminator":"0","collectibles":null,"clan":null,"bot":true,"avatar_decoration_data":null,"avatar":"avatar"},"attachments":[],"application_id":"0","guild_id":"0"}}
-    ;
+    const input = @embedFile("message1.test.json");
+
+    const parsed = try std.json.parseFromSlice(ReceiveEvent, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
+    parsed.deinit();
+}
+
+test "uhhh" {
+    const input = @embedFile("./message2.test.json");
 
     const parsed = try std.json.parseFromSlice(ReceiveEvent, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
     parsed.deinit();
