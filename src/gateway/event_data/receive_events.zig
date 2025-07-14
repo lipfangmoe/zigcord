@@ -326,7 +326,7 @@ pub const MessageUpdate = struct {
 
     pub const UserWithPartialMember = struct {
         user: model.User,
-        member: jconfig.Partial(model.guild.Member),
+        member: jconfig.Omittable(jconfig.Partial(model.guild.Member)) = .omit,
 
         pub usingnamespace jconfig.InlineSingleStructFieldMixin(@This(), "user");
     };
