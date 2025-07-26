@@ -1,4 +1,5 @@
 const std = @import("std");
+const zigcord = @import("../root.zig");
 
 const writePossiblyOmittableFieldToStream = @import("./omit.zig").writePossiblyOmittableFieldToStream;
 
@@ -36,6 +37,7 @@ pub fn InlineSingleStructFieldMixin(comptime T: type, comptime inline_field: []c
                             if (field.default_value_ptr) |default_value| {
                                 break :blk @as(*const field.type, @alignCast(@ptrCast(default_value))).*;
                             } else {
+                                zigcord.logger.err("Missing field for type '{s}': '{s}'", .{ @typeName(T), field.name });
                                 return error.MissingField;
                             }
                         }
