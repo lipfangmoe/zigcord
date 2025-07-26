@@ -73,7 +73,7 @@ pub fn main() !void {
                         } else {
                             try req.respond(zigcord.model.interaction.InteractionResponse{
                                 .type = .channel_message_with_source,
-                                .data = .{ .some = .{ .content = .{ .some = str } } },
+                                .data = .initSome(.{ .content = .initSome(str) }),
                             });
                         }
                     }
@@ -84,16 +84,15 @@ pub fn main() !void {
 }
 
 fn createTestCommand(client: *zigcord.EndpointClient, application_id: zigcord.model.Snowflake) !zigcord.model.Snowflake {
-    // TODO - this is all way too verbose.
     const command_result = try client.createGlobalApplicationCommand(
         application_id,
         zigcord.rest.endpoints.CreateGlobalApplicationCommandBody{
             .name = "test",
-            .type = .{ .some = .chat_input },
-            .description = .{ .some = "test" },
-            .options = .{ .some = &.{zigcord.model.interaction.command_option.ApplicationCommandOption.new(
-                .{ .string = zigcord.model.interaction.command_option.StringOptionBuilder{ .name = "weee", .description = "wowie!" } },
-            )} },
+            .type = .initSome(.chat_input),
+            .description = .initSome("test"),
+            .options = .initSome(&.{
+                .initStringOption(zigcord.model.interaction.command_option.StringOptionBuilder{ .name = "weee", .description = "wowie!" }),
+            }),
         },
     );
     defer command_result.deinit();
