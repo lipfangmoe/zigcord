@@ -69,6 +69,20 @@ pub fn getChannelMessage(
 pub fn createMessage(
     client: *rest.EndpointClient,
     channel_id: Snowflake,
+    body: CreateMessageJsonBody,
+) !rest.RestClient.Result(model.Message) {
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{}/messages", .{channel_id});
+    defer client.rest_client.allocator.free(uri_str);
+
+    const uri = try std.Uri.parse(uri_str);
+
+    return client.rest_client.requestWithValueBody(model.Message, .POST, uri, body, .{});
+}
+
+/// Note - the CreateMessageParams type has several helpers for creating messages easily
+pub fn createMessageMultipart(
+    client: *rest.EndpointClient,
+    channel_id: Snowflake,
     body: CreateMessageFormBody,
 ) !rest.RestClient.Result(model.Message) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{}/messages", .{channel_id});
@@ -578,6 +592,55 @@ pub const GetChannelMessagesQuery = struct {
     pub usingnamespace rest.QueryStringFormatMixin(GetChannelMessagesQuery);
 };
 
+pub const CreateMessageJsonBody = struct {
+    content: jconfig.Omittable([]const u8) = .omit,
+    nonce: jconfig.Omittable(Nonce) = .omit,
+    tts: jconfig.Omittable(bool) = .omit,
+    embeds: jconfig.Omittable([]const model.Message.Embed) = .omit,
+    allowed_mentions: jconfig.Omittable(model.Message.AllowedMentions) = .omit,
+    message_reference: jconfig.Omittable(model.Message.Reference) = .omit,
+    components: jconfig.Omittable([]const model.MessageComponent) = .omit,
+    sticker_ids: jconfig.Omittable([]const Snowflake) = .omit,
+    attachments: jconfig.Omittable([]const jconfig.Partial(model.Message.Attachment)) = .omit,
+    flags: jconfig.Omittable(model.Message.Flags) = .omit,
+    enforce_nonce: jconfig.Omittable(bool) = .omit,
+    poll: jconfig.Omittable(model.Poll) = .omit,
+
+    pub const Nonce = union(enum) {
+        int: u64,
+        str: []const u8,
+
+        pub usingnamespace jconfig.InlineUnionMixin(@This());
+    };
+
+    pub usingnamespace jconfig.OmittableFieldsMixin(@This());
+
+    /// Creates a text-only message
+    pub fn initTextOnly(message: []const u8) CreateMessageJsonBody {
+        return CreateMessageJsonBody{ .content = .initSome(message) };
+    }
+
+    pub fn initMessageWithEmbeds(message: ?[]const u8, embeds: []const model.Message.Embed) CreateMessageJsonBody {
+        return CreateMessageJsonBody{ .content = .initNullable(message), .embeds = .initSome(embeds) };
+    }
+
+    pub fn initMessageWithStickers(message: ?[]const u8, sticker_ids: []const Snowflake) CreateMessageJsonBody {
+        return CreateMessageJsonBody{ .content = .initNullable(message), .sticker_ids = .initSome(sticker_ids) };
+    }
+
+    pub fn initMessageWithComponents(message: ?[]const u8, components: []const model.MessageComponent) CreateMessageJsonBody {
+        return CreateMessageJsonBody{ .content = .initNullable(message), .components = .initSome(components) };
+    }
+
+    pub fn initMessageWithComponentsV2(components: []const model.MessageComponent) CreateMessageJsonBody {
+        return CreateMessageJsonBody{ .components = .initSome(components), .flags = .initSome(model.Message.Flags{ .is_components_v2 = true }) };
+    }
+
+    pub fn initMessageWithPoll(message: ?[]const u8, poll: model.Poll) CreateMessageJsonBody {
+        return CreateMessageJsonBody{ .content = .initNullable(message), .poll = .initSome(poll) };
+    }
+};
+
 // note to maintainers: top-level properties are encoded as form parameters, although the
 // properties themselves (except files) will be encoded as JSON
 pub const CreateMessageFormBody = struct {
@@ -628,6 +691,10 @@ pub const CreateMessageFormBody = struct {
 
     pub fn initMessageWithComponents(message: ?[]const u8, components: []const model.MessageComponent) CreateMessageFormBody {
         return CreateMessageFormBody{ .content = message, .components = components };
+    }
+
+    pub fn initMessageWithComponentsV2(components: []const model.MessageComponent) CreateMessageFormBody {
+        return CreateMessageFormBody{ .components = components, .flags = model.Message.Flags{ .is_components_v2 = true } };
     }
 
     pub fn initMessageWithPoll(message: ?[]const u8, poll: model.Poll) CreateMessageFormBody {

@@ -47,20 +47,6 @@ pub const ApplicationCommandOption = struct {
     max_length: Omittable(i64) = .omit,
     autocomplete: Omittable(bool) = .omit,
 
-    pub const Builder = union(ApplicationCommandOptionType) {
-        subcommand: SubcommandOptionBuilder,
-        subcommand_group: SubcommandGroupOptionBuilder,
-        string: StringOptionBuilder,
-        integer: IntegerOptionBuilder,
-        boolean: GenericOptionBuilder(.boolean),
-        user: GenericOptionBuilder(.user),
-        channel: GenericOptionBuilder(.channel),
-        role: GenericOptionBuilder(.role),
-        mentionable: GenericOptionBuilder(.mentionable),
-        number: NumberOptionBuilder,
-        attachment: GenericOptionBuilder(.attachment),
-    };
-
     pub const Choices = union(enum) {
         string: []const StringChoice,
         integer: []const IntegerChoice,
@@ -71,11 +57,48 @@ pub const ApplicationCommandOption = struct {
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 
-    /// Creates an ApplicationCommandOption from a builder. See `Builder` for a list of allowed builders.
-    pub fn new(builder: Builder) ApplicationCommandOption {
-        return switch (builder) {
-            inline else => |value| value.build(),
-        };
+    pub fn initSubCommandOption(builder: SubcommandOptionBuilder) ApplicationCommandOption {
+        return builder.build();
+    }
+
+    pub fn initSubCommandGroupOption(builder: SubcommandGroupOptionBuilder) ApplicationCommandOption {
+        return builder.build();
+    }
+
+    pub fn initStringOption(builder: StringOptionBuilder) ApplicationCommandOption {
+        return builder.build();
+    }
+
+    pub fn initIntegerOption(builder: IntegerOptionBuilder) ApplicationCommandOption {
+        return builder.build();
+    }
+
+    pub fn initBooleanOption(builder: GenericOptionBuilder(.boolean)) ApplicationCommandOption {
+        return builder.build();
+    }
+
+    pub fn initUserOption(builder: GenericOptionBuilder(.user)) ApplicationCommandOption {
+        return builder.build();
+    }
+
+    pub fn initChannelOption(builder: GenericOptionBuilder(.channel)) ApplicationCommandOption {
+        return builder.build();
+    }
+
+    pub fn initRoleOption(builder: GenericOptionBuilder(.role)) ApplicationCommandOption {
+        return builder.build();
+    }
+
+    pub fn initMentionableOption(builder: GenericOptionBuilder(.mentionable)) ApplicationCommandOption {
+        return builder.build();
+    }
+
+    pub fn initNumberOption(builder: NumberOptionBuilder) ApplicationCommandOption {
+        return builder.build();
+    }
+
+    pub fn initAttachmentOption(builder: GenericOptionBuilder(.attachment)) ApplicationCommandOption {
+        return builder.build();
     }
 };
 
@@ -157,7 +180,7 @@ pub const StringOptionBuilder = struct {
             .description = self.description,
             .description_localizations = self.description_localizations,
             .required = self.required,
-            .choices = if (self.choices == .some) .{ .some = .{ .string = self.choices.some } } else .omit,
+            .choices = if (self.choices == .some) .initSome(.{ .string = self.choices.some }) else .omit,
             .options = .omit,
             .channel_types = self.channel_types,
             .min_value = .omit,
@@ -189,7 +212,7 @@ pub const IntegerOptionBuilder = struct {
             .description = self.description,
             .description_localizations = self.description_localizations,
             .required = self.required,
-            .choices = if (self.choices == .some) .{ .some = .{ .integer = self.choices.some } } else .omit,
+            .choices = if (self.choices == .some) .initSome(.{ .integer = self.choices.some }) else .omit,
             .options = .omit,
             .channel_types = self.channel_types,
             .min_value = .omit,
@@ -221,7 +244,7 @@ pub const NumberOptionBuilder = struct {
             .description = self.description,
             .description_localizations = self.description_localizations,
             .required = self.required,
-            .choices = if (self.choices == .some) .{ .some = .{ .double = self.choices.some } } else .omit,
+            .choices = if (self.choices == .some) .initSome(.{ .double = self.choices.some }) else .omit,
             .options = .omit,
             .channel_types = self.channel_types,
             .min_value = .omit,
