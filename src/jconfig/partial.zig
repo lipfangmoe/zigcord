@@ -77,10 +77,10 @@ test "Partial Stringify" {
     });
 
     const value = MyPartial{ .partial = .{
-        .five = .{ .some = 5 },
-        .something = .{ .some = "lol" },
-        .nested_type = .{ .some = .{ .foo = 5 } },
-        .already_omittable = .{ .some = 255 },
+        .five = .initSome(5),
+        .something = .initSome("lol"),
+        .nested_type = .initSome(.{ .foo = 5 }),
+        .already_omittable = .initSome(255),
     } };
 
     const value_json = try std.json.stringifyAlloc(std.testing.allocator, value, .{});

@@ -51,7 +51,7 @@ pub fn jsonParseFromValue(allocator: std.mem.Allocator, source: std.json.Value, 
     const type_value = root_obj.get("type") orelse return error.MissingField;
     new.type = try std.json.innerParseFromValue(Type, allocator, type_value, options);
 
-    new.id = if (root_obj.get("id")) |id_value| .{ .some = try std.json.innerParseFromValue(i32, allocator, id_value, options) } else .omit;
+    new.id = if (root_obj.get("id")) |id_value| .initSome(try std.json.innerParseFromValue(i32, allocator, id_value, options)) else .omit;
 
     switch (new.type) {
         inline else => |tag| {
@@ -310,7 +310,7 @@ test "discord example" {
             .other_props = .{ .action_row = .{ .components = &.{
                 MessageComponent{
                     .type = .button,
-                    .other_props = .{ .button = Button{ .label = .{ .some = "Click me!" }, .style = .primary, .custom_id = .{ .some = "click_one" } } },
+                    .other_props = .{ .button = Button{ .label = .initSome("Click me!"), .style = .primary, .custom_id = .initSome("click_one") } },
                 },
             } } },
         },

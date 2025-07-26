@@ -13,6 +13,14 @@ pub fn Omittable(comptime T: type) type {
         some: T,
         omit: void,
 
+        pub fn initSome(val: T) Omittable(T) {
+            return .{ .some = val };
+        }
+
+        pub fn initNullable(val: ?T) Omittable(T) {
+            return if (val) |nn| .{ .some = nn } else .omit;
+        }
+
         /// Turns Omittable(T) into a `?T`. If `T` is already an optional, `??T` is collapsed to `?T`.
         pub fn asSome(self: Omittable(T)) ?T {
             return switch (self) {
@@ -30,14 +38,14 @@ pub fn Omittable(comptime T: type) type {
         }
 
         pub fn jsonParse(allocator: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !Omittable(T) {
-            return .{ .some = try std.json.innerParse(T, allocator, source, options) };
+            return .initSome(try std.json.innerParse(T, allocator, source, options));
         }
 
         pub fn jsonParseFromValue(allocator: std.mem.Allocator, source: std.json.Value, options: std.json.ParseOptions) !Omittable(T) {
             const inner_value = std.json.innerParseFromValue(T, allocator, source, options) catch |err| {
                 return err;
             };
-            return .{ .some = inner_value };
+            return .initSome(inner_value);
         }
 
         pub fn jsonStringify(_: Omittable(T), _: anytype) !void {
@@ -110,10 +118,12 @@ pub fn writePossiblyOmittableFieldToStream(field: std.builtin.Type.StructField, 
 test "stringify with omit" {
     const OmittableTest = struct {
         omittable_omitted: Omittable(bool) = .omit,
-        omittable_included: Omittable(bool) = .{ .some = true },
+        omittable_included: Omittable(bool) = .initSome(true),
         nullable_omitted: Omittable(?bool) = .omit,
-        nullable_null: Omittable(?bool) = .{ .some = null },
-        nullable_nonnull: Omittable(?bool) = .{ .some = true },
+        nullable_null: Omittable(?bool) = .initSome(null),
+        nullable_null_initnullable: Omittable(?bool) = .initNullable(@as(?bool, null)),
+        nullable_omit_initnullable: Omittable(?bool) = .initNullable(@as(??bool, null)),
+        nullable_nonnull: Omittable(?bool) = .initSome(true),
 
         pub const jsonStringify = stringifyWithOmit;
     };
@@ -122,5 +132,9 @@ test "stringify with omit" {
 
     const valueAsStr = try std.json.stringifyAlloc(std.testing.allocator, value, .{});
     defer std.testing.allocator.free(valueAsStr);
-    try std.testing.expectEqualStrings("{\"omittable_included\":true,\"nullable_null\":null,\"nullable_nonnull\":true}", valueAsStr);
+
+    const expected =
+        \\{"omittable_included":true,"nullable_null":null,"nullable_null_initnullable":null,"nullable_nonnull":true}
+    ;
+    try std.testing.expectEqualStrings(expected, valueAsStr);
 }
