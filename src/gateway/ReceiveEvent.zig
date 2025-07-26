@@ -144,15 +144,8 @@ test "undocumented event" {
     parsed.deinit();
 }
 
-test "update message" {
+test "message1.test.json" {
     const input = @embedFile("message1.test.json");
-
-    const parsed = try std.json.parseFromSlice(ReceiveEvent, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
-    parsed.deinit();
-}
-
-test "uhhh" {
-    const input = @embedFile("./message2.test.json");
 
     const parsed = try std.json.parseFromSlice(ReceiveEvent, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
     parsed.deinit();
