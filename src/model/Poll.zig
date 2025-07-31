@@ -4,8 +4,10 @@ const jconfig = zigcord.jconfig;
 const model = zigcord.model;
 const Snowflake = model.Snowflake;
 
+const Poll = @This();
+
 question: Media,
-answers: Answer,
+answers: []const Answer,
 expiry: ?model.IsoTime,
 allow_multiselect: bool,
 layout_type: i64,
@@ -23,6 +25,8 @@ pub const Media = struct {
 pub const Answer = struct {
     answer_id: jconfig.Omittable(i64) = .omit,
     poll_media: Media,
+
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const Results = struct {
@@ -35,3 +39,12 @@ pub const Results = struct {
         me_voted: bool,
     };
 };
+
+test "poll" {
+    const poll_example =
+        \\{"question":{"text":"redacted"},"layout_type":1,"expiry":"2025-07-01T14:00:00.000000+00:00","answers":[    {"poll_media":{"text":"redacted"},"answer_id":1},    {"poll_media":{"text":"redacted"},"answer_id":2}],"allow_multiselect":false}
+    ;
+
+    const value = try std.json.parseFromSlice(Poll, std.testing.allocator, poll_example, .{});
+    value.deinit();
+}
