@@ -65,7 +65,7 @@ pub fn getChannelMessage(
     return client.rest_client.request(model.Message, .GET, uri);
 }
 
-/// Note - the CreateMessageParams type has several helpers for creating messages easily
+/// Note - the CreateMessageJsonBody type has several helpers for creating messages easily
 pub fn createMessage(
     client: *rest.EndpointClient,
     channel_id: Snowflake,
@@ -79,7 +79,7 @@ pub fn createMessage(
     return client.rest_client.requestWithValueBody(model.Message, .POST, uri, body, .{});
 }
 
-/// Note - the CreateMessageParams type has several helpers for creating messages easily
+/// Note - the CreateMessageFormBody type has several helpers for creating messages easily
 pub fn createMessageMultipart(
     client: *rest.EndpointClient,
     channel_id: Snowflake,
