@@ -153,6 +153,7 @@ pub const Embed = struct {
         gifv,
         article,
         link,
+        poll_result,
 
         // enums are encoded as string by default, no need for custom jsonStringify
     };
@@ -381,3 +382,12 @@ pub const AllowedMentions = struct {
         everyone,
     };
 };
+
+test "embeds" {
+    const input =
+        \\[{"type":"poll_result","id":"0","fields":[{"value":"redacted","name":"poll_question_text","inline":false},{"value":"redacted","name":"victor_answer_votes","inline":false},{"value":"redacted","name":"total_votes","inline":false},{"value":"redacted","name":"victor_answer_id","inline":false},{"value":"redacted","name":"victor_answer_text","inline":false}],"content_scan_version":0}]
+    ;
+
+    const value = try std.json.parseFromSlice([]const Embed, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
+    defer value.deinit();
+}
