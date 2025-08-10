@@ -243,6 +243,19 @@ pub fn bulkDeleteMessages(
     return client.rest_client.requestWithValueBodyAndAuditLogReason(void, .POST, uri, message_ids, .{}, audit_log_reason);
 }
 
+pub fn getChannelPins(
+    client: *rest.EndpointClient,
+    channel_id: Snowflake,
+    query: GetChannelPinsQuery,
+) !rest.RestClient.Result([]const model.Channel.MessagePin) {
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{}/messages/pins?{query}", .{ channel_id, query });
+    defer client.rest_client.allocator.free(uri_str);
+
+    const uri = try std.Uri.parse(uri_str);
+
+    return client.rest_client.request([]const model.Channel.MessagePin, .GET, uri);
+}
+
 pub fn editChannelPermissions(
     client: *rest.EndpointClient,
     channel_id: Snowflake,
@@ -324,25 +337,13 @@ pub fn triggerTypingIndicator(
     return client.rest_client.request(void, .POST, uri);
 }
 
-pub fn getPinnedMessages(
-    client: *rest.EndpointClient,
-    channel_id: Snowflake,
-) !rest.RestClient.Result([]const model.Message) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{}/pins", .{channel_id});
-    defer client.rest_client.allocator.free(uri_str);
-
-    const uri = try std.Uri.parse(uri_str);
-
-    return client.rest_client.request([]const model.Message, .GET, uri);
-}
-
 pub fn pinMessage(
     client: *rest.EndpointClient,
     channel_id: Snowflake,
     message_id: Snowflake,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{}/pins/{}", .{ channel_id, message_id });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{}/messages/pins/{}", .{ channel_id, message_id });
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -356,7 +357,7 @@ pub fn unpinMessage(
     message_id: Snowflake,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{}/pins/{}", .{ channel_id, message_id });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{}/messages/pins/{}", .{ channel_id, message_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -843,4 +844,11 @@ pub const ListThreadsResponse = struct {
     threads: []const Channel,
     members: []const Channel.ThreadMember,
     has_more: bool,
+};
+
+pub const GetChannelPinsQuery = struct {
+    before: ?model.IsoTime = null,
+    limit: ?i64 = null,
+
+    pub usingnamespace rest.QueryStringFormatMixin(@This());
 };

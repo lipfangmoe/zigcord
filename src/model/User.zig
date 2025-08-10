@@ -39,6 +39,8 @@ premium_type: Omittable(NitroType) = .omit,
 public_flags: Omittable(Flags) = .omit,
 /// The user's avatar decoration data.
 avatar_decoration_data: Omittable(?AvatarDecorationData) = .omit,
+/// The user's primary guild (guild tag)
+primary_guild: Omittable(?PrimaryGuild) = .omit,
 
 pub usingnamespace jconfig.OmittableFieldsMixin(@This());
 
@@ -133,10 +135,26 @@ pub const ApplicationRoleConnection = struct {
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
+pub const PrimaryGuild = struct {
+    identity_guild_id: ?model.Snowflake,
+    identity_enabled: ?bool,
+    tag: ?[]const u8,
+    badge: ?[]const u8,
+};
+
 test "idk some websocket response" {
-    const str =
+    const input =
         \\{"verified":true,"username":"zigcord test bot","mfa_enabled":true,"id":"1277009867730845787","global_name":null,"flags":0,"email":null,"discriminator":"0175","clan":null,"bot":true,"avatar":"be737e5512e505a791c5437f9a3d2c29"}
     ;
-    const value = try std.json.parseFromSlice(User, std.testing.allocator, str, .{ .ignore_unknown_fields = true });
+    const value = try std.json.parseFromSlice(User, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
+    defer value.deinit();
+}
+
+test "api docs" {
+    const input =
+        \\{"id": "80351110224678912","username": "Nelly","global_name": null,"discriminator": "1337","avatar": "8342729096ea3675442027381ff50dfe","verified": true,"email": "nelly@discord.com","flags": 64,"banner": "06c16474723fe537c283b8efa61a30c8","accent_color": 16711680,"premium_type": 1,"public_flags": 64,"avatar_decoration_data": {"sku_id": "1144058844004233369","asset": "a_fed43ab12698df65902ba06727e20c0e"},"collectibles": {"nameplate": {"sku_id": "2247558840304243311","asset": "nameplates/nameplates/twilight/","label": "","palette": "cobalt"}},"primary_guild": {"identity_guild_id": "1234647491267808778","identity_enabled": true,"tag": "DISC","badge": "7d1734ae5a615e82bc7a4033b98fade8"}}
+    ;
+
+    const value = try std.json.parseFromSlice(User, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
     defer value.deinit();
 }
