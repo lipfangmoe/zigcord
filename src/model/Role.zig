@@ -2,12 +2,16 @@ const std = @import("std");
 const model = @import("../root.zig").model;
 const jconfig = @import("../root.zig").jconfig;
 
+const Role = @This();
+
 /// role id
 id: model.Snowflake,
 /// role name
 name: []const u8,
-/// integer representing hex color code
+/// Deprecated: use `.colors` instead
 color: u64,
+/// the role's colors
+colors: Colors,
 /// true if this role is shown separately in the member listing sidebar
 hoist: bool,
 /// role icon hash, see https://discord.com/developers/docs/reference#image-formatting
@@ -46,3 +50,20 @@ pub const Flags = packed struct(u64) {
 
     pub usingnamespace model.PackedFlagsMixin(@This());
 };
+
+pub const Colors = struct {
+    primary_color: u64,
+    secondary_color: ?u63,
+    tertiary_color: ?u63,
+
+    pub usingnamespace jconfig.OmittableFieldsMixin(@This());
+};
+
+test "api example" {
+    const input =
+        \\{"id": "41771983423143936","name": "WE DEM BOYZZ!!!!!!","color": 3447003,"colors": {  "primary_color": 3447003,  "secondary_color": null,  "tertiary_color": null},"hoist": true,"icon": "cf3ced8600b777c9486c6d8d84fb4327","unicode_emoji": null,"position": 1,"permissions": "66321471","managed": false,"mentionable": false,"flags": 0}
+    ;
+
+    const parsed = try std.json.parseFromSlice(Role, std.testing.allocator, input, .{});
+    defer parsed.deinit();
+}

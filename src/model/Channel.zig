@@ -165,3 +165,8 @@ pub const ForumLayout = enum(i64) {
     list_view = 1,
     gallery_view = 2,
 };
+
+pub const MessagePin = struct {
+    pinned_at: model.IsoTime,
+    message: model.Message,
+};
