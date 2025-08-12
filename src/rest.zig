@@ -2,7 +2,7 @@ const std = @import("std");
 const model = @import("zigcord").model;
 const http = std.http;
 
-pub const base_url = "https://discord.com/api/v10";
+pub const base_url = if (@import("builtin").is_test) "http://127.0.0.1/api/v10" else "https://discord.com/api/v10";
 
 pub const endpoints = @import("./rest/endpoints.zig");
 pub const RestClient = @import("./rest/RestClient.zig");
