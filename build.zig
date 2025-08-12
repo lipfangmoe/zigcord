@@ -1,6 +1,6 @@
 const std = @import("std");
 
-const version = std.SemanticVersion.parse("0.4.3") catch unreachable; // TODO: get from build.zig.zon
+const version = std.SemanticVersion.parse("0.4.4") catch unreachable; // TODO: get from build.zig.zon
 
 // Although this function looks imperative, note that its job is to
 // declaratively construct a build graph that will be executed by an external
