@@ -12,20 +12,6 @@ auth: zigcord.Authorization,
 client: std.http.Client,
 config: Config,
 
-pub const Config = struct {
-    pub const default_user_agent = std.fmt.comptimePrint("DiscordBot (https://codeberg.org/lipfang/zigcord, {})", .{zigcord.version});
-
-    /// 1mb seems fair since all discord api responses should be text, with urls for anything large.
-    /// surely they don't respond with more than 1 million characters... Clueless
-    max_response_length: usize = 1_000_000,
-
-    /// Allows customizing the user agent string. You are advised to keep the default value as a prefix (see https://discord.com/developers/docs/reference#user-agent)
-    user_agent: []const u8 = default_user_agent,
-
-    /// When encountering HTTP-related request issues, the program will attempt this many retries.
-    retries: usize = 5,
-};
-
 /// Creates a discord http client with default configuration.
 ///
 /// Cannot be used in tests, instead use `initWithConfig` and provide a mock response from the server.
@@ -188,6 +174,17 @@ pub fn deinit(self: *RestClient) void {
     self.client.deinit();
 }
 
+pub const Config = struct {
+    pub const default_user_agent = std.fmt.comptimePrint("DiscordBot (https://codeberg.org/lipfang/zigcord, {})", .{zigcord.version});
+
+    /// 1mb seems fair since all discord api responses should be text, with urls for anything large.
+    /// surely they don't respond with more than 1 million characters... Clueless
+    max_response_length: usize = 1_000_000,
+
+    /// Allows customizing the user agent string. You are advised to keep the default value as a prefix (see https://discord.com/developers/docs/reference#user-agent)
+    user_agent: []const u8 = default_user_agent,
+};
+
 pub const WaitForResponseError = error{ RequestFinishError, ResponseWaitError, ResponseReadError, ResponseJsonParseError };
 
 pub fn PendingRequest(comptime T: type) type {
@@ -238,21 +235,6 @@ pub fn PendingRequest(comptime T: type) type {
 
         /// Waits for the server to return its response.
         pub fn waitForResponse(self: *PendingRequest(T)) WaitForResponseError!Result(T) {
-            for (0..self.config.retries) |retry| {
-                const response = self._waitForResponse() catch |err| {
-                    switch (err) {
-                        error.RequestFinishError, error.ResponseWaitError, error.ResponseReadError => if (retry == self.config.retries - 1) return err else continue,
-                        error.ResponseJsonParseError => return error.ResponseJsonParseError,
-                    }
-                };
-                return response;
-            }
-
-            // the final retry will always return
-            unreachable;
-        }
-
-        fn _waitForResponse(self: *PendingRequest(T)) WaitForResponseError!Result(T) {
             self.req.finish() catch return error.RequestFinishError;
             self.req.wait() catch return error.ResponseWaitError;
 
