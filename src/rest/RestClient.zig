@@ -53,9 +53,10 @@ pub fn beginRequest(
         defaulted_headers.content_type = .{ .override = "application/json" };
     }
 
-    var server_header_buffer: [4096]u8 = undefined;
+    const server_header_buffer = try self.allocator.alloc(u8, 4096);
+    errdefer self.allocator.free(server_header_buffer);
     var req = self.client.open(method, url, std.http.Client.RequestOptions{
-        .server_header_buffer = &server_header_buffer,
+        .server_header_buffer = server_header_buffer,
         .headers = defaulted_headers,
         .extra_headers = extra_headers orelse &.{},
     }) catch return error.OpenError;
@@ -68,6 +69,7 @@ pub fn beginRequest(
         .allocator = self.allocator,
         .req = req,
         .config = self.config,
+        .server_header_buffer = server_header_buffer,
     };
 }
 
@@ -192,6 +194,7 @@ pub fn PendingRequest(comptime T: type) type {
         allocator: std.mem.Allocator,
         req: std.http.Client.Request,
         config: Config,
+        server_header_buffer: []const u8,
 
         /// returns a writer that writes to the request body
         pub fn writer(self: *PendingRequest(T)) std.io.GenericWriter(*PendingRequest(T), std.http.Client.Request.WriteError, writeFn) {
@@ -269,6 +272,7 @@ pub fn PendingRequest(comptime T: type) type {
 
         pub fn deinit(self: *PendingRequest(T)) void {
             self.req.deinit();
+            self.allocator.free(self.server_header_buffer);
         }
     };
 }
