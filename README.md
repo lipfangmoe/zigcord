@@ -2,7 +2,7 @@
 
 A Discord API for the Zig programming language.
 
-Currently built off of Zig Version `0.14.1`. If you notice that it is broken
+Currently built off of Zig Version `0.15.2`. If you notice that it is broken
 on a more recent patch of Zig, please create an [issue](https://codeberg.org/lipfang/zigcord/issues)!
 
 # Including in your project
