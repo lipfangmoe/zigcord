@@ -10,7 +10,7 @@ pub fn createWebhook(
     body: CreateWebhookBody,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(model.Webhook) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{}/webhooks", .{channel_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/webhooks", .{channel_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -21,7 +21,7 @@ pub fn getChannelWebhooks(
     client: *rest.EndpointClient,
     channel_id: model.Snowflake,
 ) !rest.RestClient.Result([]const model.Webhook) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{}/webhooks", .{channel_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/webhooks", .{channel_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -32,7 +32,7 @@ pub fn getGuildWebhooks(
     client: *rest.EndpointClient,
     guild_id: model.Snowflake,
 ) !rest.RestClient.Result([]const model.Webhook) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/webhooks", .{guild_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/webhooks", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -43,7 +43,7 @@ pub fn getWebhook(
     client: *rest.EndpointClient,
     webhook_id: model.Snowflake,
 ) !rest.RestClient.Result(model.Webhook) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{}", .{webhook_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}", .{webhook_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -55,7 +55,7 @@ pub fn getWebhookWithToken(
     webhook_id: model.Snowflake,
     webhook_token: []const u8,
 ) !rest.RestClient.Result(model.Webhook) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{}/{s}", .{ webhook_id, webhook_token });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}", .{ webhook_id, webhook_token });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -68,7 +68,7 @@ pub fn modifyWebhook(
     body: ModifyWebhookBody,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(model.Webhook) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{}", .{webhook_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}", .{webhook_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -82,7 +82,7 @@ pub fn modifyWebhookWithToken(
     body: ModifyWebhookBody,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(model.Webhook) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{}/{s}", .{ webhook_id, webhook_token });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}", .{ webhook_id, webhook_token });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -94,7 +94,7 @@ pub fn deleteWebhook(
     webhook_id: model.Snowflake,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{}", .{webhook_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}", .{webhook_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -107,7 +107,7 @@ pub fn deleteWebhookWithToken(
     webhook_token: []const u8,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{}/{s}", .{ webhook_id, webhook_token });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}", .{ webhook_id, webhook_token });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -119,18 +119,16 @@ pub fn executeWebhookWait(
     webhook_id: model.Snowflake,
     webhook_token: []const u8,
     query: ExecuteWebhookQuery,
-    body: ExecuteWebhookFormBody,
+    body: ExecuteWebhookJsonBody,
 ) !rest.RestClient.Result(model.Message) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{}/{s}?{query}", .{ webhook_id, webhook_token, query });
+    var override_query = query;
+    override_query.wait = true;
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}?{f}", .{ webhook_id, webhook_token, override_query });
     defer client.rest_client.allocator.free(uri_str);
+
     const uri = try std.Uri.parse(uri_str);
 
-    var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .POST, uri, .chunked, rest.multipart_boundary, null);
-    defer pending_request.deinit();
-
-    try std.fmt.format(pending_request.writer(), "{form}", .{body});
-
-    return pending_request.waitForResponse();
+    return try client.rest_client.requestWithValueBody(model.Message, .POST, uri, body, .{});
 }
 
 pub fn executeWebhookNoWait(
@@ -138,16 +136,58 @@ pub fn executeWebhookNoWait(
     webhook_id: model.Snowflake,
     webhook_token: []const u8,
     query: ExecuteWebhookQuery,
+    body: ExecuteWebhookJsonBody,
+) !rest.RestClient.Result(void) {
+    var override_query = query;
+    override_query.wait = true;
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}?{f}", .{ webhook_id, webhook_token, override_query });
+    defer client.rest_client.allocator.free(uri_str);
+
+    const uri = try std.Uri.parse(uri_str);
+
+    return try client.rest_client.requestWithValueBody(void, .POST, uri, body, .{});
+}
+
+pub fn executeWebhookWaitMultipart(
+    client: *rest.EndpointClient,
+    webhook_id: model.Snowflake,
+    webhook_token: []const u8,
+    query: ExecuteWebhookQuery,
+    body: ExecuteWebhookFormBody,
+) !rest.RestClient.Result(model.Message) {
+    var override_query = query;
+    override_query.wait = true;
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}?{f}", .{ webhook_id, webhook_token, override_query });
+    defer client.rest_client.allocator.free(uri_str);
+    const uri = try std.Uri.parse(uri_str);
+
+    var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .POST, uri, .chunked, rest.multipart_boundary, null);
+
+    var body_writer = try pending_request.request.sendBodyUnflushed("");
+    try body_writer.writer.print("{f}", .{body});
+    try body_writer.end();
+
+    return pending_request.waitForResponse();
+}
+
+pub fn executeWebhookNoWaitMultipart(
+    client: *rest.EndpointClient,
+    webhook_id: model.Snowflake,
+    webhook_token: []const u8,
+    query: ExecuteWebhookQuery,
     body: ExecuteWebhookFormBody,
 ) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{}/{s}?{query}", .{ webhook_id, webhook_token, query });
+    var override_query = query;
+    override_query.wait = true;
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}?{f}", .{ webhook_id, webhook_token, override_query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
     var pending_request = try client.rest_client.beginMultipartRequest(void, .POST, uri, .chunked, rest.multipart_boundary, null);
-    defer pending_request.deinit();
 
-    try std.fmt.format(pending_request.writer(), "{form}", .{body});
+    var body_writer = try pending_request.request.sendBodyUnflushed("");
+    try body_writer.writer.print("{f}", .{body});
+    try body_writer.end();
 
     return pending_request.waitForResponse();
 }
@@ -161,7 +201,7 @@ pub fn getWebhookMessage(
     message_id: model.Snowflake,
     query: PossiblyInThreadQuery,
 ) !rest.RestClient.Result(model.Message) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{}/{s}/messages/{}?{query}", .{ webhook_id, webhook_token, message_id, query });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}/messages/{f}?{f}", .{ webhook_id, webhook_token, message_id, query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -174,16 +214,33 @@ pub fn editWebhookMessage(
     webhook_token: []const u8,
     message_id: model.Snowflake,
     query: PossiblyInThreadQuery,
+    body: EditWebhookMessageJsonBody,
+) !rest.RestClient.Result(model.Message) {
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}/messages/{f}?{f}", .{ webhook_id, webhook_token, message_id, query });
+    defer client.rest_client.allocator.free(uri_str);
+
+    const uri = try std.Uri.parse(uri_str);
+
+    return try client.rest_client.requestWithValueBody(model.Message, .PATCH, uri, body, .{});
+}
+
+pub fn editWebhookMessageMultipart(
+    client: *rest.EndpointClient,
+    webhook_id: model.Snowflake,
+    webhook_token: []const u8,
+    message_id: model.Snowflake,
+    query: PossiblyInThreadQuery,
     body: EditWebhookMessageFormBody,
 ) !rest.RestClient.Result(model.Message) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{}/{s}/messages/{}?{query}", .{ webhook_id, webhook_token, message_id, query });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}/messages/{f}?{f}", .{ webhook_id, webhook_token, message_id, query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
     var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .PATCH, uri, .chunked, rest.multipart_boundary, null);
-    defer pending_request.deinit();
 
-    try std.fmt.format(pending_request.writer(), "{form}", .{body});
+    var body_writer = try pending_request.request.sendBodyUnflushed("");
+    try body_writer.writer.print("{f}", .{body});
+    try body_writer.end();
 
     return pending_request.waitForResponse();
 }
@@ -195,7 +252,7 @@ pub fn deleteWebhookMessage(
     message_id: model.Snowflake,
     query: PossiblyInThreadQuery,
 ) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{}/{s}/messages/{}?{query}", .{ webhook_id, webhook_token, message_id, query });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}/messages/{f}?{f}", .{ webhook_id, webhook_token, message_id, query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -219,9 +276,28 @@ pub const ModifyWebhookBody = struct {
 
 pub const ExecuteWebhookQuery = struct {
     thread_id: ?model.Snowflake = null,
+    wait: ?bool = null,
 
-    pub usingnamespace rest.QueryStringFormatMixin(@This());
+    pub const format = rest.QueryStringFormatMixin(@This()).format;
 };
+
+pub const ExecuteWebhookJsonBody = struct {
+    content: jconfig.Omittable(?[]const u8) = .omit,
+    username: jconfig.Omittable(?[]const u8) = .omit,
+    avatar_url: jconfig.Omittable(?[]const u8) = .omit,
+    tts: jconfig.Omittable(?bool) = .omit,
+    embeds: jconfig.Omittable(?[]const model.Message.Embed) = .omit,
+    allowed_mentions: jconfig.Omittable(?model.Message.AllowedMentions) = .omit,
+    components: jconfig.Omittable(?[]const model.MessageComponent) = .omit,
+    attachments: jconfig.Omittable(?[]const jconfig.Partial(model.Message.Attachment)) = .omit,
+    flags: jconfig.Omittable(?model.Message.Flags) = .omit,
+    thread_name: jconfig.Omittable(?[]const u8) = .omit,
+    applied_tags: jconfig.Omittable(?[]const model.Snowflake) = .omit,
+    poll: jconfig.Omittable(?model.Poll) = .omit,
+
+    pub const jsonStringify = jconfig.stringifyWithOmit;
+};
+
 pub const ExecuteWebhookFormBody = struct {
     content: ?[]const u8 = null,
     username: ?[]const u8 = null,
@@ -230,25 +306,33 @@ pub const ExecuteWebhookFormBody = struct {
     embeds: ?[]const model.Message.Embed = null,
     allowed_mentions: ?model.Message.AllowedMentions = null,
     components: ?[]const model.MessageComponent = null,
-    files: ?[]const ?std.io.AnyReader = null,
+    files: ?[]const ?*std.Io.Reader = null,
     attachments: ?[]const jconfig.Partial(model.Message.Attachment) = null,
     flags: ?model.Message.Flags = null,
     thread_name: ?[]const u8 = null,
     applied_tags: ?[]const model.Snowflake = null,
     poll: ?model.Poll = null,
 
-    pub fn format(self: ExecuteWebhookFormBody, comptime fmt: []const u8, _: std.fmt.FormatOptions, writer: anytype) !void {
-        if (comptime !std.mem.eql(u8, fmt, "form")) {
-            @compileError("ExecuteWebhookFormBody.format should only be called with fmt string {form}");
-        }
-        try rest.writeMultipartFormDataBody(self, "files", writer);
+    pub fn format(self: ExecuteWebhookFormBody, writer: anytype) !void {
+        rest.writeMultipartFormDataBody(self, "files", writer) catch return error.WriteFailed;
     }
 };
 
 pub const PossiblyInThreadQuery = struct {
     thread_id: ?model.Snowflake = null,
 
-    pub usingnamespace rest.QueryStringFormatMixin(@This());
+    pub const format = rest.QueryStringFormatMixin(@This()).format;
+};
+
+pub const EditWebhookMessageJsonBody = struct {
+    content: jconfig.Omittable(?[]const u8) = .omit,
+    embeds: jconfig.Omittable(?[]const model.Message.Embed) = .omit,
+    allowed_mentions: jconfig.Omittable(?model.Message.AllowedMentions) = .omit,
+    components: jconfig.Omittable(?[]const model.MessageComponent) = .omit,
+    attachments: jconfig.Omittable(?[]const jconfig.Partial(model.Message.Attachment)) = .omit,
+    poll: jconfig.Omittable(?model.Poll) = .omit, // Polls can only be added when editing a deferred interaction response.
+
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const EditWebhookMessageFormBody = struct {
@@ -256,14 +340,11 @@ pub const EditWebhookMessageFormBody = struct {
     embeds: ?[]const model.Message.Embed = null,
     allowed_mentions: ?model.Message.AllowedMentions = null,
     components: ?[]const model.MessageComponent = null,
-    files: ?[]const ?std.io.AnyReader = null,
+    files: ?[]const ?*std.Io.Reader = null,
     attachments: ?[]const jconfig.Partial(model.Message.Attachment) = null,
     poll: ?model.Poll = null, // Polls can only be added when editing a deferred interaction response.
 
-    pub fn format(self: EditWebhookMessageFormBody, comptime fmt: []const u8, _: std.fmt.FormatOptions, writer: anytype) !void {
-        if (comptime !std.mem.eql(u8, fmt, "form")) {
-            @compileError("ExecuteWebhookFormBody.format should only be called with fmt string {form}");
-        }
-        try rest.writeMultipartFormDataBody(self, "files", writer);
+    pub fn format(self: EditWebhookMessageFormBody, writer: anytype) !void {
+        rest.writeMultipartFormDataBody(self, "files", writer) catch return error.WriteFailed;
     }
 };

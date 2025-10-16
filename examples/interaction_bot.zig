@@ -54,7 +54,7 @@ pub fn main() !void {
         const interaction = req.interaction;
         if (interaction.type == .application_command) {
             const data = interaction.data.asSome() orelse {
-                std.log.warn("data expected from application command: {}", .{std.json.fmt(interaction, .{})});
+                std.log.warn("data expected from application command: {f}", .{std.json.fmt(interaction, .{})});
                 continue;
             };
             const command_data = data.application_command;
@@ -86,7 +86,7 @@ pub fn main() !void {
 fn createTestCommand(client: *zigcord.EndpointClient, application_id: zigcord.model.Snowflake) !zigcord.model.Snowflake {
     const command_result = try client.createGlobalApplicationCommand(
         application_id,
-        zigcord.rest.endpoints.CreateGlobalApplicationCommandBody{
+        zigcord.rest.EndpointClient.application_commands.CreateGlobalApplicationCommandBody{
             .name = "test",
             .type = .initSome(.chat_input),
             .description = .initSome("test"),
@@ -100,7 +100,7 @@ fn createTestCommand(client: *zigcord.EndpointClient, application_id: zigcord.mo
     const command = switch (command_result.value()) {
         .ok => |cmd| cmd,
         .err => |discord_err| {
-            std.log.err("error creating command: {}", .{std.json.fmt(discord_err, .{})});
+            std.log.err("error creating command: {f}", .{std.json.fmt(discord_err, .{})});
             return error.RestError;
         },
     };

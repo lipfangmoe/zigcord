@@ -10,7 +10,7 @@ pub fn listScheduledEventsForGuild(
     with_user_count: ?bool,
 ) !rest.RestClient.Result([]model.GuildScheduledEvent) {
     const query = WithUserCountQuery{ .with_user_count = with_user_count };
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/scheduled-events?{query}", .{ guild_id, query });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/scheduled-events?{f}", .{ guild_id, query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -23,7 +23,7 @@ pub fn createGuildScheduledEvent(
     body: CreateGuildScheduledEventBody,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(model.GuildScheduledEvent) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/scheduled-events", .{guild_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/scheduled-events", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -37,7 +37,7 @@ pub fn getGuildScheuledEvent(
     with_user_count: ?bool,
 ) !rest.RestClient.Result(model.GuildScheduledEvent) {
     const query = WithUserCountQuery{ .with_user_count = with_user_count };
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/scheduled-events/{}?{query}", .{ guild_id, guild_scheduled_Event_id, query });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/scheduled-events/{f}?{f}", .{ guild_id, guild_scheduled_Event_id, query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -51,7 +51,7 @@ pub fn modifyGuildScheduledEvent(
     body: ModifyGuildScheduledEventBody,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(model.GuildScheduledEvent) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/scheduled-events/{}", .{ guild_id, guild_scheduled_Event_id });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/scheduled-events/{f}", .{ guild_id, guild_scheduled_Event_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -63,7 +63,7 @@ pub fn deleteGuildScheduledEvent(
     guild_id: model.Snowflake,
     guild_scheduled_Event_id: model.Snowflake,
 ) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/scheduled-events/{}", .{ guild_id, guild_scheduled_Event_id });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/scheduled-events/{f}", .{ guild_id, guild_scheduled_Event_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -76,7 +76,7 @@ pub fn getGuildScheuledEventUsers(
     guild_scheduled_Event_id: model.Snowflake,
     query: GetGuildScheduledEventUsersQuery,
 ) !rest.RestClient.Result([]model.GuildScheduledEvent.EventUser) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/scheduled-events/{}/users?{query}", .{ guild_id, guild_scheduled_Event_id, query });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/scheduled-events/{f}/users?{f}", .{ guild_id, guild_scheduled_Event_id, query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -86,7 +86,7 @@ pub fn getGuildScheuledEventUsers(
 pub const WithUserCountQuery = struct {
     with_user_count: ?bool = null,
 
-    pub usingnamespace rest.QueryStringFormatMixin(@This());
+    pub const format = rest.QueryStringFormatMixin(@This()).format;
 };
 
 pub const CreateGuildScheduledEventBody = struct {
@@ -97,7 +97,7 @@ pub const CreateGuildScheduledEventBody = struct {
     scheduled_start_time: model.IsoTime,
     scheduled_end_time: model.IsoTime,
 
-    pub usingnamespace jconfig.OmittableFieldsMixin(@This());
+    pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
 };
 
 pub const ModifyGuildScheduledEventBody = struct {
@@ -112,7 +112,7 @@ pub const ModifyGuildScheduledEventBody = struct {
     status: jconfig.Omittable(model.GuildScheduledEvent.EventStatus) = .omit,
     image: jconfig.Omittable(model.DataUri) = .omit,
 
-    pub usingnamespace jconfig.OmittableFieldsMixin(@This());
+    pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
 };
 
 pub const GetGuildScheduledEventUsersQuery = struct {
@@ -121,5 +121,5 @@ pub const GetGuildScheduledEventUsersQuery = struct {
     before: ?model.Snowflake = null,
     after: ?model.Snowflake = null,
 
-    pub usingnamespace rest.QueryStringFormatMixin(@This());
+    pub const format = rest.QueryStringFormatMixin(@This()).format;
 };

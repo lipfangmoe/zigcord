@@ -21,8 +21,22 @@ pub const Snowflake = packed struct {
         return @bitCast(self);
     }
 
-    pub fn format(self: Snowflake, comptime _: []const u8, _: std.fmt.FormatOptions, writer: anytype) !void {
-        try std.fmt.format(writer, "{d}", .{self.asU64()});
+    pub fn format(self: Snowflake, writer: *std.Io.Writer) !void {
+        try writer.print("{d}", .{self.asU64()});
+    }
+
+    pub fn formatNumber(self: Snowflake, writer: *std.Io.Writer, options: std.fmt.Number) !void {
+        try writer.printInt(
+            self.asU64(),
+            options.mode.base() orelse 10,
+            options.case,
+            .{
+                .alignment = options.alignment,
+                .precision = options.precision,
+                .width = options.width,
+                .fill = options.fill,
+            },
+        );
     }
 
     pub fn jsonParse(allocator: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !Snowflake {
@@ -57,9 +71,7 @@ pub const Snowflake = packed struct {
     }
 
     pub fn jsonStringify(self: Snowflake, jw: anytype) !void {
-        var buf: [100]u8 = undefined;
-        const n = std.fmt.formatIntBuf(&buf, self.asU64(), 10, .lower, .{});
-        try jw.write(buf[0..n]);
+        try jw.print("{d}", .{self.asU64()});
     }
 };
 

@@ -11,7 +11,7 @@ fractional_second: ?f64 = null,
 zone: ?Zone = null,
 
 pub fn jsonStringify(self: IsoTime, jw: anytype) !void {
-    try jw.print("\"{}\"", .{self});
+    try jw.print("\"{f}\"", .{self});
 }
 
 pub fn jsonParse(alloc: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) std.json.ParseError(@TypeOf(source.*))!IsoTime {
@@ -28,7 +28,7 @@ pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, opti
     };
 }
 
-pub fn format(self: IsoTime, comptime _: []const u8, _: std.fmt.FormatOptions, writer: anytype) !void {
+pub fn format(self: IsoTime, writer: *std.Io.Writer) !void {
     try writer.print("{d:0>4}-{d:0>2}-{d:0>2}T{d:0>2}:{d:0>2}:{d:0>2}", .{ self.year, self.month, self.day, self.hour, self.minute, self.second });
 
     if (self.fractional_second) |fractional_second| {
@@ -38,7 +38,7 @@ pub fn format(self: IsoTime, comptime _: []const u8, _: std.fmt.FormatOptions, w
     }
 
     if (self.zone) |zone| {
-        try writer.print("{}", .{zone});
+        try writer.print("{f}", .{zone});
     }
 }
 
@@ -160,7 +160,7 @@ pub const Zone = union(enum) {
         positive,
         negative,
 
-        pub fn format(self: Sign, comptime _: []const u8, _: std.fmt.FormatOptions, writer: anytype) !void {
+        pub fn format(self: Sign, writer: *std.Io.Writer) !void {
             switch (self) {
                 .positive => try writer.writeByte('+'),
                 .negative => try writer.writeByte('-'),
@@ -168,24 +168,26 @@ pub const Zone = union(enum) {
         }
     };
 
-    pub fn format(self: Zone, comptime _: []const u8, _: std.fmt.FormatOptions, writer: anytype) !void {
+    pub fn format(self: Zone, writer: *std.Io.Writer) !void {
         switch (self) {
             .gmt => try writer.writeByte('Z'),
-            .hour_offset => |offset| try writer.print("{}{d:0>2}", .{ offset.sign, offset.hour }),
-            .hour_and_minute_offset => |offset| try writer.print("{}{d:0>2}:{d:0>2}", .{ offset.sign, offset.hour, offset.minute }),
+            .hour_offset => |offset| try writer.print("{f}{d:0>2}", .{ offset.sign, offset.hour }),
+            .hour_and_minute_offset => |offset| try writer.print("{f}{d:0>2}:{d:0>2}", .{ offset.sign, offset.hour, offset.minute }),
         }
     }
 };
 
 fn testStringifies(actual: IsoTime, comptime expected: []const u8) !void {
-    var fmt_buf = std.BoundedArray(u8, 100){};
-    var json_buf = std.BoundedArray(u8, 100){};
+    var fmt_writer = std.Io.Writer.Allocating.init(std.testing.allocator);
+    defer fmt_writer.deinit();
+    var json_writer = std.Io.Writer.Allocating.init(std.testing.allocator);
+    defer json_writer.deinit();
 
-    try fmt_buf.writer().print("{}", .{actual});
-    try std.json.stringify(actual, .{}, json_buf.writer());
+    try fmt_writer.writer.print("{f}", .{actual});
+    try std.json.Stringify.value(actual, .{}, &json_writer.writer);
 
-    try std.testing.expectEqualStrings(expected, fmt_buf.constSlice());
-    try std.testing.expectEqualStrings("\"" ++ expected ++ "\"", json_buf.constSlice());
+    try std.testing.expectEqualStrings(expected, fmt_writer.written());
+    try std.testing.expectEqualStrings("\"" ++ expected ++ "\"", json_writer.written());
 }
 
 test "isotime stringify gmt" {

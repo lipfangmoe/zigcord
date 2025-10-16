@@ -71,7 +71,11 @@ pub const Flags = packed struct(u64) {
     application_command_badge: bool = false, // 1 << 23
     _overflow: u40 = 0,
 
-    pub usingnamespace model.PackedFlagsMixin(Flags);
+    const Mixin = model.PackedFlagsMixin(@This());
+    pub const format = Mixin.format;
+    pub const jsonStringify = Mixin.jsonStringify;
+    pub const jsonParse = Mixin.jsonParse;
+    pub const jsonParseFromValue = Mixin.jsonParseFromValue;
 
     test "sanity tests" {
         const FlagsBackingT = @typeInfo(Flags).@"struct".backing_integer orelse unreachable;

@@ -4,7 +4,6 @@ const http = std.http;
 
 pub const base_url = if (@import("builtin").is_test) "http://127.0.0.1/api/v10" else "https://discord.com/api/v10";
 
-pub const endpoints = @import("./rest/endpoints.zig");
 pub const RestClient = @import("./rest/RestClient.zig");
 pub const EndpointClient = @import("./rest/EndpointClient.zig");
 pub const HttpInteractionServer = @import("./interaction_server/HttpServer.zig");
@@ -36,13 +35,7 @@ pub const writeMultipartFormDataBody = multipart.writeMultipartFormDataBody;
 
 pub fn QueryStringFormatMixin(comptime T: type) type {
     return struct {
-        pub fn format(self: T, comptime fmt: []const u8, _: std.fmt.FormatOptions, writer: anytype) @TypeOf(writer).Error!void {
-            comptime {
-                if (!std.mem.eql(u8, fmt, "query")) {
-                    @compileError("QueryStringFormatMixin used for type " ++ @typeName(@TypeOf(self)) ++ ", but {query} was not used as format specifier");
-                }
-            }
-
+        pub fn format(self: T, writer: *std.Io.Writer) std.Io.Writer.Error!void {
             var is_first = false;
 
             inline for (std.meta.fields(@TypeOf(self))) |field| {
@@ -55,9 +48,11 @@ pub fn QueryStringFormatMixin(comptime T: type) type {
                 };
                 if (value_nullable) |value| {
                     if (@TypeOf(value) == []const u8) {
-                        try std.fmt.format(writer, "{s}={s}", .{ field.name, value });
+                        try writer.print("{s}={s}", .{ field.name, value });
+                    } else if (comptime std.meta.hasMethod(@TypeOf(value), "format")) {
+                        try writer.print("{s}={f}", .{ field.name, value });
                     } else {
-                        try std.fmt.format(writer, "{s}={}", .{ field.name, value });
+                        try writer.print("{s}={any}", .{ field.name, value });
                     }
 
                     if (!is_first) {

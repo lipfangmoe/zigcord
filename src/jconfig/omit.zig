@@ -42,10 +42,7 @@ pub fn Omittable(comptime T: type) type {
         }
 
         pub fn jsonParseFromValue(allocator: std.mem.Allocator, source: std.json.Value, options: std.json.ParseOptions) !Omittable(T) {
-            const inner_value = std.json.innerParseFromValue(T, allocator, source, options) catch |err| {
-                return err;
-            };
-            return .initSome(inner_value);
+            return .initSome(try std.json.innerParseFromValue(T, allocator, source, options));
         }
 
         pub fn jsonStringify(_: Omittable(T), _: anytype) !void {
@@ -130,7 +127,7 @@ test "stringify with omit" {
 
     const value = OmittableTest{};
 
-    const valueAsStr = try std.json.stringifyAlloc(std.testing.allocator, value, .{});
+    const valueAsStr = try std.json.Stringify.valueAlloc(std.testing.allocator, value, .{});
     defer std.testing.allocator.free(valueAsStr);
 
     const expected =

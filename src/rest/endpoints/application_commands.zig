@@ -16,7 +16,7 @@ const Snowflake = model.Snowflake;
 pub fn getGlobalApplicationCommands(client: *rest.EndpointClient, application_id: Snowflake, with_localizations: ?bool) !rest.RestClient.Result([]ApplicationCommand) {
     const query = WithLocalizationsQuery{ .with_localizations = with_localizations };
 
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/applications/{d}/commands?{query}", .{ application_id, query });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/applications/{d}/commands?{f}", .{ application_id, query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -79,7 +79,7 @@ pub fn bulkOverwriteGlobalApplicationCommands(client: *rest.EndpointClient, appl
 
 pub fn getGuildApplicationCommands(client: *rest.EndpointClient, application_id: Snowflake, guild_id: Snowflake, with_localizations: ?bool) !rest.RestClient.Result([]ApplicationCommand) {
     const query = WithLocalizationsQuery{ .with_localizations = with_localizations };
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/applications/{d}/guilds/{d}/commands?{query}", .{ application_id, guild_id, query });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/applications/{d}/guilds/{d}/commands?{f}", .{ application_id, guild_id, query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -240,5 +240,5 @@ pub const EditGuildApplicationCommandBody = struct {
 const WithLocalizationsQuery = struct {
     with_localizations: ?bool = null,
 
-    pub usingnamespace rest.QueryStringFormatMixin(WithLocalizationsQuery);
+    pub const format = rest.QueryStringFormatMixin(WithLocalizationsQuery).format;
 };

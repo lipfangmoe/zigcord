@@ -10,7 +10,7 @@ privacy_level: PrivacyLevel,
 discoverable_disabled: jconfig.Omittable(bool) = .omit,
 guild_scheduled_event_id: ?bool,
 
-pub usingnamespace jconfig.OmittableFieldsMixin(@This());
+pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
 
 pub const PrivacyLevel = enum(u2) {
     public = 1,

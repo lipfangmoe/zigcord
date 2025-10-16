@@ -33,20 +33,24 @@ pub fn deinit(self: *Server) void {
 }
 
 pub fn receiveInteraction(self: *Server, alloc: std.mem.Allocator) !InteractionRequest {
-    var buf: [10000]u8 = undefined;
-
     while (true) {
         const conn = self.net_server.accept() catch |err| {
             zigcord.logger.warn("error occurred while accepting request: {}", .{err});
             continue;
         };
+        var stream_writer_buf: [1000]u8 = undefined;
+        var stream_writer = conn.stream.writer(&stream_writer_buf);
 
-        var http_server = std.http.Server.init(conn, &buf);
+        var stream_reader_buf: [10000]u8 = undefined;
+        var stream_reader = self.net_server.stream.reader(&stream_reader_buf);
+
+        var http_server = std.http.Server.init(stream_reader.interface(), &stream_writer.interface);
         var http_req = http_server.receiveHead() catch |err| {
             zigcord.logger.warn("error occurred while receiving headers: {}", .{err});
             continue;
         };
-        const signature_headers = verify.SignatureHeaders.initFromHttpRequest(&http_req) catch |err| {
+        var sig_buf: [64]u8 = undefined;
+        const signature_headers = verify.SignatureHeaders.initFromHttpRequest(&http_req, &sig_buf) catch |err| {
             zigcord.logger.warn("error occurred while looking for signature headers: {}", .{err});
             http_req.respond("", .{ .status = .unauthorized }) catch |respond_err| {
                 zigcord.logger.warn("IO error occurred while writing error response: {}", .{respond_err});
@@ -54,14 +58,15 @@ pub fn receiveInteraction(self: *Server, alloc: std.mem.Allocator) !InteractionR
             continue;
         };
 
-        const body_reader = http_req.reader() catch |err| {
+        var reader_buf: [1000]u8 = undefined;
+        const body_reader = http_req.readerExpectContinue(&reader_buf) catch |err| {
             zigcord.logger.err("http error occurred while writing a response to 100-continue: {}", .{err});
             http_req.respond("", .{ .status = .expectation_failed }) catch |respond_err| {
                 zigcord.logger.warn("IO error occurred while writing error response: {}", .{respond_err});
             };
             return error.HttpError;
         };
-        const body = body_reader.readAllAlloc(alloc, 1024 * 1024) catch |err| {
+        const body = body_reader.allocRemaining(alloc, .limited(1024 * 1024)) catch |err| {
             zigcord.logger.err("error occurred while reading request body: {}", .{err});
             http_req.respond("", .{ .status = .internal_server_error }) catch |respond_err| {
                 zigcord.logger.warn("IO error occurred while writing error response: {}", .{respond_err});

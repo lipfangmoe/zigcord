@@ -67,15 +67,18 @@ test "union inline - regular" {
         number: i64,
         string: []const u8,
 
-        pub usingnamespace InlineUnionJsonMixin(@This());
+        const Mixin = InlineUnionJsonMixin(@This());
+        pub const jsonStringify = Mixin.jsonStringify;
+        pub const jsonParse = Mixin.jsonParse;
+        pub const jsonParseFromValue = Mixin.jsonParseFromValue;
     };
 
     const twenty = TestUnion{ .number = 20 };
     const bar = TestUnion{ .string = "bar" };
 
-    const actual_twenty_str = try std.json.stringifyAlloc(std.testing.allocator, twenty, .{});
+    const actual_twenty_str = try std.json.Stringify.valueAlloc(std.testing.allocator, twenty, .{});
     defer std.testing.allocator.free(actual_twenty_str);
-    const actual_bar_str = try std.json.stringifyAlloc(std.testing.allocator, bar, .{});
+    const actual_bar_str = try std.json.Stringify.valueAlloc(std.testing.allocator, bar, .{});
     defer std.testing.allocator.free(actual_bar_str);
 
     try std.testing.expectEqualStrings("20", actual_twenty_str);
@@ -87,7 +90,10 @@ test "union inline - inside struct" {
         number: i64,
         string: []const u8,
 
-        pub usingnamespace InlineUnionJsonMixin(@This());
+        const Mixin = InlineUnionJsonMixin(@This());
+        pub const jsonStringify = Mixin.jsonStringify;
+        pub const jsonParse = Mixin.jsonParse;
+        pub const jsonParseFromValue = Mixin.jsonParseFromValue;
     };
     const TestStruct = struct {
         foo: []const u8,
@@ -97,9 +103,9 @@ test "union inline - inside struct" {
     const twenty = TestStruct{ .foo = "foo", .onion = .{ .number = 20 } };
     const bar = TestStruct{ .foo = "foo", .onion = .{ .string = "bar" } };
 
-    const actual_twenty_str = try std.json.stringifyAlloc(std.testing.allocator, twenty, .{});
+    const actual_twenty_str = try std.json.Stringify.valueAlloc(std.testing.allocator, twenty, .{});
     defer std.testing.allocator.free(actual_twenty_str);
-    const actual_bar_str = try std.json.stringifyAlloc(std.testing.allocator, bar, .{});
+    const actual_bar_str = try std.json.Stringify.valueAlloc(std.testing.allocator, bar, .{});
     defer std.testing.allocator.free(actual_bar_str);
 
     try std.testing.expectEqualStrings("{\"foo\":\"foo\",\"onion\":20}", actual_twenty_str);

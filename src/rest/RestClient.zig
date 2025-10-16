@@ -31,32 +31,31 @@ pub fn initWithConfig(allocator: std.mem.Allocator, auth: zigcord.Authorization,
     };
 }
 
-pub const BeginRequestError = error{ OutOfMemory, OpenError, SendError };
+pub const BeginRequestError = error{ OutOfMemory, OpenError, RequestSendBodyError };
+pub const WaitForResponseError = error{ RequestFinishError, ResponseReceiveHeadError, ResponseReadError, ResponseJsonParseError };
+pub const RequestError = BeginRequestError || WaitForResponseError;
 
-pub fn beginRequest(
+fn setupRequest(
     self: *RestClient,
-    comptime ResponseT: type,
     method: std.http.Method,
     url: std.Uri,
-    transfer_encoding: std.http.Client.RequestTransfer,
+    transfer_encoding: std.http.Client.Request.TransferEncoding,
     headers: ?std.http.Client.Request.Headers,
     extra_headers: ?[]const std.http.Header,
-) BeginRequestError!PendingRequest(ResponseT) {
-    const authValue = std.fmt.allocPrint(self.allocator, "{}", .{self.auth}) catch return error.OutOfMemory;
-    defer self.allocator.free(authValue);
+) BeginRequestError!std.http.Client.Request {
+    var auth_value_buf: [200]u8 = undefined;
+    var auth_value = std.Io.Writer.fixed(&auth_value_buf);
+    auth_value.print("{f}", .{self.auth}) catch return error.OutOfMemory;
 
     var defaulted_headers = headers orelse std.http.Client.Request.Headers{};
     if (defaulted_headers.authorization == .default) {
-        defaulted_headers.authorization = .{ .override = authValue };
+        defaulted_headers.authorization = .{ .override = auth_value.buffered() };
     }
     if (defaulted_headers.content_type == .default) {
         defaulted_headers.content_type = .{ .override = "application/json" };
     }
 
-    const server_header_buffer = try self.allocator.alloc(u8, 4096);
-    errdefer self.allocator.free(server_header_buffer);
-    var req = self.client.open(method, url, std.http.Client.RequestOptions{
-        .server_header_buffer = server_header_buffer,
+    var req = self.client.request(method, url, std.http.Client.RequestOptions{
         .headers = defaulted_headers,
         .extra_headers = extra_headers orelse &.{},
     }) catch return error.OpenError;
@@ -64,13 +63,43 @@ pub fn beginRequest(
 
     req.transfer_encoding = transfer_encoding;
 
-    req.send() catch return error.SendError;
-    return PendingRequest(ResponseT){
-        .allocator = self.allocator,
-        .req = req,
-        .config = self.config,
-        .server_header_buffer = server_header_buffer,
+    return req;
+}
+
+fn handleResponse(
+    allocator: std.mem.Allocator,
+    config: Config,
+    comptime ResponseT: type,
+    response: *std.http.Client.Response,
+) !Result(ResponseT) {
+    const status = response.head.status;
+    const status_class = status.class();
+    if (ResponseT == void and status_class == .success) {
+        return Result(ResponseT){ .ok = .{ .status = status, .value = void{}, .parsed = null } };
+    }
+
+    var buf: [2000]u8 = undefined;
+    const body_reader = response.reader(&buf);
+    var json_reader = std.json.Reader.init(allocator, body_reader);
+    defer json_reader.deinit();
+
+    const value = switch (status_class) {
+        .success => blk: {
+            if (ResponseT != void) {
+                const parsed = std.json.parseFromTokenSource(ResponseT, allocator, &json_reader, .{ .ignore_unknown_fields = true, .max_value_len = config.max_response_length }) catch |err| return reduceJsonParseError(err);
+                break :blk Result(ResponseT){ .ok = .{ .status = status, .value = parsed.value, .parsed = parsed } };
+            } else {
+                // unreachable because we have a special case for `T == void and status_class == .success` earlier
+                unreachable;
+            }
+        },
+        else => blk: {
+            const parsed = std.json.parseFromTokenSource(DiscordError, allocator, &json_reader, .{ .ignore_unknown_fields = true, .max_value_len = config.max_response_length }) catch |err| return reduceJsonParseError(err);
+            break :blk Result(ResponseT){ .err = .{ .status = status, .value = parsed.value, .parsed = parsed } };
+        },
     };
+
+    return value;
 }
 
 pub fn beginMultipartRequest(
@@ -78,32 +107,34 @@ pub fn beginMultipartRequest(
     comptime ResponseT: type,
     method: std.http.Method,
     url: std.Uri,
-    transfer_encoding: std.http.Client.RequestTransfer,
+    transfer_encoding: std.http.Client.Request.TransferEncoding,
     boundary: []const u8,
     extra_headers: ?[]const std.http.Header,
 ) BeginRequestError!PendingRequest(ResponseT) {
     var buf: [1028]u8 = undefined;
-    var alloc = std.heap.FixedBufferAllocator.init(&buf);
-    const content_type = std.mem.concat(alloc.allocator(), u8, &.{ "multipart/form-data; boundary=", boundary }) catch return std.mem.Allocator.Error.OutOfMemory;
-    return try beginRequest(
-        self,
-        ResponseT,
+    var content_type = std.Io.Writer.fixed(&buf);
+    content_type.print("multipart/form-data; boundary={s}", .{boundary}) catch return std.mem.Allocator.Error.OutOfMemory;
+
+    const http_request = try self.setupRequest(
         method,
         url,
         transfer_encoding,
-        std.http.Client.Request.Headers{ .content_type = .{ .override = content_type } },
+        std.http.Client.Request.Headers{ .content_type = .{ .override = content_type.buffered() } },
         extra_headers,
     );
-}
 
-pub const RequestError = BeginRequestError || WaitForResponseError;
+    return PendingRequest(ResponseT){ .allocator = self.allocator, .request = http_request, .config = self.config };
+}
 
 /// Sends a request to the Discord REST API with the credentials stored in this context
 pub fn request(self: *RestClient, comptime ResponseT: type, method: std.http.Method, url: std.Uri) RequestError!Result(ResponseT) {
-    var pending = try self.beginRequest(ResponseT, method, url, .{ .none = void{} }, null, null);
-    defer pending.deinit();
+    var http_request = try self.setupRequest(method, url, .{ .none = void{} }, null, null);
+    defer http_request.deinit();
 
-    return pending.waitForResponse();
+    http_request.sendBodiless() catch return error.RequestSendBodyError;
+    var response = http_request.receiveHead(&.{}) catch return error.ResponseReceiveHeadError;
+
+    return try handleResponse(self.allocator, self.config, ResponseT, &response);
 }
 
 /// Sends a request to the Discord REST API with the credentials stored in this context
@@ -113,38 +144,29 @@ pub fn requestWithAuditLogReason(self: *RestClient, comptime ResponseT: type, me
     else
         &.{};
 
-    var pending = try self.beginRequest(ResponseT, method, url, .{ .none = void{} }, null, extra_headers);
-    defer pending.deinit();
+    var http_request = try self.setupRequest(method, url, .{ .none = void{} }, null, extra_headers);
+    defer http_request.deinit();
 
-    return pending.waitForResponse();
-}
+    http_request.sendBodiless() catch return error.RequestSendBodyError;
+    var response = http_request.receiveHead(&.{}) catch return error.ResponseReceiveHeadError;
 
-/// Sends a request (with a body) to the Discord REST API with the credentials stored in this context.
-pub fn requestWithBody(self: *RestClient, comptime ResponseT: type, method: std.http.Method, url: std.Uri, body: std.io.AnyReader) RequestError!Result(ResponseT) {
-    var pending = try self.beginRequest(ResponseT, method, url, .{ .chunked = void{} }, null, null);
-    defer pending.deinit();
-
-    var fifo = std.fifo.LinearFifo([]u8, .{ .Static = 1000 }).init();
-    try fifo.pump(body, pending.writer());
-
-    return try pending.waitForResponse();
+    return try handleResponse(self.allocator, self.config, ResponseT, &response);
 }
 
 pub const JsonRequestError = BeginRequestError || WaitForResponseError || error{RequestJsonStringifyError};
 
 /// Sends a request (with a body) to the Discord REST API with the credentials stored in this context.
-pub fn requestWithValueBody(self: *RestClient, comptime ResponseT: type, method: std.http.Method, url: std.Uri, body: anytype, stringifyOptions: std.json.StringifyOptions) JsonRequestError!Result(ResponseT) {
-    var pending = try self.beginRequest(ResponseT, method, url, .{ .chunked = void{} }, null, null);
-    defer pending.deinit();
+pub fn requestWithValueBody(self: *RestClient, comptime ResponseT: type, method: std.http.Method, url: std.Uri, body: anytype, stringify_options: std.json.Stringify.Options) JsonRequestError!Result(ResponseT) {
+    const stringified_body = std.json.Stringify.valueAlloc(self.allocator, body, stringify_options) catch return error.RequestJsonStringifyError;
+    defer self.allocator.free(stringified_body);
 
-    var buffered_body_writer = std.io.bufferedWriter(pending.writer());
+    var http_request = try self.setupRequest(method, url, .{ .content_length = stringified_body.len }, null, null);
+    defer http_request.deinit();
 
-    std.json.stringify(body, stringifyOptions, buffered_body_writer.writer()) catch return error.RequestJsonStringifyError;
-    buffered_body_writer.flush() catch return error.RequestJsonStringifyError;
+    http_request.sendBodyComplete(stringified_body) catch return error.RequestSendBodyError;
+    var response = http_request.receiveHead(&.{}) catch return error.ResponseReceiveHeadError;
 
-    zigcord.logger.debug("sending JSON request to path '{}':\n{}", .{ url, std.json.fmt(body, stringifyOptions) });
-
-    return try pending.waitForResponse();
+    return try handleResponse(self.allocator, self.config, ResponseT, &response);
 }
 
 pub fn requestWithValueBodyAndAuditLogReason(
@@ -153,7 +175,7 @@ pub fn requestWithValueBodyAndAuditLogReason(
     method: std.http.Method,
     url: std.Uri,
     body: anytype,
-    stringifyOptions: std.json.StringifyOptions,
+    stringify_options: std.json.Stringify.Options,
     audit_log_reason: ?[]const u8,
 ) JsonRequestError!Result(ResponseT) {
     const extra_headers: []const std.http.Header = if (audit_log_reason) |reason|
@@ -161,15 +183,16 @@ pub fn requestWithValueBodyAndAuditLogReason(
     else
         &.{};
 
-    var pending = try self.beginRequest(ResponseT, method, url, .{ .chunked = void{} }, null, extra_headers);
-    defer pending.deinit();
+    const stringified_body = std.json.Stringify.valueAlloc(self.allocator, body, stringify_options) catch return error.RequestJsonStringifyError;
+    defer self.allocator.free(stringified_body);
 
-    var buffered_body_writer = std.io.bufferedWriter(pending.writer());
+    var http_request = try self.setupRequest(method, url, .{ .content_length = stringified_body.len }, null, extra_headers);
+    defer http_request.deinit();
 
-    std.json.stringify(body, stringifyOptions, buffered_body_writer.writer()) catch return error.RequestJsonStringifyError;
-    buffered_body_writer.flush() catch return error.RequestJsonStringifyError;
+    http_request.sendBodyComplete(stringified_body) catch return error.RequestSendBodyError;
+    var response = http_request.receiveHead(&.{}) catch return error.ResponseReceiveHeadError;
 
-    return try pending.waitForResponse();
+    return try handleResponse(self.allocator, self.config, ResponseT, &response);
 }
 
 pub fn deinit(self: *RestClient) void {
@@ -177,7 +200,7 @@ pub fn deinit(self: *RestClient) void {
 }
 
 pub const Config = struct {
-    pub const default_user_agent = std.fmt.comptimePrint("DiscordBot (https://codeberg.org/lipfang/zigcord, {})", .{zigcord.version});
+    pub const default_user_agent = std.fmt.comptimePrint("DiscordBot (https://codeberg.org/lipfang/zigcord, {f})", .{zigcord.version});
 
     /// 1mb seems fair since all discord api responses should be text, with urls for anything large.
     /// surely they don't respond with more than 1 million characters... Clueless
@@ -187,92 +210,41 @@ pub const Config = struct {
     user_agent: []const u8 = default_user_agent,
 };
 
-pub const WaitForResponseError = error{ RequestFinishError, ResponseWaitError, ResponseReadError, ResponseJsonParseError };
+const RawJsonParseError = std.json.ParseError(std.json.Reader);
+fn reduceJsonParseError(err: RawJsonParseError) WaitForResponseError {
+    switch (err) {
+        error.EndOfStream,
+        error.SyntaxError,
+        error.UnexpectedEndOfInput,
+        error.ValueTooLong,
+        error.ReadFailed,
+        => return error.ResponseReadError,
+        error.OutOfMemory,
+        error.Overflow,
+        error.InvalidCharacter,
+        error.UnexpectedToken,
+        error.InvalidNumber,
+        error.InvalidEnumTag,
+        error.DuplicateField,
+        error.UnknownField,
+        error.MissingField,
+        error.LengthMismatch,
+        => return error.ResponseJsonParseError,
+    }
+}
 
 pub fn PendingRequest(comptime T: type) type {
     return struct {
         allocator: std.mem.Allocator,
-        req: std.http.Client.Request,
+        request: std.http.Client.Request,
         config: Config,
-        server_header_buffer: []const u8,
-
-        /// returns a writer that writes to the request body
-        pub fn writer(self: *PendingRequest(T)) std.io.GenericWriter(*PendingRequest(T), std.http.Client.Request.WriteError, writeFn) {
-            return std.io.GenericWriter(*PendingRequest(T), std.http.Client.Request.WriteError, writeFn){ .context = self };
-        }
-
-        fn writeFn(self: *PendingRequest(T), bytes: []const u8) std.http.Client.Request.WriteError!usize {
-            return try self.req.write(bytes);
-        }
-
-        const RawJsonParseError = std.json.ParseError(std.json.Reader(std.json.default_buffer_size, std.http.Client.Request.Reader));
-        fn reduceJsonParseError(err: RawJsonParseError) WaitForResponseError {
-            switch (err) {
-                error.EndOfStream,
-                error.TlsFailure,
-                error.TlsAlert,
-                error.ConnectionTimedOut,
-                error.ConnectionResetByPeer,
-                error.UnexpectedReadFailure,
-                error.HttpChunkInvalid,
-                error.HttpHeadersOversize,
-                error.SyntaxError,
-                error.UnexpectedEndOfInput,
-                error.ValueTooLong,
-                error.DecompressionFailure,
-                error.InvalidTrailers,
-                => return error.ResponseReadError,
-                error.OutOfMemory,
-                error.Overflow,
-                error.InvalidCharacter,
-                error.UnexpectedToken,
-                error.InvalidNumber,
-                error.InvalidEnumTag,
-                error.DuplicateField,
-                error.UnknownField,
-                error.MissingField,
-                error.LengthMismatch,
-                => return error.ResponseJsonParseError,
-            }
-        }
 
         /// Waits for the server to return its response.
         pub fn waitForResponse(self: *PendingRequest(T)) WaitForResponseError!Result(T) {
-            self.req.finish() catch return error.RequestFinishError;
-            self.req.wait() catch return error.ResponseWaitError;
-
-            const status = self.req.response.status;
-            const status_class = status.class();
-            if (T == void and status_class == .success) {
-                return Result(T){ .ok = .{ .status = status, .value = void{}, .parsed = null } };
-            }
-
-            const byte_reader = self.req.reader();
-            var json_reader = std.json.reader(self.allocator, byte_reader);
-            defer json_reader.deinit();
-
-            const value = switch (status_class) {
-                .success => blk: {
-                    if (T != void) {
-                        const parsed = std.json.parseFromTokenSource(T, self.allocator, &json_reader, .{ .ignore_unknown_fields = true, .max_value_len = self.config.max_response_length }) catch |err| return reduceJsonParseError(err);
-                        break :blk Result(T){ .ok = .{ .status = status, .value = parsed.value, .parsed = parsed } };
-                    } else {
-                        // unreachable because we have a special case for `T == void and status_class == .success` earlier
-                        unreachable;
-                    }
-                },
-                else => blk: {
-                    const parsed = std.json.parseFromTokenSource(DiscordError, self.allocator, &json_reader, .{ .ignore_unknown_fields = true, .max_value_len = self.config.max_response_length }) catch |err| return reduceJsonParseError(err);
-                    break :blk Result(T){ .err = .{ .status = status, .value = parsed.value, .parsed = parsed } };
-                },
-            };
-
-            return value;
-        }
-
-        pub fn deinit(self: *PendingRequest(T)) void {
-            self.req.deinit();
-            self.allocator.free(self.server_header_buffer);
+            defer self.request.deinit();
+            var response = self.request.receiveHead(&.{}) catch return error.ResponseReceiveHeadError;
+            const result = handleResponse(self.allocator, self.config, T, &response);
+            return result;
         }
     };
 }
@@ -413,22 +385,22 @@ pub fn TestServer(S: type) type {
         server_thread: std.Thread,
         net_server: std.net.Server,
 
-        fn start(self: *TestServer(S)) !void {
-            var header_buf: [2048]u8 = undefined;
-            const conn = try self.net_server.accept();
-            defer conn.stream.close();
+        fn start(self: *TestServer(S)) void {
+            var reader_buf: [2048]u8 = undefined;
+            var writer_buf: [2048]u8 = undefined;
 
-            var server = std.http.Server.init(conn, &header_buf);
-            while (server.state == .ready) {
-                var req = server.receiveHead() catch |err| {
-                    switch (err) {
-                        error.HttpConnectionClosing => break,
-                        else => |e| return e,
-                    }
+            var conn = self.net_server.accept() catch |err| std.debug.panic("while initializing connection: {}", .{err});
+            var conn_reader = conn.stream.reader(&reader_buf);
+            var conn_writer = conn.stream.writer(&writer_buf);
+
+            var server = std.http.Server.init(conn_reader.interface(), &conn_writer.interface);
+            while (true) {
+                var req = server.receiveHead() catch |err| switch (err) {
+                    error.HttpConnectionClosing => break,
+                    else => std.debug.panic("while receiving headers: {}", .{err}),
                 };
-
-                const response: TestResponse = try S.onRequest(&req);
-                try req.respond(response.body, .{ .status = response.status });
+                const response: TestResponse = S.onRequest(&req) catch |err| std.debug.panic("while calling onRequest: {}", .{err});
+                req.respond(response.body, .{ .status = response.status }) catch |err| std.debug.panic("while writing request: {}", .{err});
             }
         }
 
@@ -438,19 +410,15 @@ pub fn TestServer(S: type) type {
             std.testing.allocator.destroy(self);
         }
 
-        fn port(self: TestServer(S)) u16 {
+        fn port(self: *const TestServer(S)) u16 {
             return self.net_server.listen_address.in.getPort();
         }
     };
 }
 fn createTestServer(S: type) !*TestServer(S) {
     if (builtin.single_threaded) return error.SkipZigTest;
-    if (builtin.zig_backend == .stage2_llvm and builtin.cpu.arch.endian() == .big) {
-        // https://github.com/ziglang/zig/issues/13782
-        return error.SkipZigTest;
-    }
 
-    const address = try std.net.Address.parseIp("127.0.0.1", 0);
+    const address = try std.net.Address.resolveIp("127.0.0.1", 0);
     var test_server = try std.testing.allocator.create(TestServer(S));
     test_server.net_server = try address.listen(.{ .reuse_address = true });
     test_server.server_thread = try std.Thread.spawn(.{}, TestServer(S).start, .{test_server});
@@ -467,11 +435,14 @@ test "request parses response body" {
 
     const test_server = try createTestServer(struct {
         pub fn onRequest(req: *std.http.Server.Request) !TestResponse {
-            const body_reader = try req.reader();
-            const body = try body_reader.readAllAlloc(std.testing.allocator, 10);
-            defer std.testing.allocator.free(body);
             try std.testing.expectEqual(.GET, req.head.method);
             try std.testing.expectEqualStrings("/api/v10/lol", req.head.target);
+
+            var body_buf: [100]u8 = undefined;
+            var body_reader = req.readerExpectNone(&body_buf);
+            const body = try body_reader.allocRemaining(std.testing.allocator, .limited(1000));
+            defer std.testing.allocator.free(body);
+
             try std.testing.expectEqualStrings("", body);
 
             return TestResponse{
@@ -505,12 +476,14 @@ test "requestWithValueBody stringifies struct request body" {
 
     const test_server = try createTestServer(struct {
         pub fn onRequest(req: *std.http.Server.Request) !TestResponse {
-            const body_reader = try req.reader();
-            const body = try body_reader.readBoundedBytes(100);
-
             try std.testing.expectEqual(.POST, req.head.method);
             try std.testing.expectEqualStrings("/api/v10/lol", req.head.target);
-            try std.testing.expectEqualStrings("{\"str\":\"lol lmao\",\"num\":4.2e1}", body.constSlice());
+
+            var body_buf: [1000]u8 = undefined;
+            var body_reader = req.readerExpectNone(&body_buf);
+            const body = try body_reader.allocRemaining(std.testing.allocator, .unlimited);
+            defer std.testing.allocator.free(body);
+            try std.testing.expectEqualStrings("{\"str\":\"lol lmao\",\"num\":42}", body);
 
             return TestResponse{
                 .status = std.http.Status.ok,
@@ -550,12 +523,16 @@ test "requestWithValueBody jsonError in response" {
 
     const test_server = try createTestServer(struct {
         pub fn onRequest(req: *std.http.Server.Request) !TestResponse {
-            const body_reader = try req.reader();
-            const body = try body_reader.readBoundedBytes(100);
-
             try std.testing.expectEqual(.POST, req.head.method);
             try std.testing.expectEqualStrings("/api/v10/lol", req.head.target);
-            try std.testing.expectEqualStrings("{\"str\":\"lol lmao\",\"num\":4.2e1}", body.constSlice());
+
+            var buf: [1000]u8 = undefined;
+            const body_reader = req.readerExpectNone(&buf);
+            var body_buf: [100]u8 = undefined;
+            var body = std.Io.Writer.fixed(&body_buf);
+            _ = try body_reader.stream(&body, .unlimited);
+
+            try std.testing.expectEqualStrings("{\"str\":\"lol lmao\",\"num\":42}", body.buffered());
 
             return TestResponse{
                 .status = std.http.Status.ok,

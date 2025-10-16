@@ -213,7 +213,10 @@ pub const Section = struct {
         thumbnail: Thumbnail,
         button: []const Button,
 
-        pub usingnamespace jconfig.InlineUnionMixin(@This());
+        const Mixin = jconfig.InlineUnionMixin(@This());
+        pub const jsonStringify = Mixin.jsonStringify;
+        pub const jsonParse = Mixin.jsonParse;
+        pub const jsonParseFromValue = Mixin.jsonParseFromValue;
     };
 };
 
@@ -228,7 +231,7 @@ pub const Thumbnail = struct {
     description: jconfig.Omittable([]const u8) = .omit,
     spoiler: jconfig.Omittable(bool) = .omit,
 
-    pub usingnamespace jconfig.OmittableFieldsMixin(@This());
+    pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
 };
 
 /// Message.Flag.is_components_v2 must be set to use this
@@ -240,7 +243,7 @@ pub const MediaGallery = struct {
         description: jconfig.Omittable([]const u8) = .omit,
         spoiler: jconfig.Omittable(bool) = .omit,
 
-        pub usingnamespace jconfig.OmittableFieldsMixin(@This());
+        pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
     };
 };
 
@@ -249,7 +252,7 @@ pub const File = struct {
     file: UnfurledMediaItem,
     spoiler: jconfig.Omittable(bool) = .omit,
 
-    pub usingnamespace jconfig.OmittableFieldsMixin(@This());
+    pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
 };
 
 /// Message.Flag.is_components_v2 must be set to use this
@@ -257,7 +260,7 @@ pub const Separator = struct {
     divider: jconfig.Omittable(bool) = .omit,
     spacing: jconfig.Omittable(i64) = .omit,
 
-    pub usingnamespace jconfig.OmittableFieldsMixin(@This());
+    pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
 };
 
 /// Message.Flag.is_components_v2 must be set to use this
@@ -266,7 +269,7 @@ pub const Container = struct {
     accent_color: jconfig.Omittable(?i64) = .omit,
     spoiler: jconfig.Omittable(bool) = .omit,
 
-    pub usingnamespace jconfig.OmittableFieldsMixin(@This());
+    pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
 };
 
 pub const UnfurledMediaItem = struct {
@@ -276,7 +279,7 @@ pub const UnfurledMediaItem = struct {
     width: jconfig.Omittable(?i64) = .omit,
     content_type: jconfig.Omittable(?i64) = .omit,
 
-    pub usingnamespace jconfig.OmittableFieldsMixin(@This());
+    pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
 };
 
 test "discord example" {

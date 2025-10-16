@@ -9,7 +9,7 @@ pub fn createInteractionResponse(
     interaction_token: []const u8,
     body: model.interaction.InteractionResponse,
 ) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/interactions/{}/{s}/callback", .{ interaction_id, interaction_token });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/interactions/{f}/{s}/callback", .{ interaction_id, interaction_token });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -22,14 +22,15 @@ pub fn createInteractionResponseMultipart(
     interaction_token: []const u8,
     form: CreateInteractionResponseFormBody,
 ) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/interactions/{}/{s}/callback", .{ interaction_id, interaction_token });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/interactions/{f}/{s}/callback", .{ interaction_id, interaction_token });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
     var pending_request = try client.rest_client.beginMultipartRequest(void, .POST, uri, .chunked, rest.multipart_boundary, null);
-    defer pending_request.deinit();
 
-    try std.fmt.format(pending_request.writer(), "{form}", .{form});
+    var body_writer = try pending_request.request.sendBodyUnflushed("");
+    try body_writer.writer.print("{f}", .{form});
+    try body_writer.end();
 
     return pending_request.waitForResponse();
 }
@@ -39,7 +40,7 @@ pub fn getOriginalInteractionResponse(
     application_id: model.Snowflake,
     interaction_token: []const u8,
 ) !rest.RestClient.Result(model.Message) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{}/{s}/messages/@original", .{ application_id, interaction_token });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}/messages/@original", .{ application_id, interaction_token });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -50,16 +51,17 @@ pub fn editOriginalInteractionResponse(
     client: *rest.EndpointClient,
     application_id: model.Snowflake,
     interaction_token: []const u8,
-    body: rest.endpoints.EditWebhookMessageFormBody,
+    body: rest.EndpointClient.webhook.EditWebhookMessageFormBody,
 ) !rest.RestClient.Result(model.Message) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{}/{s}/messages/@original", .{ application_id, interaction_token });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}/messages/@original", .{ application_id, interaction_token });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
     var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .PATCH, uri, .chunked, rest.multipart_boundary, null);
-    defer pending_request.deinit();
 
-    try std.fmt.format(pending_request.writer(), "{form}", .{body});
+    var body_writer = try pending_request.request.sendBodyUnflushed("");
+    try body_writer.writer.print("{f}", .{body});
+    try body_writer.end();
 
     return pending_request.waitForResponse();
 }
@@ -69,7 +71,7 @@ pub fn deleteOriginalInteractionResponse(
     application_id: model.Snowflake,
     interaction_token: []const u8,
 ) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{}/{s}/messages/@original", .{ application_id, interaction_token });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}/messages/@original", .{ application_id, interaction_token });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -80,9 +82,18 @@ pub fn createFollowupMessage(
     client: *rest.EndpointClient,
     application_id: model.Snowflake,
     interaction_token: []const u8,
-    body: rest.endpoints.ExecuteWebhookFormBody,
+    body: rest.EndpointClient.webhook.ExecuteWebhookJsonBody,
 ) !rest.RestClient.Result(model.Message) {
-    return rest.endpoints.executeWebhookWait(client, application_id, interaction_token, .{}, body);
+    return client.executeWebhookWait(application_id, interaction_token, .{}, body);
+}
+
+pub fn createFollowupMessageMultipart(
+    client: *rest.EndpointClient,
+    application_id: model.Snowflake,
+    interaction_token: []const u8,
+    body: rest.EndpointClient.webhook.ExecuteWebhookFormBody,
+) !rest.RestClient.Result(model.Message) {
+    return client.executeWebhookWaitMultipart(application_id, interaction_token, .{}, body);
 }
 
 pub fn getFollowupMessage(
@@ -91,7 +102,7 @@ pub fn getFollowupMessage(
     interaction_token: []const u8,
     message_id: model.Snowflake,
 ) !rest.RestClient.Result(model.Message) {
-    return rest.endpoints.getWebhookMessage(client, application_id, interaction_token, message_id, .{});
+    return client.getWebhookMessage(application_id, interaction_token, message_id, .{});
 }
 
 pub fn editFollowupMessage(
@@ -99,9 +110,19 @@ pub fn editFollowupMessage(
     application_id: model.Snowflake,
     interaction_token: []const u8,
     message_id: model.Snowflake,
-    body: rest.endpoints.EditWebhookMessageFormBody,
+    body: rest.EndpointClient.webhook.EditWebhookMessageJsonBody,
 ) !rest.RestClient.Result(model.Message) {
-    return rest.endpoints.editWebhookMessage(client, application_id, interaction_token, message_id, .{}, body);
+    return client.editWebhookMessage(application_id, interaction_token, message_id, .{}, body);
+}
+
+pub fn editFollowupMessageMultipart(
+    client: *rest.EndpointClient,
+    application_id: model.Snowflake,
+    interaction_token: []const u8,
+    message_id: model.Snowflake,
+    body: rest.EndpointClient.webhook.EditWebhookMessageFormBody,
+) !rest.RestClient.Result(model.Message) {
+    return client.editWebhookMessageMultipart(application_id, interaction_token, message_id, .{}, body);
 }
 
 pub fn deleteFollowupMessage(
@@ -110,19 +131,15 @@ pub fn deleteFollowupMessage(
     interaction_token: []const u8,
     message_id: model.Snowflake,
 ) !rest.RestClient.Result(void) {
-    return rest.endpoints.deleteWebhookMessage(client, application_id, interaction_token, message_id, .{});
+    return client.deleteWebhookMessage(application_id, interaction_token, message_id, .{});
 }
 
 pub const CreateInteractionResponseFormBody = struct {
     type: model.interaction.InteractionResponse.Type,
     data: ?model.interaction.InteractionCallbackData = null,
-    files: ?[]const ?std.io.AnyReader = null,
+    files: ?[]const *std.Io.Reader = null,
 
-    pub fn format(self: CreateInteractionResponseFormBody, comptime fmt: []const u8, _: std.fmt.FormatOptions, writer: anytype) !void {
-        if (comptime !std.mem.eql(u8, fmt, "form")) {
-            @compileError("CreateInteractionResponseFormBody.format should only be called with fmt string {form}");
-        }
-
-        try rest.writeMultipartFormDataBody(self, "files", writer);
+    pub fn format(self: CreateInteractionResponseFormBody, writer: anytype) !void {
+        rest.writeMultipartFormDataBody(self, "files", writer) catch return error.WriteFailed;
     }
 };

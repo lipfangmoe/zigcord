@@ -24,7 +24,7 @@ pub fn deinit(self: InteractionRequest) void {
 /// need more time to respond, respond quickly with a deferred InteractionResponse type,
 /// then use one of the .followup* methods when you're ready to respond.
 pub fn respond(self: *InteractionRequest, response_body: model.interaction.InteractionResponse) !void {
-    const response_body_json = try std.json.stringifyAlloc(self.arena.allocator(), response_body, .{});
+    const response_body_json = try std.json.Stringify.valueAlloc(self.arena.allocator(), response_body, .{});
     try self.http_request.respond(response_body_json, .{});
 }
 

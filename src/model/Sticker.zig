@@ -50,5 +50,5 @@ pub const Pack = struct {
     description: []const u8,
     banner_asset_id: jconfig.Omittable(model.Snowflake) = .omit,
 
-    pub usingnamespace jconfig.OmittableFieldsMixin(@This());
+    pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
 };

@@ -20,7 +20,7 @@ pub fn getStageInstance(
     client: *rest.EndpointClient,
     channel_id: model.Snowflake,
 ) !rest.RestClient.Result(model.StageInstance) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/stage-instances/{}", .{channel_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/stage-instances/{f}", .{channel_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -33,7 +33,7 @@ pub fn modifyStageInstance(
     body: ModifyStageInstanceBody,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(model.StageInstance) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/stage-instances/{}", .{channel_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/stage-instances/{f}", .{channel_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -44,7 +44,7 @@ pub fn deleteStageInstance(
     client: *rest.EndpointClient,
     channel_id: model.Snowflake,
 ) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/stage-instances/{}", .{channel_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/stage-instances/{f}", .{channel_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -58,12 +58,12 @@ pub const CreateStageInstanceBody = struct {
     send_start_notification: jconfig.Omittable(bool) = .omit,
     guild_scheduled_event_id: jconfig.Omittable(model.Snowflake) = .omit,
 
-    pub usingnamespace jconfig.OmittableFieldsMixin(@This());
+    pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
 };
 
 pub const ModifyStageInstanceBody = struct {
     topic: jconfig.Omittable([]const u8) = .omit,
     privacy_level: jconfig.Omittable(i64) = .omit,
 
-    pub usingnamespace jconfig.OmittableFieldsMixin(@This());
+    pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
 };

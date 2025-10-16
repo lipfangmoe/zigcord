@@ -27,9 +27,9 @@ test "enum as int - regular" {
         pub const jsonStringify = stringifyEnumAsInt;
     };
 
-    const actual_one_str = try std.json.stringifyAlloc(std.testing.allocator, TestEnum.one, .{});
+    const actual_one_str = try std.json.Stringify.valueAlloc(std.testing.allocator, TestEnum.one, .{});
     defer std.testing.allocator.free(actual_one_str);
-    const actual_five_str = try std.json.stringifyAlloc(std.testing.allocator, TestEnum.five, .{});
+    const actual_five_str = try std.json.Stringify.valueAlloc(std.testing.allocator, TestEnum.five, .{});
     defer std.testing.allocator.free(actual_five_str);
 
     try std.testing.expectEqualStrings("1", actual_one_str);
@@ -50,9 +50,9 @@ test "enum as int - inside struct" {
         nomnom: TestEnum,
     };
 
-    const actual_one_str = try std.json.stringifyAlloc(std.testing.allocator, TestStruct{ .foo = "foo", .nomnom = .one }, .{});
+    const actual_one_str = try std.json.Stringify.valueAlloc(std.testing.allocator, TestStruct{ .foo = "foo", .nomnom = .one }, .{});
     defer std.testing.allocator.free(actual_one_str);
-    const actual_five_str = try std.json.stringifyAlloc(std.testing.allocator, TestStruct{ .foo = "foo", .nomnom = .five }, .{});
+    const actual_five_str = try std.json.Stringify.valueAlloc(std.testing.allocator, TestStruct{ .foo = "foo", .nomnom = .five }, .{});
     defer std.testing.allocator.free(actual_five_str);
 
     try std.testing.expectEqualStrings("{\"foo\":\"foo\",\"nomnom\":1}", actual_one_str);

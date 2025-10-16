@@ -5,7 +5,7 @@ const rest = zigcord.rest;
 const jconfig = zigcord.jconfig;
 
 pub fn listSkuSubscriptions(client: *rest.EndpointClient, sku_id: model.Snowflake, query: ListSkuSubscriptionsQuery) !rest.RestClient.Result([]model.Subscription) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/skus/{}/subscriptions?{query}", .{ sku_id, query });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/skus/{f}/subscriptions?{f}", .{ sku_id, query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -13,7 +13,7 @@ pub fn listSkuSubscriptions(client: *rest.EndpointClient, sku_id: model.Snowflak
 }
 
 pub fn getSkuSubscription(client: *rest.EndpointClient, sku_id: model.Snowflake, subscription_id: model.Snowflake) !rest.RestClient.Result(model.Subscription) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/skus/{}/subscriptions/{}", .{ sku_id, subscription_id });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/skus/{f}/subscriptions/{f}", .{ sku_id, subscription_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -26,5 +26,5 @@ pub const ListSkuSubscriptionsQuery = struct {
     limit: ?u7 = null,
     user_id: ?model.Snowflake = null,
 
-    pub usingnamespace rest.QueryStringFormatMixin(@This());
+    pub const format = rest.QueryStringFormatMixin(@This()).format;
 };

@@ -5,7 +5,7 @@ const rest = zigcord.rest;
 const jconfig = zigcord.jconfig;
 
 pub fn sendSoundboardSound(client: *rest.EndpointClient, channel_id: model.Snowflake, body: SendSoundboardSoundBody) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{}/send-soundboard-sound", .{channel_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/send-soundboard-sound", .{channel_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -19,7 +19,7 @@ pub fn listDefaultSoundboardSounds(client: *rest.EndpointClient) !rest.RestClien
 }
 
 pub fn listGuildSoundboardSounds(client: *rest.EndpointClient, guild_id: model.Snowflake) !rest.RestClient.Result([]model.SoundboardSound) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/soundboard-sounds", .{guild_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/soundboard-sounds", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -27,7 +27,7 @@ pub fn listGuildSoundboardSounds(client: *rest.EndpointClient, guild_id: model.S
 }
 
 pub fn getGuildSoundboardSound(client: *rest.EndpointClient, guild_id: model.Snowflake, sound_id: model.Snowflake) !rest.RestClient.Result(model.SoundboardSound) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/soundboard-sounds/{}", .{ guild_id, sound_id });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/soundboard-sounds/{f}", .{ guild_id, sound_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -40,7 +40,7 @@ pub fn createGuildSoundboardSound(
     body: CreateGuildSoundboardSoundBody,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(model.SoundboardSound) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/soundboard-sounds", .{guild_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/soundboard-sounds", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -53,7 +53,7 @@ pub fn modifyGuildSoundboardSound(
     body: ModifyGuildSoundboardSoundBody,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(model.SoundboardSound) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/soundboard-sounds", .{guild_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/soundboard-sounds", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -66,7 +66,7 @@ pub fn deleteGuildSoundboardSound(
     sound_id: model.Snowflake,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/soundboard-sounds/{}", .{ guild_id, sound_id });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/soundboard-sounds/{f}", .{ guild_id, sound_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -77,7 +77,7 @@ pub const SendSoundboardSoundBody = struct {
     sound_id: model.Snowflake,
     source_guild_id: jconfig.Omittable(model.Snowflake) = .omit,
 
-    pub usingnamespace jconfig.OmittableFieldsMixin(@This());
+    pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
 };
 
 pub const CreateGuildSoundboardSoundBody = struct {
@@ -87,7 +87,7 @@ pub const CreateGuildSoundboardSoundBody = struct {
     emoji_id: jconfig.Omittable(?model.Snowflake) = .omit,
     emoji_name: jconfig.Omittable(?[]const u8) = .omit,
 
-    pub usingnamespace jconfig.OmittableFieldsMixin(@This());
+    pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
 };
 
 pub const ModifyGuildSoundboardSoundBody = struct {
@@ -96,5 +96,5 @@ pub const ModifyGuildSoundboardSoundBody = struct {
     emoji_id: jconfig.Omittable(?model.Snowflake) = .omit,
     emoji_name: jconfig.Omittable(?[]const u8) = .omit,
 
-    pub usingnamespace jconfig.OmittableFieldsMixin(@This());
+    pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
 };

@@ -74,10 +74,11 @@ pub fn initWithUri(allocator: std.mem.Allocator, auth: zigcord.Authorization, ur
     client.ws_client.* = ws.Client.init(allocator);
     errdefer client.ws_client.deinit();
 
-    var auth_header = std.BoundedArray(u8, 256){};
-    try std.fmt.format(auth_header.writer(), "{}", .{auth});
+    var auth_header_buf: [256]u8 = undefined;
+    var auth_header = std.Io.Writer.fixed(&auth_header_buf);
+    try auth_header.print("{f}", .{auth});
 
-    client.ws_conn.* = try client.ws_client.handshake(try std.Uri.parse(uri), &.{.{ .name = "Authorization", .value = auth_header.constSlice() }});
+    client.ws_conn.* = try client.ws_client.handshake(try std.Uri.parse(uri), &.{.{ .name = "Authorization", .value = auth_header.buffered() }});
 
     return client;
 }
@@ -98,8 +99,10 @@ pub fn deinit(self: *JsonWSClient) void {
 }
 
 pub fn readEvent(self: *JsonWSClient) error{ WebsocketError, JsonError }!std.json.Parsed(gateway.ReceiveEvent) {
-    var message = self.ws_conn.readMessage() catch return error.WebsocketError;
-    const payload_data = message.payloadReader().readAllAlloc(self.allocator, 1_000_000) catch return error.JsonError;
+    var message = self.ws_conn.receiveMessage() catch return error.WebsocketError;
+
+    // normally i would avoid allocating here, but it's useful for error logging
+    const payload_data = message.reader().allocRemaining(self.allocator, .limited(1_000_000)) catch return error.JsonError;
     defer self.allocator.free(payload_data);
 
     const payload_json_parsed = std.json.parseFromSlice(gateway.ReceiveEvent, self.allocator, payload_data, .{ .ignore_unknown_fields = true, .allocate = .alloc_always }) catch {
@@ -118,9 +121,10 @@ pub fn writeEvent(self: *JsonWSClient, event: gateway.SendEvent) error{ Websocke
     self.write_message_mutex.lock();
     defer self.write_message_mutex.unlock();
 
-    var payload = std.BoundedArray(u8, 4096){}; // discord only accepts payloads shorter than 4096 bytes
-    std.json.stringify(event, .{}, payload.writer()) catch return error.JsonError;
-    self.ws_conn.writeMessage(.text, payload.constSlice()) catch return error.WebsocketError;
+    var payload: [4096]u8 = undefined; // discord only accepts payloads shorter than 4096 bytes
+    var payload_writer = std.Io.Writer.fixed(&payload);
+    std.json.Stringify.value(event, .{}, &payload_writer) catch return error.JsonError;
+    self.ws_conn.sendMessage(.text, payload_writer.buffered()) catch return error.WebsocketError;
 }
 
 pub fn authenticate(self: *JsonWSClient, token: []const u8, intents: model.Intents) error{ WebsocketError, JsonError, HeartbeatStartError }!void {

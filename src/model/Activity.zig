@@ -71,7 +71,11 @@ pub const Flags = packed struct(u64) {
     embedded: bool = false,
     _overflow: u55 = 0,
 
-    pub usingnamespace model.PackedFlagsMixin(@This());
+    const Mixin = model.PackedFlagsMixin(@This());
+    pub const format = Mixin.format;
+    pub const jsonStringify = Mixin.jsonStringify;
+    pub const jsonParse = Mixin.jsonParse;
+    pub const jsonParseFromValue = Mixin.jsonParseFromValue;
 };
 pub const Button = struct {
     label: []const u8,

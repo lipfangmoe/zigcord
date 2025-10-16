@@ -4,23 +4,25 @@ const jconfig = zigcord.jconfig;
 
 pub const boundary = "f89767726a7827c6f785b40aee1ca2ade74d951d6a2d50e27cc0f0e5072a12b2";
 
-pub fn writeMultipartFormDataBody(value: anytype, comptime upload_field_name: []const u8, writer: anytype) !void {
-    var buffered_writer = std.io.bufferedWriter(writer);
+pub fn writeMultipartFormDataBody(value: anytype, comptime upload_field_name: []const u8, writer: *std.Io.Writer) !void {
+    try printUploadAny(@field(value, upload_field_name), upload_field_name, writer);
+    try printPayloadJson(value, upload_field_name, writer);
 
-    try printUpload(@field(value, upload_field_name), upload_field_name, buffered_writer.writer());
-    try printPayloadJson(value, upload_field_name, buffered_writer.writer());
-
-    try buffered_writer.writer().writeAll("--" ++ boundary ++ "--");
-
-    try buffered_writer.flush();
+    try writer.writeAll("--" ++ boundary ++ "--");
+    try writer.flush();
 }
 
-fn printUpload(value: anytype, field_name: []const u8, writer: anytype) !void {
+fn printUploadAny(value: anytype, field_name: []const u8, writer: *std.Io.Writer) !void {
+    if (@TypeOf(value) == *std.Io.Reader) {
+        try printUpload(value, field_name, writer);
+        return;
+    }
+
     // check a couple recursive cases
     switch (@typeInfo(@TypeOf(value))) {
         .optional => {
             if (value) |nn_value| {
-                try printUpload(nn_value, field_name, writer);
+                try printUploadAny(nn_value, field_name, writer);
                 return;
             } else {
                 return;
@@ -32,7 +34,7 @@ fn printUpload(value: anytype, field_name: []const u8, writer: anytype) !void {
                     for (0.., value) |idx, each_value| {
                         var buf: [100]u8 = undefined;
                         const field_name_with_idx = std.fmt.bufPrint(&buf, "{s}[{d}]", .{ field_name, idx }) catch return error.UnexpectedWriteFailure;
-                        try printUpload(each_value, field_name_with_idx, writer);
+                        try printUploadAny(each_value, field_name_with_idx, writer);
                     }
                     return;
                 },
@@ -41,21 +43,22 @@ fn printUpload(value: anytype, field_name: []const u8, writer: anytype) !void {
                 },
             }
         },
-        else => {},
+        else => @compileError("Unsupported type " ++ @typeName(@TypeOf(value))),
     }
+}
 
+fn printUpload(value: *std.Io.Reader, field_name: []const u8, writer: *std.Io.Writer) !void {
     try printHeader(field_name, writer);
-    var fifo = std.fifo.LinearFifo(u8, .{ .Static = 10_000 }).init();
-    fifo.pump(value, writer) catch return error.UnexpectedWriteFailure;
+
+    _ = try value.streamRemaining(writer);
     try writer.writeAll("\r\n");
 }
 
-fn printPayloadJson(value: anytype, comptime upload_field_name: []const u8, writer: anytype) !void {
+fn printPayloadJson(value: anytype, comptime upload_field_name: []const u8, writer: *std.Io.Writer) !void {
     try printHeader("payload_json", writer);
 
-    var json_writer = std.json.writeStream(writer, .{});
-    defer json_writer.deinit();
-    try json_writer.beginObject();
+    var stringifier = std.json.Stringify{ .writer = writer };
+    try stringifier.beginObject();
     inline for (std.meta.fields(@TypeOf(value))) |field| {
         if (comptime std.mem.eql(u8, field.name, upload_field_name)) {
             continue;
@@ -64,17 +67,17 @@ fn printPayloadJson(value: anytype, comptime upload_field_name: []const u8, writ
         switch (@typeInfo(field.type)) {
             .optional => {
                 if (field_value) |nn_value| {
-                    try json_writer.objectField(field.name);
-                    try json_writer.write(nn_value);
+                    try stringifier.objectField(field.name);
+                    try stringifier.write(nn_value);
                 }
             },
             else => {
-                try json_writer.objectField(field.name);
-                try json_writer.write(field_value);
+                try stringifier.objectField(field.name);
+                try stringifier.write(field_value);
             },
         }
     }
-    try json_writer.endObject();
+    try stringifier.endObject();
 
     try writer.writeAll("\r\n");
 }
@@ -86,26 +89,22 @@ fn printHeader(field_name: []const u8, writer: anytype) !void {
 
 test "multipart single upload" {
     const Foo = struct {
-        foo: std.io.AnyReader,
+        foo: *std.Io.Reader,
         bar: []const u8,
         baz: ?i64 = null,
 
-        pub fn format(self: @This(), comptime fmt: []const u8, _: std.fmt.FormatOptions, writer: anytype) !void {
-            if (comptime !std.mem.eql(u8, fmt, "form")) {
-                @compileError("Foo.format should only be called with fmt string {form}");
-            }
-            try writeMultipartFormDataBody(self, "foo", writer);
+        pub fn format(self: @This(), writer: anytype) !void {
+            writeMultipartFormDataBody(self, "foo", writer) catch return error.WriteFailed;
         }
         pub const jsonStringify = zigcord.jconfig.stringifyWithOmit;
     };
 
     const my_upload = "this is my upload";
-    var byte_stream = std.io.fixedBufferStream(my_upload);
-    var reader = byte_stream.reader();
-    const foo = Foo{ .foo = reader.any(), .bar = "some string" };
+    var reader = std.Io.Reader.fixed(my_upload);
+    const foo = Foo{ .foo = &reader, .bar = "some string" };
 
     var buf: [1000]u8 = undefined;
-    const output = try std.fmt.bufPrint(&buf, "{form}", .{foo});
+    const output = try std.fmt.bufPrint(&buf, "{f}", .{foo});
 
     const expected =
         "--f89767726a7827c6f785b40aee1ca2ade74d951d6a2d50e27cc0f0e5072a12b2\r\n" ++
@@ -122,29 +121,24 @@ test "multipart single upload" {
 
 test "multipart multi upload" {
     const Foo = struct {
-        foo: []const std.io.AnyReader,
+        foo: []const *std.Io.Reader,
         bar: []const u8,
         baz: ?i64 = null,
 
-        pub fn format(self: @This(), comptime fmt: []const u8, _: std.fmt.FormatOptions, writer: anytype) !void {
-            if (comptime !std.mem.eql(u8, fmt, "form")) {
-                @compileError("Foo.format should only be called with fmt string {form}");
-            }
-            try writeMultipartFormDataBody(self, "foo", writer);
+        pub fn format(self: @This(), writer: anytype) !void {
+            writeMultipartFormDataBody(self, "foo", writer) catch return error.WriteFailed;
         }
         pub const jsonStringify = zigcord.jconfig.stringifyWithOmit;
     };
 
     const my_upload1 = "this is my first upload";
     const my_upload2 = "this is my second upload";
-    var byte_stream1 = std.io.fixedBufferStream(my_upload1);
-    var byte_stream2 = std.io.fixedBufferStream(my_upload2);
-    var reader1 = byte_stream1.reader();
-    var reader2 = byte_stream2.reader();
-    const foo = Foo{ .foo = &.{ reader1.any(), reader2.any() }, .bar = "some string" };
+    var reader1 = std.Io.Reader.fixed(my_upload1);
+    var reader2 = std.Io.Reader.fixed(my_upload2);
+    const foo = Foo{ .foo = &.{ &reader1, &reader2 }, .bar = "some string" };
 
     var buf: [1000]u8 = undefined;
-    const output = try std.fmt.bufPrint(&buf, "{form}", .{foo});
+    const output = try std.fmt.bufPrint(&buf, "{f}", .{foo});
 
     const expected =
         "--f89767726a7827c6f785b40aee1ca2ade74d951d6a2d50e27cc0f0e5072a12b2\r\n" ++
@@ -165,26 +159,22 @@ test "multipart multi upload" {
 
 test "multipart optional single upload - present" {
     const Foo = struct {
-        foo: ?std.io.AnyReader,
+        foo: ?*std.Io.Reader,
         bar: []const u8,
         baz: ?i64 = null,
 
-        pub fn format(self: @This(), comptime fmt: []const u8, _: std.fmt.FormatOptions, writer: anytype) !void {
-            if (comptime !std.mem.eql(u8, fmt, "form")) {
-                @compileError("Foo.format should only be called with fmt string {form}");
-            }
-            try writeMultipartFormDataBody(self, "foo", writer);
+        pub fn format(self: @This(), writer: anytype) !void {
+            writeMultipartFormDataBody(self, "foo", writer) catch return error.WriteFailed;
         }
         pub const jsonStringify = zigcord.jconfig.stringifyWithOmit;
     };
 
     const my_upload = "this is my upload";
-    var byte_stream = std.io.fixedBufferStream(my_upload);
-    var reader = byte_stream.reader();
-    const foo = Foo{ .foo = reader.any(), .bar = "some string" };
+    var reader = std.Io.Reader.fixed(my_upload);
+    const foo = Foo{ .foo = &reader, .bar = "some string" };
 
     var buf: [1000]u8 = undefined;
-    const output = try std.fmt.bufPrint(&buf, "{form}", .{foo});
+    const output = try std.fmt.bufPrint(&buf, "{f}", .{foo});
 
     const expected =
         "--f89767726a7827c6f785b40aee1ca2ade74d951d6a2d50e27cc0f0e5072a12b2\r\n" ++
@@ -201,15 +191,12 @@ test "multipart optional single upload - present" {
 
 test "multipart optional single upload - null" {
     const Foo = struct {
-        foo: ?std.io.AnyReader,
+        foo: ?*std.Io.Reader,
         bar: []const u8,
         baz: ?i64 = null,
 
-        pub fn format(self: @This(), comptime fmt: []const u8, _: std.fmt.FormatOptions, writer: anytype) !void {
-            if (comptime !std.mem.eql(u8, fmt, "form")) {
-                @compileError("Foo.format should only be called with fmt string {form}");
-            }
-            try writeMultipartFormDataBody(self, "foo", writer);
+        pub fn format(self: @This(), writer: anytype) !void {
+            writeMultipartFormDataBody(self, "foo", writer) catch return error.WriteFailed;
         }
         pub const jsonStringify = zigcord.jconfig.stringifyWithOmit;
     };
@@ -217,7 +204,7 @@ test "multipart optional single upload - null" {
     const foo = Foo{ .foo = null, .bar = "some string" };
 
     var buf: [1000]u8 = undefined;
-    const output = try std.fmt.bufPrint(&buf, "{form}", .{foo});
+    const output = try std.fmt.bufPrint(&buf, "{f}", .{foo});
 
     const expected =
         "--f89767726a7827c6f785b40aee1ca2ade74d951d6a2d50e27cc0f0e5072a12b2\r\n" ++
@@ -230,26 +217,22 @@ test "multipart optional single upload - null" {
 
 test "multipart optional multi upload" {
     const Foo = struct {
-        foo: []const ?std.io.AnyReader,
+        foo: []const ?*std.Io.Reader,
         bar: []const u8,
         baz: ?i64 = null,
 
-        pub fn format(self: @This(), comptime fmt: []const u8, _: std.fmt.FormatOptions, writer: anytype) !void {
-            if (comptime !std.mem.eql(u8, fmt, "form")) {
-                @compileError("Foo.format should only be called with fmt string {form}");
-            }
-            try writeMultipartFormDataBody(self, "foo", writer);
+        pub fn format(self: @This(), writer: anytype) !void {
+            writeMultipartFormDataBody(self, "foo", writer) catch return error.WriteFailed;
         }
         pub const jsonStringify = zigcord.jconfig.stringifyWithOmit;
     };
 
     const my_upload2 = "this is my second upload";
-    var byte_stream2 = std.io.fixedBufferStream(my_upload2);
-    var reader2 = byte_stream2.reader();
-    const foo = Foo{ .foo = &.{ null, reader2.any() }, .bar = "some string" };
+    var reader = std.Io.Reader.fixed(my_upload2);
+    const foo = Foo{ .foo = &.{ null, &reader }, .bar = "some string" };
 
     var buf: [1000]u8 = undefined;
-    const output = try std.fmt.bufPrint(&buf, "{form}", .{foo});
+    const output = try std.fmt.bufPrint(&buf, "{f}", .{foo});
 
     const expected =
         "--f89767726a7827c6f785b40aee1ca2ade74d951d6a2d50e27cc0f0e5072a12b2\r\n" ++
