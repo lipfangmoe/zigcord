@@ -94,8 +94,8 @@ pub const Permissions = packed struct(u64) {
         return @bitCast(self);
     }
 
-    pub fn format(self: Permissions, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: anytype) !void {
-        try std.fmt.formatIntValue(self.asU64(), fmt, options, writer);
+    pub fn format(self: Permissions, writer: *std.Io.Writer) !void {
+        try writer.print("{d}", .{self.asU64()});
     }
 
     pub fn jsonStringify(self: Permissions, jsonWriter: anytype) !void {

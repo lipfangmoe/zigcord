@@ -83,7 +83,7 @@ test "Partial Stringify" {
         .already_omittable = .initSome(255),
     } };
 
-    const value_json = try std.json.stringifyAlloc(std.testing.allocator, value, .{});
+    const value_json = try std.json.Stringify.valueAlloc(std.testing.allocator, value, .{});
     defer std.testing.allocator.free(value_json);
 
     try std.testing.expectEqualStrings(

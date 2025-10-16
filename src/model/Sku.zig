@@ -26,7 +26,11 @@ pub const Flags = packed struct(u64) {
     user_subscription: bool = false, // 1<<8
     _unknown3: u55 = 0,
 
-    pub usingnamespace model.PackedFlagsMixin(Flags);
+    const Mixin = model.PackedFlagsMixin(@This());
+    pub const format = Mixin.format;
+    pub const jsonStringify = Mixin.jsonStringify;
+    pub const jsonParse = Mixin.jsonParse;
+    pub const jsonParseFromValue = Mixin.jsonParseFromValue;
 
     test "flags test" {
         try std.testing.expectEqual(Flags{ .user_subscription = true }, @as(Flags, @bitCast(@as(u64, 1 << 8))));

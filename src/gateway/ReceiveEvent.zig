@@ -84,9 +84,11 @@ pub fn jsonStringify(self: ReceiveEvent, jw: anytype) !void {
 }
 
 fn getDataFromTag(alloc: std.mem.Allocator, d: std.json.Value, t: ?[]const u8, options: std.json.ParseOptions) std.json.ParseFromValueError!event_data.AnyReceiveEvent {
-    const enum_tag_str = try snakeToTitleCase(t orelse "UNDOCUMENTED");
+    var title_cased_buf: [100]u8 = undefined;
+    const title_cased_len = try snakeToTitleCase(t orelse "UNDOCUMENTED", &title_cased_buf);
+    const title_cased = title_cased_buf[0..title_cased_len];
 
-    const enum_tag = std.meta.stringToEnum(@typeInfo(event_data.AnyReceiveEvent).@"union".tag_type orelse unreachable, enum_tag_str.constSlice()) orelse .Undocumented;
+    const enum_tag = std.meta.stringToEnum(@typeInfo(event_data.AnyReceiveEvent).@"union".tag_type orelse unreachable, title_cased) orelse .Undocumented;
     switch (enum_tag) {
         inline else => |tag| {
             const typ = @field(event_data.receive_events, @tagName(tag));
@@ -95,8 +97,8 @@ fn getDataFromTag(alloc: std.mem.Allocator, d: std.json.Value, t: ?[]const u8, o
     }
 }
 
-fn snakeToTitleCase(source: []const u8) !std.BoundedArray(u8, 100) {
-    var output = std.BoundedArray(u8, 100){};
+fn snakeToTitleCase(source: []const u8, title_cased: []u8) !usize {
+    var output = std.ArrayList(u8).initBuffer(title_cased);
 
     var next_char_upper = true;
     for (source) |char| {
@@ -106,14 +108,14 @@ fn snakeToTitleCase(source: []const u8) !std.BoundedArray(u8, 100) {
         }
 
         if (next_char_upper) {
-            try output.append(char);
+            try output.appendBounded(char);
             next_char_upper = false;
         } else {
-            try output.append(std.ascii.toLower(char));
+            try output.appendBounded(std.ascii.toLower(char));
         }
     }
 
-    return output;
+    return output.items.len;
 }
 
 test "resumed event" {

@@ -35,7 +35,7 @@ pub fn InlineSingleStructFieldMixin(comptime T: type, comptime inline_field: []c
                             break :blk field_value;
                         } else {
                             if (field.default_value_ptr) |default_value| {
-                                break :blk @as(*const field.type, @alignCast(@ptrCast(default_value))).*;
+                                break :blk @as(*const field.type, @ptrCast(@alignCast(default_value))).*;
                             } else {
                                 zigcord.logger.err("Missing field for type '{s}': '{s}'", .{ @typeName(T), field.name });
                                 return error.MissingField;
@@ -134,17 +134,21 @@ test "InlineFieldJsonMixin - stringify" {
         field1: struct { foo: i64 },
         field2: struct { bar: u64 },
 
-        pub usingnamespace InlineSingleStructFieldMixin(@This(), "field1");
+        const Mixin = InlineSingleStructFieldMixin(@This(), "field1");
+        pub const jsonStringify = Mixin.jsonStringify;
+        pub const jsonParse = Mixin.jsonParse;
+        pub const jsonParseFromValue = Mixin.jsonParseFromValue;
     };
 
     const t = TestStruct{ .field1 = .{ .foo = 5 }, .field2 = .{ .bar = 100 } };
-    var out = std.BoundedArray(u8, 100){};
+    var output = std.Io.Writer.Allocating.init(std.testing.allocator);
+    defer output.deinit();
 
-    try std.json.stringify(t, .{}, out.writer());
+    try std.json.Stringify.value(t, .{}, &output.writer);
 
     try std.testing.expectEqualStrings(
         \\{"foo":5,"field2":{"bar":100}}
-    , out.constSlice());
+    , output.written());
 }
 
 test "InlineFieldJsonMixin - parse" {
@@ -152,7 +156,10 @@ test "InlineFieldJsonMixin - parse" {
         field1: struct { foo: i64 },
         field2: struct { bar: u64 },
 
-        pub usingnamespace InlineSingleStructFieldMixin(@This(), "field1");
+        const Mixin = InlineSingleStructFieldMixin(@This(), "field1");
+        pub const jsonStringify = Mixin.jsonStringify;
+        pub const jsonParse = Mixin.jsonParse;
+        pub const jsonParseFromValue = Mixin.jsonParseFromValue;
     };
 
     const str =

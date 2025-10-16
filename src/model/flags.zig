@@ -10,9 +10,9 @@ pub fn PackedFlagsMixin(comptime FlagStruct: type) type {
     }
 
     return struct {
-        pub fn format(self: FlagStruct, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: anytype) !void {
+        pub fn format(self: FlagStruct, writer: *std.Io.Writer) !void {
             const int: u64 = @bitCast(self);
-            try std.fmt.formatIntValue(int, fmt, options, writer);
+            try writer.print("{d}", .{int});
         }
         pub fn jsonStringify(self: FlagStruct, jsonWriter: anytype) !void {
             const int: u64 = @bitCast(self);

@@ -176,7 +176,11 @@ pub const SystemChannelFlags = packed struct(u64) {
     suppress_role_subscription_purchase_notification_replies: bool = false,
     _overflow: u58 = 0,
 
-    pub usingnamespace model.PackedFlagsMixin(@This());
+    const Mixin = model.PackedFlagsMixin(@This());
+    pub const format = Mixin.format;
+    pub const jsonStringify = Mixin.jsonStringify;
+    pub const jsonParse = Mixin.jsonParse;
+    pub const jsonParseFromValue = Mixin.jsonParseFromValue;
 };
 
 pub const Ban = struct {
@@ -232,7 +236,7 @@ pub const Onboarding = struct {
         title: []const u8,
         description: ?[]const u8,
 
-        pub usingnamespace jconfig.OmittableFieldsMixin(@This());
+        pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
     };
 
     pub const Mode = enum(u1) {
@@ -325,6 +329,10 @@ pub const Member = struct {
         started_onboarding: bool = false,
         _overflow: u60 = 0,
 
-        pub usingnamespace model.PackedFlagsMixin(@This());
+        const Mixin = model.PackedFlagsMixin(@This());
+        pub const format = Mixin.format;
+        pub const jsonStringify = Mixin.jsonStringify;
+        pub const jsonParse = Mixin.jsonParse;
+        pub const jsonParseFromValue = Mixin.jsonParseFromValue;
     };
 };

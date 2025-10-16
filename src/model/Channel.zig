@@ -99,7 +99,11 @@ pub const Flags = packed struct(u64) {
 
     _overflow: u48 = 0,
 
-    pub usingnamespace model.PackedFlagsMixin(@This());
+    const Mixin = model.PackedFlagsMixin(@This());
+    pub const format = Mixin.format;
+    pub const jsonStringify = Mixin.jsonStringify;
+    pub const jsonParse = Mixin.jsonParse;
+    pub const jsonParseFromValue = Mixin.jsonParseFromValue;
 };
 
 pub const ThreadMetadata = struct {
@@ -126,7 +130,11 @@ pub const ThreadMember = struct {
         notifications: bool = false,
         _overflow: u63 = 0,
 
-        pub usingnamespace model.PackedFlagsMixin(@This());
+        const Mixin = model.PackedFlagsMixin(@This());
+        pub const format = Mixin.format;
+        pub const jsonStringify = Mixin.jsonStringify;
+        pub const jsonParse = Mixin.jsonParse;
+        pub const jsonParseFromValue = Mixin.jsonParseFromValue;
     };
 };
 

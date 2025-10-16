@@ -47,7 +47,10 @@ pub const TriggerMetadata = union(TriggerType) {
         allow_list: []const []const u8,
     },
 
-    pub usingnamespace jconfig.InlineUnionMixin(@This());
+    const Mixin = jconfig.InlineUnionMixin(@This());
+    pub const jsonStringify = Mixin.jsonStringify;
+    pub const jsonParse = Mixin.jsonParse;
+    pub const jsonParseFromValue = Mixin.jsonParseFromValue;
 };
 
 pub const KeywordPreset = enum(u8) {

@@ -11,11 +11,11 @@ fn AnyNamespaceDecl(namespace: type) type {
 
     var union_fields: [module_decls.len]std.builtin.Type.UnionField = undefined;
     for (module_decls, 0..) |decl, idx| {
-        const decl_value = @field(namespace, decl.name);
+        const decl_value: type = @field(namespace, decl.name);
         union_fields[idx] = std.builtin.Type.UnionField{
             .name = decl.name,
             .type = decl_value,
-            .alignment = 0,
+            .alignment = @alignOf(decl_value),
         };
     }
 

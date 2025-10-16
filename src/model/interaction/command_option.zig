@@ -36,12 +36,20 @@ pub const ApplicationCommandOption = struct {
     min_value: Omittable(union(enum) {
         double: f64,
         integer: i64,
-        pub usingnamespace jconfig.InlineUnionMixin(@This());
+
+        const Mixin = jconfig.InlineUnionMixin(@This());
+        pub const jsonStringify = Mixin.jsonStringify;
+        pub const jsonParse = Mixin.jsonParse;
+        pub const jsonParseFromValue = Mixin.jsonParseFromValue;
     }) = .omit,
     max_value: Omittable(union(enum) {
         double: f64,
         integer: i64,
-        pub usingnamespace jconfig.InlineUnionMixin(@This());
+
+        const Mixin = jconfig.InlineUnionMixin(@This());
+        pub const jsonStringify = Mixin.jsonStringify;
+        pub const jsonParse = Mixin.jsonParse;
+        pub const jsonParseFromValue = Mixin.jsonParseFromValue;
     }) = .omit,
     min_length: Omittable(i64) = .omit,
     max_length: Omittable(i64) = .omit,
@@ -52,7 +60,10 @@ pub const ApplicationCommandOption = struct {
         integer: []const IntegerChoice,
         double: []const DoubleChoice,
 
-        pub usingnamespace jconfig.InlineUnionMixin(@This());
+        const Mixin = jconfig.InlineUnionMixin(@This());
+        pub const jsonStringify = Mixin.jsonStringify;
+        pub const jsonParse = Mixin.jsonParse;
+        pub const jsonParseFromValue = Mixin.jsonParseFromValue;
     };
 
     pub const jsonStringify = jconfig.stringifyWithOmit;

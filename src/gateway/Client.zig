@@ -54,7 +54,7 @@ pub fn readEvent(self: *Client) error{ Disconnected, JsonError }!ReadEvent {
             error.WebsocketError => {
                 zigcord.logger.err("WebsocketError encountered", .{});
                 if (@errorReturnTrace()) |trace| {
-                    zigcord.logger.err("{}", .{trace});
+                    zigcord.logger.err("{f}", .{trace});
                 }
                 self.reconnect() catch return error.Disconnected;
                 zigcord.logger.info("Successfully reconnected! Re-reading event", .{});

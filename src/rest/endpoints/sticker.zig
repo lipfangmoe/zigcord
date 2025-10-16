@@ -8,7 +8,7 @@ pub fn getSticker(
     client: *rest.EndpointClient,
     sticker_id: model.Snowflake,
 ) !rest.RestClient.Result(model.Sticker) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/stickers/{}", .{sticker_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/stickers/{f}", .{sticker_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -29,7 +29,7 @@ pub fn listGuildStickers(
     client: *rest.EndpointClient,
     guild_id: model.Snowflake,
 ) !rest.RestClient.Result([]const model.Sticker) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/stickers", .{guild_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/stickers", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -39,9 +39,9 @@ pub fn listGuildStickers(
 pub fn getGuildSticker(
     client: *rest.EndpointClient,
     guild_id: model.Snowflake,
-    sticker_id: model.Sticker,
+    sticker_id: model.Snowflake,
 ) !rest.RestClient.Result(model.Sticker) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/stickers/{}", .{ guild_id, sticker_id });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/stickers/{f}", .{ guild_id, sticker_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -53,7 +53,7 @@ pub fn createGuildSticker(
     guild_id: model.Snowflake,
     sticker_id: model.Snowflake,
 ) !rest.RestClient.Result(model.Sticker) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/stickers/{}", .{ guild_id, sticker_id });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/stickers/{f}", .{ guild_id, sticker_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -68,12 +68,9 @@ pub const CreateGuildStickerFormBody = struct {
     name: []const u8,
     description: []const u8,
     tags: []const u8,
-    file: std.io.AnyReader,
+    file: *std.Io.Reader,
 
-    pub fn format(self: CreateGuildStickerFormBody, comptime fmt: []const u8, _: std.fmt.FormatOptions, writer: anytype) !void {
-        if (comptime !std.mem.eql(u8, fmt, "form")) {
-            @compileError("CreateGuildStickerFormBody.format should only be called with fmt string {form}");
-        }
-        try rest.writeMultipartFormDataBody(self, "file", writer);
+    pub fn format(self: CreateGuildStickerFormBody, writer: anytype) !void {
+        rest.writeMultipartFormDataBody(self, "file", writer) catch return error.WriteFailed;
     }
 };

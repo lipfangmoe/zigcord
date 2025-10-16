@@ -78,7 +78,7 @@ pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, opti
                     return err;
                 };
             } else {
-                const default_opt: ?*const field.type = @alignCast(@ptrCast(field.default_value_ptr));
+                const default_opt: ?*const field.type = @ptrCast(@alignCast(field.default_value_ptr));
                 if (default_opt) |default| {
                     @field(message, field.name) = default.*;
                 } else {
@@ -101,7 +101,10 @@ pub const MessageAuthor = union(enum) {
         avatar: ?[]const u8,
     };
 
-    pub usingnamespace jconfig.InlineUnionMixin(@This());
+    const Mixin = jconfig.InlineUnionMixin(@This());
+    pub const jsonStringify = Mixin.jsonStringify;
+    pub const jsonParse = Mixin.jsonParse;
+    pub const jsonParseFromValue = Mixin.jsonParseFromValue;
 };
 
 pub const Attachment = struct {
@@ -338,7 +341,11 @@ pub const Flags = packed struct(u64) {
     is_components_v2: bool = false, // 1 << 15
     _unknown2: u48 = 0,
 
-    pub usingnamespace model.PackedFlagsMixin(@This());
+    const Mixin = model.PackedFlagsMixin(@This());
+    pub const format = Mixin.format;
+    pub const jsonStringify = Mixin.jsonStringify;
+    pub const jsonParse = Mixin.jsonParse;
+    pub const jsonParseFromValue = Mixin.jsonParseFromValue;
 
     test "sanity" {
         try std.testing.expectEqual(Flags{ .is_components_v2 = true }, @as(Flags, @bitCast(@as(u64, 1 << 15))));

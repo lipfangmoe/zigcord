@@ -9,7 +9,7 @@ pub fn getInvite(
     code: []const u8,
     query: GetInviteQuery,
 ) !rest.RestClient.Result(model.Invite) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/invites/{s}?{query}", .{ code, query });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/invites/{s}?{f}", .{ code, query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -33,5 +33,5 @@ pub const GetInviteQuery = struct {
     with_expiration: ?bool,
     guild_scheduled_event_id: ?model.Snowflake,
 
-    pub usingnamespace rest.QueryStringFormatMixin(@This());
+    pub const format = rest.QueryStringFormatMixin(@This()).format;
 };

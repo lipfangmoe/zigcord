@@ -14,10 +14,10 @@ pub fn getGuild(
     const Query = struct {
         with_counts: ?bool,
 
-        pub usingnamespace rest.QueryStringFormatMixin(@This());
+        pub const format = rest.QueryStringFormatMixin(@This()).format;
     };
     const query = Query{ .with_counts = with_counts };
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}?{query}", .{ guild_id, query });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}?{f}", .{ guild_id, query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -28,7 +28,7 @@ pub fn getGuildPreview(
     client: *rest.EndpointClient,
     guild_id: model.Snowflake,
 ) !rest.RestClient.Result(model.guild.Preview) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/preview", .{guild_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/preview", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -41,7 +41,7 @@ pub fn modifyGuild(
     body: ModifyGuildBody,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(Guild) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/preview", .{guild_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/preview", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -52,7 +52,7 @@ pub fn deleteGuild(
     client: *rest.EndpointClient,
     guild_id: model.Snowflake,
 ) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}", .{guild_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -63,7 +63,7 @@ pub fn getGuildChannels(
     client: *rest.EndpointClient,
     guild_id: model.Snowflake,
 ) !rest.RestClient.Result([]model.Channel) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/channels", .{guild_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/channels", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -76,7 +76,7 @@ pub fn createGuildChannel(
     body: CreateGuildChannelBody,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(model.Channel) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/channels", .{guild_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/channels", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -88,7 +88,7 @@ pub fn modifyGuildChannelPositions(
     guild_id: model.Snowflake,
     body: []const ModifyGuildChannelPositionsBodyEntry,
 ) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/channels", .{guild_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/channels", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -100,7 +100,7 @@ pub fn listActiveGuildThreads(
     guild_id: model.Snowflake,
     body: ListActiveGuildThreadsBody,
 ) !rest.RestClient.Result([]const model.Channel) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/threads/active", .{guild_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/threads/active", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -112,7 +112,7 @@ pub fn getGuildMember(
     guild_id: model.Snowflake,
     user_id: model.Snowflake,
 ) !rest.RestClient.Result(model.guild.Member) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/members/{}", .{ guild_id, user_id });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/members/{f}", .{ guild_id, user_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -124,7 +124,7 @@ pub fn listGuildMembers(
     guild_id: model.Snowflake,
     query: ListGuildMembersParams,
 ) !rest.RestClient.Result(model.guild.Member) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/members?{query}", .{ guild_id, query });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/members?{f}", .{ guild_id, query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -136,7 +136,7 @@ pub fn searchGuildMembers(
     guild_id: model.Snowflake,
     query: SearchGuildMembersParams,
 ) !rest.RestClient.Result(model.guild.Member) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/members/search?{query}", .{ guild_id, query });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/members/search?{f}", .{ guild_id, query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -149,7 +149,7 @@ pub fn addGuildMember(
     user_id: model.Snowflake,
     body: AddGuildMemberBody,
 ) !rest.RestClient.Result(model.guild.Member) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/members/{}", .{ guild_id, user_id });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/members/{f}", .{ guild_id, user_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -163,7 +163,7 @@ pub fn modifyGuildMember(
     body: ModifyGuildMemberBody,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(model.guild.Member) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/members/{}", .{ guild_id, user_id });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/members/{f}", .{ guild_id, user_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -176,7 +176,7 @@ pub fn modifyCurrentMember(
     body: ModifyGuildMemberBody,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(model.guild.Member) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/members/@me", .{guild_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/members/@me", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -190,7 +190,7 @@ pub fn addGuildMemberRole(
     role_id: model.Snowflake,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/members/{}/roles/{}", .{ guild_id, user_id, role_id });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/members/{f}/roles/{f}", .{ guild_id, user_id, role_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -204,7 +204,7 @@ pub fn removeGuildmemberRole(
     role_id: model.Snowflake,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/members/{}/roles/{}", .{ guild_id, user_id, role_id });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/members/{f}/roles/{f}", .{ guild_id, user_id, role_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -217,7 +217,7 @@ pub fn removeGuildMember(
     user_id: model.Snowflake,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/members/{}", .{ guild_id, user_id });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/members/{f}", .{ guild_id, user_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -229,7 +229,7 @@ pub fn getGuildBans(
     guild_id: model.Snowflake,
     query: GetGuildBansQuery,
 ) !rest.RestClient.Result([]model.guild.Ban) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/bans?{query}", .{ guild_id, query });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/bans?{f}", .{ guild_id, query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -241,7 +241,7 @@ pub fn getGuildBan(
     guild_id: model.Snowflake,
     user_id: model.Snowflake,
 ) !rest.RestClient.Result(model.guild.Ban) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/bans/{}", .{ guild_id, user_id });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/bans/{f}", .{ guild_id, user_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -254,7 +254,7 @@ pub fn createGuildBan(
     user_id: model.Snowflake,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/bans/{}", .{ guild_id, user_id });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/bans/{f}", .{ guild_id, user_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -267,7 +267,7 @@ pub fn removeGuildBan(
     user_id: model.Snowflake,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/bans/{}", .{ guild_id, user_id });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/bans/{f}", .{ guild_id, user_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -280,7 +280,7 @@ pub fn bulkGuildBan(
     body: BulkGuildBanBody,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(BulkGuildBanResponse) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/bulk-ban", .{guild_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/bulk-ban", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -291,7 +291,7 @@ pub fn getGuildRoles(
     client: *rest.EndpointClient,
     guild_id: model.Snowflake,
 ) !rest.RestClient.Result([]model.Role) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/roles", .{guild_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/roles", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -303,7 +303,7 @@ pub fn getGuildRole(
     guild_id: model.Snowflake,
     role_id: model.Snowflake,
 ) !rest.RestClient.Result(model.Role) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/roles/{}", .{ guild_id, role_id });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/roles/{f}", .{ guild_id, role_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -316,7 +316,7 @@ pub fn createGuildRole(
     body: CreateGuildRoleBody,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result([]model.Role) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/roles", .{guild_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/roles", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -329,7 +329,7 @@ pub fn modifyGuildRolePositions(
     body: []const ModifyGuildRolePositionsBodyEntry,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result([]model.Role) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/roles", .{guild_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/roles", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -343,7 +343,7 @@ pub fn modifyGuildRole(
     body: ModifyGuildRoleBody,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(model.Role) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/roles/{}", .{ guild_id, role_id });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/roles/{f}", .{ guild_id, role_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -356,7 +356,7 @@ pub fn modifyGuildMfaLevel(
     body: ModifyGuildMfaLevelBody,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(model.guild.MfaLevel) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/mfa", .{guild_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/mfa", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -370,7 +370,7 @@ pub fn deleteGuildRole(
     body: ModifyGuildMfaLevelBody,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(model.guild.MfaLevel) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/roles/{}", .{ guild_id, role_id });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/roles/{f}", .{ guild_id, role_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -382,7 +382,7 @@ pub fn getGuildPruneCount(
     guild_id: model.Snowflake,
     query: GetGuildPruneCountQuery,
 ) !rest.RestClient.Result(GetGuildPruneCountResponse) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/prune?{query}", .{ guild_id, query });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/prune?{f}", .{ guild_id, query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -395,7 +395,7 @@ pub fn beginGuildPrune(
     body: BeginGuildPruneBody,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(BeginGuildPruneResponse) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/prune", .{guild_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/prune", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -406,7 +406,7 @@ pub fn getGuildVoiceRegions(
     client: *rest.EndpointClient,
     guild_id: model.Snowflake,
 ) !rest.RestClient.Result([]model.voice.Region) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/regions", .{guild_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/regions", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -417,7 +417,7 @@ pub fn getGuildInvites(
     client: *rest.EndpointClient,
     guild_id: model.Snowflake,
 ) !rest.RestClient.Result([]model.Invite) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/invites", .{guild_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/invites", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -428,7 +428,7 @@ pub fn getGuildIntegrations(
     client: *rest.EndpointClient,
     guild_id: model.Snowflake,
 ) !rest.RestClient.Result([]model.guild.Integration) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/integrations", .{guild_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/integrations", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -441,7 +441,7 @@ pub fn deleteGuildIntegration(
     integration_id: model.Snowflake,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/integrations/{}", .{ guild_id, integration_id });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/integrations/{f}", .{ guild_id, integration_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -452,7 +452,7 @@ pub fn getGuildWidgetSettings(
     client: *rest.EndpointClient,
     guild_id: model.Snowflake,
 ) !rest.RestClient.Result(model.guild.WidgetSettings) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/widget", .{guild_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/widget", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -465,7 +465,7 @@ pub fn modifyGuildWidget(
     body: ModifyGuildWidgetBody,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(model.guild.WidgetSettings) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/widget", .{guild_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/widget", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -476,7 +476,7 @@ pub fn getGuildWidget(
     client: *rest.EndpointClient,
     guild_id: model.Snowflake,
 ) !rest.RestClient.Result(model.guild.WidgetSettings) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/widget.json", .{guild_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/widget.json", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -487,7 +487,7 @@ pub fn getGuildVanityUrl(
     client: *rest.EndpointClient,
     guild_id: model.Snowflake,
 ) !rest.RestClient.Result(jconfig.Partial(model.Invite)) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/vanity-url", .{guild_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/vanity-url", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -496,31 +496,27 @@ pub fn getGuildVanityUrl(
 
 /// Because this endpoint is unauthenticated and does not return JSON (it returns a PNG), `std.http.client.rest_client.request` is
 /// returned instead.
-///
-/// This method automatically calls `.send()` and `.wait()` on the request, it is the callers responsibility
-/// to call `.reader()` (to read the PNG) and `.deinit()`. Does no error handling on the HTTP response.
 pub fn getGuildWidgetImage(
     client: *rest.EndpointClient,
     guild_id: model.Snowflake,
     query: GetGuildWidgetImageQuery,
-) !std.http.Client.Request {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/widget.png?{query}", .{ guild_id, query });
+) !std.http.Client.Response {
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/widget.png?{f}", .{ guild_id, query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    var server_header_buffer: [4096]u8 = undefined;
-    var request = try client.rest_client.client.open(.GET, uri, .{ .server_header_buffer = &server_header_buffer });
-    try request.send();
-    try request.wait();
+    var request = try client.rest_client.client.request(.GET, uri, .{});
+    try request.sendBodiless();
+    const response = try request.receiveHead(&.{});
 
-    return request;
+    return response;
 }
 
 pub fn getGuildWelcomeScreen(
     client: *rest.EndpointClient,
     guild_id: model.Snowflake,
 ) !rest.RestClient.Result(model.guild.WelcomeScreen) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/welcome-screen", .{guild_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/welcome-screen", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -533,7 +529,7 @@ pub fn modifyGuildWelcomeScreen(
     body: ModifyGuildWelcomeScreenBody,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(model.guild.WelcomeScreen) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/welcome-screen", .{guild_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/welcome-screen", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -544,7 +540,7 @@ pub fn getGuildOnboarding(
     client: *rest.EndpointClient,
     guild_id: model.Snowflake,
 ) !rest.RestClient.Result(model.guild.Onboarding) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/onboarding", .{guild_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/onboarding", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -557,7 +553,7 @@ pub fn modifyGuildOnboarding(
     body: ModifyGuildOnboardingBody,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(model.guild.Onboarding) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{}/onboarding", .{guild_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/onboarding", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -635,14 +631,14 @@ pub const ListGuildMembersParams = struct {
     limit: ?i64 = null,
     after: ?model.Snowflake = null,
 
-    pub usingnamespace rest.QueryStringFormatMixin(@This());
+    pub const format = rest.QueryStringFormatMixin(@This()).format;
 };
 
 pub const SearchGuildMembersParams = struct {
     query: []const u8,
     limit: ?i64 = null,
 
-    pub usingnamespace rest.QueryStringFormatMixin(@This());
+    pub const format = rest.QueryStringFormatMixin(@This()).format;
 };
 
 pub const AddGuildMemberBody = struct {
@@ -672,7 +668,7 @@ pub const GetGuildBansQuery = struct {
     before: ?model.Snowflake = null,
     after: ?model.Snowflake = null,
 
-    pub usingnamespace rest.QueryStringFormatMixin(@This());
+    pub const format = rest.QueryStringFormatMixin(@This()).format;
 };
 
 pub const BulkGuildBanBody = struct {
@@ -726,16 +722,10 @@ pub const GetGuildPruneCountQuery = struct {
     days: ?i64 = null,
     include_roles: ?[]const model.Snowflake = null,
 
-    pub fn format(self: GetGuildPruneCountQuery, comptime fmt: []const u8, _: std.fmt.FormatOptions, writer: anytype) !void {
-        comptime {
-            if (!std.mem.eql(u8, fmt, "query")) {
-                @compileError("type GetGuildPruneCountQuery may only be formatted with the {query} format specifier");
-            }
-        }
-
+    pub fn format(self: GetGuildPruneCountQuery, writer: *std.Io.Writer) !void {
         var ampersand = false;
         if (self.days) |days| {
-            try std.fmt.format(writer, "days={d}", .{days});
+            try writer.print("days={d}", .{days});
             ampersand = true;
         }
 
@@ -747,9 +737,9 @@ pub const GetGuildPruneCountQuery = struct {
             var comma = false;
             for (include_roles) |role| {
                 if (comma) {
-                    try std.fmt.format(writer, ",{}", .{role});
+                    try writer.print(",{f}", .{role});
                 } else {
-                    try std.fmt.format(writer, "{}", .{role});
+                    try writer.print("{f}", .{role});
                     comma = true;
                 }
             }
@@ -791,12 +781,20 @@ pub const GetGuildWidgetImageQuery = struct {
         banner3,
         banner4,
 
-        pub fn format(self: StyleOption, comptime _: []const u8, options: std.fmt.FormatOptions, writer: anytype) !void {
-            try std.fmt.formatBuf(@tagName(self), options, writer);
+        pub fn format(self: StyleOption, writer: *std.Io.Writer) !void {
+            try writer.print("{t}", .{self});
         }
     };
 
-    pub usingnamespace rest.QueryStringFormatMixin(@This());
+    pub const format = rest.QueryStringFormatMixin(@This()).format;
+};
+
+pub const GetGuildImageResponse = struct {
+    response: std.http.Client.Response,
+
+    pub fn deinit(self: GetGuildImageResponse) void {
+        self.response.request.deinit();
+    }
 };
 
 pub const ModifyGuildWelcomeScreenBody = struct {

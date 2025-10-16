@@ -42,7 +42,7 @@ avatar_decoration_data: Omittable(?AvatarDecorationData) = .omit,
 /// The user's primary guild (guild tag)
 primary_guild: Omittable(?PrimaryGuild) = .omit,
 
-pub usingnamespace jconfig.OmittableFieldsMixin(@This());
+pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
 
 pub const Flags = packed struct(u64) {
     /// discord employee, 1 << 0
@@ -90,7 +90,11 @@ pub const Flags = packed struct(u64) {
 
     _overflow: u41 = 0,
 
-    pub usingnamespace model.PackedFlagsMixin(@This());
+    const Mixin = model.PackedFlagsMixin(@This());
+    pub const format = Mixin.format;
+    pub const jsonStringify = Mixin.jsonStringify;
+    pub const jsonParse = Mixin.jsonParse;
+    pub const jsonParseFromValue = Mixin.jsonParseFromValue;
 };
 
 pub const NitroType = enum(u8) {

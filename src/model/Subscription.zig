@@ -13,7 +13,7 @@ status: Status,
 canceled_at: ?model.IsoTime,
 country: jconfig.Omittable([]const u8) = .omit,
 
-pub usingnamespace jconfig.OmittableFieldsMixin(@This());
+pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
 
 pub const Status = enum(u8) {
     active = 0,

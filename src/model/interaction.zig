@@ -49,7 +49,10 @@ pub const InteractionData = union(InteractionType) {
     modal_submit: ModalSubmitData,
     ping: void, // `ping` at the end because otherwise InlineUnionMixin will always deserialize into `void`
 
-    pub usingnamespace jconfig.InlineUnionMixin(@This());
+    const Mixin = jconfig.InlineUnionMixin(@This());
+    pub const jsonStringify = Mixin.jsonStringify;
+    pub const jsonParse = Mixin.jsonParse;
+    pub const jsonParseFromValue = Mixin.jsonParseFromValue;
 };
 
 pub const ApplicationCommandInteractionData = struct {
@@ -79,7 +82,10 @@ pub const ApplicationCommandInteractionDataOption = struct {
         double: f64,
         boolean: bool,
 
-        pub usingnamespace jconfig.InlineUnionMixin(@This());
+        const Mixin = jconfig.InlineUnionMixin(@This());
+        pub const jsonStringify = Mixin.jsonStringify;
+        pub const jsonParse = Mixin.jsonParse;
+        pub const jsonParseFromValue = Mixin.jsonParseFromValue;
     };
 };
 
@@ -112,7 +118,10 @@ pub const ApplicationCommandAutocompleteInteractionData = struct {
         double: f64,
         boolean: bool,
 
-        pub usingnamespace jconfig.InlineUnionMixin(@This());
+        const Mixin = jconfig.InlineUnionMixin(@This());
+        pub const jsonStringify = Mixin.jsonStringify;
+        pub const jsonParse = Mixin.jsonParse;
+        pub const jsonParseFromValue = Mixin.jsonParseFromValue;
     };
 };
 

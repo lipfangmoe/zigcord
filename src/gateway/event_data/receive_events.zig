@@ -138,7 +138,10 @@ pub const GuildCreate = model.guild.MaybeAvailable(struct {
     stage_instances: []const model.StageInstance,
     guild_scheduled_events: []const model.GuildScheduledEvent,
 
-    pub usingnamespace jconfig.InlineSingleStructFieldMixin(@This(), "guild");
+    const Mixin = jconfig.InlineSingleStructFieldMixin(@This(), "guild");
+    pub const jsonStringify = Mixin.jsonStringify;
+    pub const jsonParse = Mixin.jsonParse;
+    pub const jsonParseFromValue = Mixin.jsonParseFromValue;
 });
 
 pub const GuildUpdate = model.guild.Guild;
@@ -149,7 +152,10 @@ pub const GuildAuditLogEntryCreate = struct {
     audit_log_entry: model.AuditLog.Entry,
     guild_id: model.Snowflake,
 
-    pub usingnamespace jconfig.InlineSingleStructFieldMixin(GuildAuditLogEntryCreate, "audit_log_entry");
+    const Mixin = jconfig.InlineSingleStructFieldMixin(GuildAuditLogEntryCreate, "audit_log_entry");
+    pub const jsonStringify = Mixin.jsonStringify;
+    pub const jsonParse = Mixin.jsonParse;
+    pub const jsonParseFromValue = Mixin.jsonParseFromValue;
 };
 
 pub const GuildBanAdd = struct {
@@ -180,7 +186,10 @@ pub const GuildMemberAdd = struct {
     guild_member: model.guild.Member,
     guild_id: model.Snowflake,
 
-    pub usingnamespace jconfig.InlineSingleStructFieldMixin(@This(), "guild_member");
+    const Mixin = jconfig.InlineSingleStructFieldMixin(@This(), "guild_member");
+    pub const jsonStringify = Mixin.jsonStringify;
+    pub const jsonParse = Mixin.jsonParse;
+    pub const jsonParseFromValue = Mixin.jsonParseFromValue;
 };
 
 pub const GuildMemberRemove = struct {
@@ -255,14 +264,20 @@ pub const IntegrationCreate = struct {
     integration: model.guild.Integration,
     guild_id: model.Snowflake,
 
-    pub usingnamespace jconfig.InlineSingleStructFieldMixin(@This(), "integration");
+    const Mixin = jconfig.InlineSingleStructFieldMixin(@This(), "integration");
+    pub const jsonStringify = Mixin.jsonStringify;
+    pub const jsonParse = Mixin.jsonParse;
+    pub const jsonParseFromValue = Mixin.jsonParseFromValue;
 };
 
 pub const IntegrationUpdate = struct {
     integration: model.guild.Integration,
     guild_id: model.Snowflake,
 
-    pub usingnamespace jconfig.InlineSingleStructFieldMixin(@This(), "integration");
+    const Mixin = jconfig.InlineSingleStructFieldMixin(@This(), "integration");
+    pub const jsonStringify = Mixin.jsonStringify;
+    pub const jsonParse = Mixin.jsonParse;
+    pub const jsonParseFromValue = Mixin.jsonParseFromValue;
 };
 
 pub const IntegrationDelete = struct {
@@ -306,13 +321,19 @@ pub const MessageCreate = struct {
     member: jconfig.Omittable(jconfig.Partial(model.guild.Member)) = .omit,
     mentions: []const UserWithPartialMember,
 
-    pub usingnamespace jconfig.InlineSingleStructFieldMixin(@This(), "message");
+    const Mixin = jconfig.InlineSingleStructFieldMixin(@This(), "message");
+    pub const jsonStringify = Mixin.jsonStringify;
+    pub const jsonParse = Mixin.jsonParse;
+    pub const jsonParseFromValue = Mixin.jsonParseFromValue;
 
     pub const UserWithPartialMember = struct {
         user: model.User,
         member: jconfig.Omittable(jconfig.Partial(model.guild.Member)) = .omit,
 
-        pub usingnamespace jconfig.InlineSingleStructFieldMixin(@This(), "user");
+        const Mixin2 = jconfig.InlineSingleStructFieldMixin(@This(), "user");
+        pub const jsonStringify = Mixin2.jsonStringify;
+        pub const jsonParse = Mixin2.jsonParse;
+        pub const jsonParseFromValue = Mixin2.jsonParseFromValue;
     };
 };
 
@@ -322,13 +343,19 @@ pub const MessageUpdate = struct {
     member: jconfig.Omittable(jconfig.Partial(model.guild.Member)) = .omit,
     mentions: []const UserWithPartialMember,
 
-    pub usingnamespace jconfig.InlineSingleStructFieldMixin(@This(), "message");
+    const Mixin = jconfig.InlineSingleStructFieldMixin(@This(), "message");
+    pub const jsonStringify = Mixin.jsonStringify;
+    pub const jsonParse = Mixin.jsonParse;
+    pub const jsonParseFromValue = Mixin.jsonParseFromValue;
 
     pub const UserWithPartialMember = struct {
         user: model.User,
         member: jconfig.Omittable(jconfig.Partial(model.guild.Member)) = .omit,
 
-        pub usingnamespace jconfig.InlineSingleStructFieldMixin(@This(), "user");
+        const Mixin2 = jconfig.InlineSingleStructFieldMixin(@This(), "user");
+        pub const jsonStringify = Mixin2.jsonStringify;
+        pub const jsonParse = Mixin2.jsonParse;
+        pub const jsonParseFromValue = Mixin2.jsonParseFromValue;
     };
 };
 
