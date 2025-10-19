@@ -8,8 +8,11 @@ url: jconfig.Omittable(?[]const u8) = .omit,
 created_at: i64,
 timestamps: jconfig.Omittable(Timestamps) = .omit,
 application_id: jconfig.Omittable(model.Snowflake) = .omit,
+status_display_type: jconfig.Omittable(?StatusDisplayType) = .omit,
 details: jconfig.Omittable(?[]const u8) = .omit,
+details_url: jconfig.Omittable(?[]const u8) = .omit,
 state: jconfig.Omittable(?[]const u8) = .omit,
+state_url: jconfig.Omittable(?[]const u8) = .omit,
 emoji: jconfig.Omittable(?model.Emoji) = .omit,
 party: jconfig.Omittable(Party) = .omit,
 assets: jconfig.Omittable(Assets) = .omit,
@@ -80,4 +83,11 @@ pub const Flags = packed struct(u64) {
 pub const Button = struct {
     label: []const u8,
     url: []const u8,
+};
+pub const StatusDisplayType = enum(u2) {
+    name = 0,
+    state = 1,
+    details = 2,
+
+    pub const jsonStringify = jconfig.stringifyEnumAsInt;
 };

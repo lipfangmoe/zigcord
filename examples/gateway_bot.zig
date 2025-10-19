@@ -2,7 +2,7 @@ const std = @import("std");
 const zigcord = @import("zigcord");
 
 pub const std_options: std.Options = .{ .log_level = switch (@import("builtin").mode) {
-    .Debug, .ReleaseSafe => .info,
+    .Debug, .ReleaseSafe => .debug,
     .ReleaseFast, .ReleaseSmall => .err,
 } };
 
@@ -28,7 +28,7 @@ pub fn main() !void {
         zigcord.model.Intents{ .guild_messages = true, .message_content = true },
     );
     defer gateway_client.deinit();
-    std.log.info("authenticated as user {}", .{gateway_client.json_ws_client.ready_event.?.event.user.id});
+    std.log.info("authenticated as user {f}", .{gateway_client.json_ws_client.ready_event.?.event.user.id});
 
     while (true) {
         const event = try gateway_client.readEvent();
@@ -36,7 +36,7 @@ pub fn main() !void {
 
         switch (event.event orelse continue) {
             .MessageCreate => |msg_event| {
-                std.log.info("message created with content \"{?s}\"", .{msg_event.message.content});
+                std.log.info("message created with content \"{s}\"", .{msg_event.message.content});
                 if (std.mem.eql(u8, msg_event.message.content, "done")) {
                     return;
                 }

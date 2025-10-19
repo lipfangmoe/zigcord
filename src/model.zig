@@ -83,8 +83,9 @@ pub const Permissions = packed struct(u64) {
     _unknown: u2 = 0,
     send_polls: bool = false, // 1 << 49
     use_external_apps: bool = false, // 1 << 50
+    pin_messages: bool = false,
 
-    _unknown2: u13 = 0,
+    _unknown2: u12 = 0,
 
     pub fn fromU64(int: u64) Permissions {
         return @bitCast(int);

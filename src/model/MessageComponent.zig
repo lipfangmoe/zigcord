@@ -82,6 +82,8 @@ pub const Type = enum(u8) {
     file = 13,
     separator = 14,
     container = 17,
+    label = 18,
+    file_upload = 19,
 
     pub const jsonStringify = jconfig.stringifyEnumAsInt;
 };
@@ -102,6 +104,8 @@ pub const TypedProps = union(Type) {
     file: File,
     separator: Separator,
     container: Container,
+    label: Label,
+    file_upload: FileUpload,
 };
 
 pub const ActionRow = struct {
@@ -270,6 +274,34 @@ pub const Container = struct {
     spoiler: jconfig.Omittable(bool) = .omit,
 
     pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
+};
+
+pub const Label = struct {
+    label: []const u8,
+    description: jconfig.Omittable([]const u8) = .omit,
+    component: ChildComponent,
+
+    pub const ChildComponent = union(enum) {
+        text_input: TextInput,
+        string_select: StringSelect,
+        user_select: GenericSelect,
+        role_select: GenericSelect,
+        mentionable_select: GenericSelect,
+        channel_select: ChannelSelect,
+        file_upload: FileUpload,
+
+        const Mixin = jconfig.InlineUnionMixin(@This());
+        pub const jsonStringify = Mixin.jsonStringify;
+        pub const jsonParse = Mixin.jsonParse;
+        pub const jsonParseFromValue = Mixin.jsonParseFromValue;
+    };
+};
+
+pub const FileUpload = struct {
+    custom_id: []const u8,
+    min_values: jconfig.Omittable(i64) = .omit,
+    max_values: jconfig.Omittable(i64) = .omit,
+    required: jconfig.Omittable(bool) = .omit,
 };
 
 pub const UnfurledMediaItem = struct {
