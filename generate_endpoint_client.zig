@@ -72,13 +72,18 @@ fn publicTopLevelFunctions(arena: *std.heap.ArenaAllocator, file_path: []const u
     var file = try std.fs.cwd().openFile(file_path, .{});
     var file_reader = file.reader(&buf);
     while (try file_reader.interface.takeDelimiter('\n')) |line| {
-        if (!std.mem.startsWith(u8, line, "pub fn")) {
-            continue;
+        if (std.mem.startsWith(u8, line, "pub fn")) {
+            const start = "pub fn ".len;
+            const end = std.mem.indexOfScalar(u8, line, '(') orelse return error.NoParenthesis;
+            const func_name = try allocator.dupe(u8, line[start..end]);
+            try funcs.append(allocator, func_name);
         }
-        const start = "pub fn ".len;
-        const end = std.mem.indexOfScalar(u8, line, '(') orelse return error.NoParenthesis;
-        const func_name = try allocator.dupe(u8, line[start..end]);
-        try funcs.append(allocator, func_name);
+        if (std.mem.startsWith(u8, line, "pub const")) {
+            const start = "pub const ".len;
+            const end = std.mem.indexOfScalarPos(u8, line, start, ' ') orelse return error.NoIdentifierEnd;
+            const const_name = try allocator.dupe(u8, line[start..end]);
+            try funcs.append(allocator, const_name);
+        }
     }
 
     return funcs.toOwnedSlice(allocator);
