@@ -23,7 +23,7 @@ pub fn main() !void {
         zigcord.model.Intents{ .guild_messages = true, .message_content = true },
     );
     defer gateway_client.deinit();
-    std.log.info("authenticated as user {}", .{gateway_client.json_ws_client.ready_event.?.event.user.id});
+    std.log.info("authenticated as user {f}", .{gateway_client.json_ws_client.ready_event.?.event.user.id});
 
     while (true) {
         const event = try gateway_client.readEvent();
@@ -34,10 +34,10 @@ pub fn main() !void {
                 if (std.mem.eql(u8, msg_event.message.content, "send error")) {
                     return error.UserRestart;
                 }
-                std.log.info("{}", .{std.json.fmt(msg_event, .{})});
+                std.log.info("{f}", .{std.json.fmt(msg_event, .{})});
             },
             inline else => |event_data| {
-                std.log.info("{}", .{std.json.fmt(event_data, .{})});
+                std.log.info("{f}", .{std.json.fmt(event_data, .{})});
             },
         }
     }

@@ -26,7 +26,7 @@ Then, make sure something similar to the following is in your `build.zig`:
 
 # Feature Support
 
- - All Discord API features up to June 2025
+ - All Discord API features up to October 15, 2025
  - [User-installable Apps](https://discord.com/developers/docs/tutorials/developing-a-user-installable-app#developing-a-userinstallable-app)
  - [Components V2](https://discord.com/developers/docs/components/overview)
  - WebSocket Gateway

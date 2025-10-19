@@ -21,6 +21,7 @@ pub fn init(allocator: std.mem.Allocator, token: []const u8, intents: zigcord.mo
     errdefer allocator.destroy(json_ws_client);
 
     json_ws_client.* = zigcord.gateway.JsonWSClient.init(allocator, .{ .bot = token }) catch return error.AuthError;
+    errdefer json_ws_client.deinit();
 
     json_ws_client.authenticate(token, intents) catch return error.AuthError;
 
@@ -75,6 +76,7 @@ pub fn readEvent(self: *Client) error{ Disconnected, JsonError }!ReadEvent {
         defer json_parsed_value.deinit();
         self_owned = true;
 
+        zigcord.logger.debug("received heartbeat event. responding!", .{});
         self.writeEvent(zigcord.gateway.SendEvent.heartbeat(self.json_ws_client.sequence)) catch |err| switch (err) {
             error.JsonError => return error.JsonError,
             error.WebsocketError => {
