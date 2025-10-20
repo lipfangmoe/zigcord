@@ -32,7 +32,7 @@ pub fn initWithConfig(allocator: std.mem.Allocator, auth: zigcord.Authorization,
 }
 
 pub const BeginRequestError = error{ OutOfMemory, OpenError, RequestSendBodyError };
-pub const WaitForResponseError = error{ RequestFinishError, ResponseReceiveHeadError, ResponseReadError, ResponseJsonParseError };
+pub const WaitForResponseError = error{ OutOfMemory, RequestFinishError, ResponseReceiveHeadError, ResponseReadError, ResponseJsonParseError };
 pub const RequestError = BeginRequestError || WaitForResponseError;
 
 fn setupRequest(
@@ -71,7 +71,7 @@ fn handleResponse(
     config: Config,
     comptime ResponseT: type,
     response: *std.http.Client.Response,
-) !Result(ResponseT) {
+) WaitForResponseError!Result(ResponseT) {
     const status = response.head.status;
     const status_class = status.class();
     if (ResponseT == void and status_class == .success) {
@@ -79,7 +79,14 @@ fn handleResponse(
     }
 
     var buf: [2000]u8 = undefined;
-    const body_reader = response.reader(&buf);
+    var decompress: std.http.Decompress = undefined;
+    const decompress_buffer: []u8 = switch (response.head.content_encoding) {
+        .identity => &.{},
+        .zstd => try allocator.alloc(u8, std.compress.zstd.default_window_len),
+        .deflate, .gzip => try allocator.alloc(u8, std.compress.flate.max_window_len),
+        .compress => return error.ResponseReadError,
+    };
+    const body_reader = response.readerDecompressing(&buf, &decompress, decompress_buffer);
     var json_reader = std.json.Reader.init(allocator, body_reader);
     defer json_reader.deinit();
 
