@@ -90,7 +90,8 @@ pub fn createMessageMultipart(
 
     const uri = try std.Uri.parse(uri_str);
 
-    var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .POST, uri, .chunked, rest.multipart_boundary, null);
+    var buf: [1028]u8 = undefined;
+    var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .POST, uri, .chunked, rest.multipart_boundary, null, &buf);
 
     var body_writer = try pending_request.request.sendBodyUnflushed("");
     try body_writer.writer.print("{f}", .{body});
@@ -222,7 +223,8 @@ pub fn editMessageMultipart(
 
     const uri = try std.Uri.parse(uri_str);
 
-    var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .PATCH, uri, .chunked, rest.multipart_boundary, null);
+    var buf: [1028]u8 = undefined;
+    var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .PATCH, uri, .chunked, rest.multipart_boundary, null, &buf);
 
     var body_writer = try pending_request.request.sendBodyUnflushed("");
     try body_writer.writer.print("{f}", .{body});
@@ -468,7 +470,8 @@ pub fn startThreadInForumOrMediaChannelMultipart(
     else
         &.{};
 
-    var pending_request = try client.rest_client.beginMultipartRequest(Channel, .POST, uri, .chunked, rest.multipart_boundary, headers);
+    var buf: [1028]u8 = undefined;
+    var pending_request = try client.rest_client.beginMultipartRequest(Channel, .POST, uri, .chunked, rest.multipart_boundary, headers, &buf);
 
     var body_writer = try pending_request.request.sendBodyUnflushed("");
     try body_writer.writer.print("{f}", .{body});

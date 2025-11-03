@@ -1,4 +1,4 @@
-//! rest.Client is a wrapper around an HttpClient which contains methods that call Discord API endpoints.
+//! rest.Client is a wrapper around an http.Client which contains methods that call Discord API endpoints.
 
 const std = @import("std");
 const builtin = @import("builtin");
@@ -37,14 +37,14 @@ pub const RequestError = BeginRequestError || WaitForResponseError;
 
 fn setupRequest(
     self: *RestClient,
+    auth_value_buf: *[200]u8,
     method: std.http.Method,
     url: std.Uri,
     transfer_encoding: std.http.Client.Request.TransferEncoding,
     headers: ?std.http.Client.Request.Headers,
     extra_headers: ?[]const std.http.Header,
 ) BeginRequestError!std.http.Client.Request {
-    var auth_value_buf: [200]u8 = undefined;
-    var auth_value = std.Io.Writer.fixed(&auth_value_buf);
+    var auth_value = std.Io.Writer.fixed(auth_value_buf);
     auth_value.print("{f}", .{self.auth}) catch return error.OutOfMemory;
 
     var defaulted_headers = headers orelse std.http.Client.Request.Headers{};
@@ -117,16 +117,18 @@ pub fn beginMultipartRequest(
     transfer_encoding: std.http.Client.Request.TransferEncoding,
     boundary: []const u8,
     extra_headers: ?[]const std.http.Header,
+    buf: *[1028]u8,
 ) BeginRequestError!PendingRequest(ResponseT) {
-    var buf: [1028]u8 = undefined;
-    var content_type = std.Io.Writer.fixed(&buf);
-    content_type.print("multipart/form-data; boundary={s}", .{boundary}) catch return std.mem.Allocator.Error.OutOfMemory;
+    var fba: std.heap.FixedBufferAllocator = .init(buf);
+    var content_type: std.Io.Writer.Allocating = .init(fba.allocator());
+    content_type.writer.print("multipart/form-data; boundary={s}", .{boundary}) catch return std.mem.Allocator.Error.OutOfMemory;
 
     const http_request = try self.setupRequest(
+        try fba.allocator().create([200]u8),
         method,
         url,
         transfer_encoding,
-        std.http.Client.Request.Headers{ .content_type = .{ .override = content_type.buffered() } },
+        std.http.Client.Request.Headers{ .content_type = .{ .override = content_type.written() } },
         extra_headers,
     );
 
@@ -135,7 +137,8 @@ pub fn beginMultipartRequest(
 
 /// Sends a request to the Discord REST API with the credentials stored in this context
 pub fn request(self: *RestClient, comptime ResponseT: type, method: std.http.Method, url: std.Uri) RequestError!Result(ResponseT) {
-    var http_request = try self.setupRequest(method, url, .{ .none = void{} }, null, null);
+    var buf: [200]u8 = undefined;
+    var http_request = try self.setupRequest(&buf, method, url, .{ .none = void{} }, null, null);
     defer http_request.deinit();
 
     http_request.sendBodiless() catch return error.RequestSendBodyError;
@@ -151,7 +154,8 @@ pub fn requestWithAuditLogReason(self: *RestClient, comptime ResponseT: type, me
     else
         &.{};
 
-    var http_request = try self.setupRequest(method, url, .{ .none = void{} }, null, extra_headers);
+    var buf: [200]u8 = undefined;
+    var http_request = try self.setupRequest(&buf, method, url, .{ .none = void{} }, null, extra_headers);
     defer http_request.deinit();
 
     http_request.sendBodiless() catch return error.RequestSendBodyError;
@@ -167,7 +171,8 @@ pub fn requestWithValueBody(self: *RestClient, comptime ResponseT: type, method:
     const stringified_body = std.json.Stringify.valueAlloc(self.allocator, body, stringify_options) catch return error.RequestJsonStringifyError;
     defer self.allocator.free(stringified_body);
 
-    var http_request = try self.setupRequest(method, url, .{ .content_length = stringified_body.len }, null, null);
+    var buf: [200]u8 = undefined;
+    var http_request = try self.setupRequest(&buf, method, url, .{ .content_length = stringified_body.len }, null, null);
     defer http_request.deinit();
 
     http_request.sendBodyComplete(stringified_body) catch return error.RequestSendBodyError;
@@ -193,7 +198,8 @@ pub fn requestWithValueBodyAndAuditLogReason(
     const stringified_body = std.json.Stringify.valueAlloc(self.allocator, body, stringify_options) catch return error.RequestJsonStringifyError;
     defer self.allocator.free(stringified_body);
 
-    var http_request = try self.setupRequest(method, url, .{ .content_length = stringified_body.len }, null, extra_headers);
+    var buf: [200]u8 = undefined;
+    var http_request = try self.setupRequest(&buf, method, url, .{ .content_length = stringified_body.len }, null, extra_headers);
     defer http_request.deinit();
 
     http_request.sendBodyComplete(stringified_body) catch return error.RequestSendBodyError;

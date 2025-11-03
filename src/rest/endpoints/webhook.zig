@@ -161,7 +161,8 @@ pub fn executeWebhookWaitMultipart(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .POST, uri, .chunked, rest.multipart_boundary, null);
+    var buf: [1028]u8 = undefined;
+    var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .POST, uri, .chunked, rest.multipart_boundary, null, &buf);
 
     var body_writer = try pending_request.request.sendBodyUnflushed("");
     try body_writer.writer.print("{f}", .{body});
@@ -183,7 +184,8 @@ pub fn executeWebhookNoWaitMultipart(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    var pending_request = try client.rest_client.beginMultipartRequest(void, .POST, uri, .chunked, rest.multipart_boundary, null);
+    var buf: [1028]u8 = undefined;
+    var pending_request = try client.rest_client.beginMultipartRequest(void, .POST, uri, .chunked, rest.multipart_boundary, null, &buf);
 
     var body_writer = try pending_request.request.sendBodyUnflushed("");
     try body_writer.writer.print("{f}", .{body});
@@ -236,7 +238,8 @@ pub fn editWebhookMessageMultipart(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .PATCH, uri, .chunked, rest.multipart_boundary, null);
+    var buf: [1028]u8 = undefined;
+    var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .PATCH, uri, .chunked, rest.multipart_boundary, null, &buf);
 
     var body_writer = try pending_request.request.sendBodyUnflushed("");
     try body_writer.writer.print("{f}", .{body});
