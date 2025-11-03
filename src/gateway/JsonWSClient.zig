@@ -153,6 +153,9 @@ pub fn authenticate(self: *JsonWSClient, token: []const u8, intents: model.Inten
     });
     try self.writeEvent(identify_event);
 
+    const first_heartbeat = gateway.SendEvent.heartbeat(self.sequence);
+    try self.writeEvent(first_heartbeat);
+
     zigcord.logger.debug("identify event sent, waiting for Ready event", .{});
     while (true) {
         const event = try self.readEvent();
