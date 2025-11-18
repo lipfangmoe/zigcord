@@ -27,10 +27,12 @@ Then, make sure something similar to the following is in your `build.zig`:
 # Feature Support
 
  - All Discord API features up to October 15, 2025
+ - Uses Zig 0.15.x `std.Io.Reader` and `std.Io.Writer` interfaces
  - [User-installable Apps](https://discord.com/developers/docs/tutorials/developing-a-user-installable-app#developing-a-userinstallable-app)
  - [Components V2](https://discord.com/developers/docs/components/overview)
  - WebSocket Gateway
  - Interaction Server
+ - Rest Client
 
 # Basic Usage
 
@@ -43,4 +45,3 @@ The examples are also runnable with `zig build examples:gateway` and `zig build 
  - HTTP Interaction Server:
    - Standalone HTTPS support (for now, you will need a reverse-proxy to provide HTTPS support)
    - Cloud function support (i.e. Cloudflare Workers)
- - Make sure all data types are accurate
