@@ -17,10 +17,14 @@ zig fetch --save 'git+https://codeberg.org/lipfang/zigcord#main'
 Then, make sure something similar to the following is in your `build.zig`:
 
 ```rs
-	const zigcord_dependency = b.dependency("zigcord");
-	const zigcord_module = zigcord_dependency.module("zigcord");
-    const my_bot = b.addExecutable(.{ ... });
-    my_bot.root_module.addImport("zigcord", zigcord_module);
+    const zigcord_dependency = b.dependency("zigcord", .{});
+    const zigcord_module = zigcord_dependency.module("zigcord");
+
+    const mybot_module = b.addModule("myBot", .{
+        .root_source_file = "src/main.zig",
+        .imports = &.{.{ .name = "zigcord", .module = zigcord_module }},
+    });
+    const my_bot_exe = b.addExecutable(.{ .name = "myBot", .root_module = mybot_module });
 	b.installArtifact(gateway_bot);
 ```
 
