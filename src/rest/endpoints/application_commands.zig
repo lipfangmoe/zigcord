@@ -69,8 +69,8 @@ pub fn deleteGlobalApplicationCommand(client: *rest.EndpointClient, application_
 /// Commands that do not already exist will count toward daily application command create limits.
 ///
 /// This will overwrite all types of application commands: slash commands, user commands, and message commands.
-pub fn bulkOverwriteGlobalApplicationCommands(client: *rest.EndpointClient, application_id: Snowflake, new_commands: []const ApplicationCommand) !rest.RestClient.Result([]ApplicationCommand) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/applications/{f}/commands/", .{application_id});
+pub fn bulkOverwriteGlobalApplicationCommands(client: *rest.EndpointClient, application_id: Snowflake, new_commands: []const OverwriteApplicationCommand) !rest.RestClient.Result([]ApplicationCommand) {
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/applications/{f}/commands", .{application_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -127,7 +127,7 @@ pub fn bulkOverwriteGuildApplicationCommands(
     client: *rest.EndpointClient,
     application_id: Snowflake,
     guild_id: Snowflake,
-    new_commands: []const ApplicationCommand,
+    new_commands: []const OverwriteApplicationCommand,
 ) !rest.RestClient.Result([]const ApplicationCommand) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/applications/{f}/guilds/{f}/commands", .{ application_id, guild_id });
     defer client.rest_client.allocator.free(uri_str);
@@ -232,6 +232,24 @@ pub const EditGuildApplicationCommandBody = struct {
     options: Omittable([]const ApplicationCommandOption) = .omit,
     default_member_permissions: Omittable(?model.Permissions) = .omit,
     default_permission: Omittable(bool) = .omit,
+    nsfw: Omittable(bool) = .omit,
+
+    pub const jsonStringify = stringifyWithOmit;
+};
+
+pub const OverwriteApplicationCommand = struct {
+    id: Omittable(Snowflake) = .omit,
+    name: []const u8,
+    name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
+    description: []const u8,
+    description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
+    options: Omittable([]const ApplicationCommandOption) = .omit,
+    default_member_permissions: Omittable(?model.Permissions) = .omit,
+    dm_permission: Omittable(bool) = .omit,
+    default_permission: Omittable(?bool) = .omit,
+    integration_types: Omittable([]const model.Application.IntegrationType) = .omit,
+    contexts: Omittable([]const model.interaction.Context) = .omit,
+    type: Omittable(ApplicationCommandType) = .omit,
     nsfw: Omittable(bool) = .omit,
 
     pub const jsonStringify = stringifyWithOmit;
