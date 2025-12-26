@@ -50,10 +50,11 @@ pub fn createGuildSoundboardSound(
 pub fn modifyGuildSoundboardSound(
     client: *rest.EndpointClient,
     guild_id: model.Snowflake,
+    sound_id: model.Snowflake,
     body: ModifyGuildSoundboardSoundBody,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(model.SoundboardSound) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/soundboard-sounds", .{guild_id});
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/soundboard-sounds/{f}", .{ guild_id, sound_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 

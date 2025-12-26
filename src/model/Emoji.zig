@@ -2,12 +2,13 @@ const std = @import("std");
 const model = @import("../model.zig");
 const jconfig = @import("../root.zig").jconfig;
 const Snowflake = model.Snowflake;
+const User = @import("User.zig");
 const Emoji = @This();
 
 id: ?Snowflake,
 name: ?[]const u8,
 roles: jconfig.Omittable([]Snowflake) = .omit,
-user: jconfig.Omittable(Snowflake) = .omit,
+user: jconfig.Omittable(User) = .omit,
 require_colons: jconfig.Omittable(bool) = .omit,
 managed: jconfig.Omittable(bool) = .omit,
 animated: jconfig.Omittable(bool) = .omit,

@@ -51,13 +51,26 @@ pub fn getGuildSticker(
 pub fn createGuildSticker(
     client: *rest.EndpointClient,
     guild_id: model.Snowflake,
-    sticker_id: model.Snowflake,
+    body: CreateGuildStickerFormBody,
+    audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(model.Sticker) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/stickers/{f}", .{ guild_id, sticker_id });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/stickers", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.request(model.Sticker, .GET, uri);
+    const headers: []const std.http.Header = if (audit_log_reason) |reason|
+        &.{std.http.Header{ .name = "X-Audit-Log-Reason", .value = reason }}
+    else
+        &.{};
+
+    var buf: [1028]u8 = undefined;
+    var pending_request = try client.rest_client.beginMultipartRequest(model.Sticker, .POST, uri, .chunked, rest.multipart_boundary, headers, &buf);
+
+    var body_writer = try pending_request.request.sendBodyUnflushed("");
+    try body_writer.writer.print("{f}", .{body});
+    try body_writer.end();
+
+    return pending_request.waitForResponse();
 }
 
 pub const ListStickerPacksResponse = struct {

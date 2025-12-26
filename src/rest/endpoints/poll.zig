@@ -27,7 +27,7 @@ pub fn endPoll(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.request(model.Message, .POST, uri);
+    return client.rest_client.requestWithValueBody(model.Message, .POST, uri, .{}, .{});
 }
 
 pub const GetAnswerVotersQuery = struct {
