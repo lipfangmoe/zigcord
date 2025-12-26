@@ -5,12 +5,12 @@ const rest = root.rest;
 const Application = model.Application;
 
 pub fn getCurrentApplication(client: *rest.EndpointClient) !rest.RestClient.Result(Application) {
-    const url = rest.base_url ++ "/application/@me";
+    const url = rest.base_url ++ "/applications/@me";
     return client.rest_client.request(Application, .GET, try std.Uri.parse(url));
 }
 
 pub fn editCurrentApplication(client: *rest.EndpointClient, params: EditParams) !rest.RestClient.Result(Application) {
-    const url = rest.base_url ++ "/application/@me";
+    const url = rest.base_url ++ "/applications/@me";
 
     return client.rest_client.requestWithValueBody(Application, .PATCH, try std.Uri.parse(url), params, .{});
 }
