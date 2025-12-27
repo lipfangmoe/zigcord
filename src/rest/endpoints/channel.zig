@@ -110,7 +110,7 @@ pub fn crosspostMessage(
 
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBody(model.Message, .POST, uri, .{}, .{});
+    return client.rest_client.request(model.Message, .POST, uri);
 }
 
 pub fn createReaction(
@@ -124,7 +124,7 @@ pub fn createReaction(
 
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBody(void, .PUT, uri, .{}, .{});
+    return client.rest_client.request(void, .PUT, uri);
 }
 
 pub fn deleteOwnReaction(
@@ -352,7 +352,7 @@ pub fn triggerTypingIndicator(
 
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBody(void, .POST, uri, .{}, .{});
+    return client.rest_client.request(void, .POST, uri);
 }
 
 pub fn pinMessage(
@@ -366,7 +366,7 @@ pub fn pinMessage(
 
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBodyAndAuditLogReason(void, .PUT, uri, .{}, .{}, audit_log_reason);
+    return client.rest_client.requestWithAuditLogReason(void, .PUT, uri, audit_log_reason);
 }
 
 pub fn unpinMessage(
@@ -495,7 +495,7 @@ pub fn addThreadMember(client: *rest.EndpointClient, channel_id: Snowflake, user
 
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBody(void, .PUT, uri, .{}, .{});
+    return client.rest_client.request(void, .PUT, uri);
 }
 
 pub fn leaveThread(client: *rest.EndpointClient, channel_id: Snowflake) !rest.RestClient.Result(void) {
