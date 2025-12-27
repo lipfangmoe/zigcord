@@ -194,7 +194,7 @@ pub fn addGuildMemberRole(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithAuditLogReason(void, .PUT, uri, audit_log_reason);
+    return client.rest_client.requestWithValueBodyAndAuditLogReason(void, .PUT, uri, .{}, .{}, audit_log_reason);
 }
 
 pub fn removeGuildmemberRole(
@@ -258,7 +258,7 @@ pub fn createGuildBan(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithAuditLogReason(void, .PUT, uri, audit_log_reason);
+    return client.rest_client.requestWithValueBodyAndAuditLogReason(void, .PUT, uri, .{}, .{}, audit_log_reason);
 }
 
 pub fn removeGuildBan(
