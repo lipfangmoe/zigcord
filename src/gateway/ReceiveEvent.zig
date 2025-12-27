@@ -66,7 +66,7 @@ pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, opti
     };
 }
 
-pub fn jsonStringify(self: ReceiveEvent, jw: anytype) !void {
+pub fn jsonStringify(self: ReceiveEvent, jw: *std.json.Stringify) !void {
     try jw.beginObject();
 
     inline for (std.meta.fields(ReceiveEvent)) |field| {

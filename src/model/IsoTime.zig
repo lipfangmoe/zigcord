@@ -10,7 +10,7 @@ second: u8,
 fractional_second: ?f64 = null,
 zone: ?Zone = null,
 
-pub fn jsonStringify(self: IsoTime, jw: anytype) !void {
+pub fn jsonStringify(self: IsoTime, jw: *std.json.Stringify) !void {
     try jw.print("\"{f}\"", .{self});
 }
 

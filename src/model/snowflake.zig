@@ -70,7 +70,7 @@ pub const Snowflake = packed struct {
         }
     }
 
-    pub fn jsonStringify(self: Snowflake, jw: anytype) !void {
+    pub fn jsonStringify(self: Snowflake, jw: *std.json.Stringify) !void {
         try jw.print("{d}", .{self.asU64()});
     }
 };

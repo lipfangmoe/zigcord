@@ -62,7 +62,7 @@ pub fn updatePresence(data: event_data.send_events.UpdatePresence) SendEvent {
     };
 }
 
-pub fn jsonStringify(self: SendEvent, jw: anytype) !void {
+pub fn jsonStringify(self: SendEvent, jw: *std.json.Stringify) !void {
     try jw.beginObject();
 
     inline for (std.meta.fields(SendEvent)) |field| {

@@ -9,7 +9,7 @@ type: Type,
 id: jconfig.Omittable(i32) = .omit,
 other_props: TypedProps,
 
-pub fn jsonStringify(self: MessageComponent, jw: anytype) !void {
+pub fn jsonStringify(self: MessageComponent, jw: *std.json.Stringify) !void {
     try jw.beginObject();
     try jw.objectField("type");
     try jw.write(self.type);

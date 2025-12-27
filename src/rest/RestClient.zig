@@ -313,7 +313,7 @@ pub const DiscordError = struct {
 
     pub const Code = ErrorCode;
 
-    pub fn jsonStringify(self: DiscordError, jw: anytype) !void {
+    pub fn jsonStringify(self: DiscordError, jw: *std.json.Stringify) !void {
         try jw.beginObject();
 
         try jw.objectField("code");

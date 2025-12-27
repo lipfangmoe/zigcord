@@ -14,9 +14,9 @@ pub fn PackedFlagsMixin(comptime FlagStruct: type) type {
             const int: u64 = @bitCast(self);
             try writer.print("{d}", .{int});
         }
-        pub fn jsonStringify(self: FlagStruct, jsonWriter: anytype) !void {
+        pub fn jsonStringify(self: FlagStruct, json_writer: *std.json.Stringify) !void {
             const int: u64 = @bitCast(self);
-            try jsonWriter.write(int);
+            try json_writer.write(int);
         }
         pub fn jsonParse(alloc: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !FlagStruct {
             const int: u64 = try std.json.innerParse(u64, alloc, source, options);

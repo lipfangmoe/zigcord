@@ -699,7 +699,7 @@ pub const CreateMessageFormBody = struct {
     enforce_nonce: ?bool = null,
     poll: ?model.Poll = null,
 
-    pub fn format(self: CreateMessageFormBody, writer: anytype) !void {
+    pub fn format(self: CreateMessageFormBody, writer: *std.Io.Writer) !void {
         rest.writeMultipartFormDataBody(self, "files", writer) catch return error.WriteFailed;
     }
 
@@ -791,7 +791,7 @@ pub const EditMessageFormBody = struct {
     /// must also include already-uploaded files
     attachments: ?[]const model.Message.Attachment = null,
 
-    pub fn format(self: EditMessageFormBody, writer: anytype) !void {
+    pub fn format(self: EditMessageFormBody, writer: *std.Io.Writer) !void {
         rest.writeMultipartFormDataBody(self, "files", writer) catch return error.WriteFailed;
     }
 };
@@ -868,7 +868,7 @@ pub const StartThreadInForumOrMediaChannelFormBody = struct {
     applied_tags: ?[]const Snowflake = null,
     files: ?[]const *std.Io.Reader = null,
 
-    pub fn format(self: StartThreadInForumOrMediaChannelFormBody, writer: anytype) !void {
+    pub fn format(self: StartThreadInForumOrMediaChannelFormBody, writer: *std.Io.Writer) !void {
         rest.writeMultipartFormDataBody(self, "files", writer) catch return error.WriteFailed;
     }
 

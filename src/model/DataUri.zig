@@ -8,7 +8,7 @@ base64: []const u8,
 const DataUri = @This();
 const decoder = std.base64.Base64Decoder.init(std.base64.standard_alphabet_chars, '=');
 
-pub fn jsonStringify(self: DataUri, json_writer: anytype) !void {
+pub fn jsonStringify(self: DataUri, json_writer: *std.json.Stringify) !void {
     try json_writer.print("data:{s};base64,{s}", .{ self.mime_type, self.base64 });
 }
 

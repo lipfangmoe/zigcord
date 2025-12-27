@@ -15,7 +15,7 @@ pub fn Partial(comptime T: type) type {
 
         const Self = @This();
 
-        pub fn jsonStringify(self: Self, json_writer: anytype) !void {
+        pub fn jsonStringify(self: Self, json_writer: *std.json.Stringify) !void {
             try jconfig.stringifyWithOmit(self.partial, json_writer);
         }
 

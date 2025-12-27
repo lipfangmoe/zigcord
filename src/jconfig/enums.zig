@@ -1,7 +1,7 @@
 const std = @import("std");
 
 /// A jsonStringify function which inlines the current enum
-pub fn stringifyEnumAsInt(self: anytype, json_writer: anytype) !void {
+pub fn stringifyEnumAsInt(self: anytype, json_writer: *std.json.Stringify) !void {
     comptime {
         const self_typeinfo = @typeInfo(@TypeOf(self));
         if (self_typeinfo != .pointer) {

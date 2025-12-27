@@ -99,7 +99,7 @@ pub const Permissions = packed struct(u64) {
         try writer.print("{d}", .{self.asU64()});
     }
 
-    pub fn jsonStringify(self: Permissions, jsonWriter: anytype) !void {
+    pub fn jsonStringify(self: Permissions, jsonWriter: *std.json.Stringify) !void {
         try jsonWriter.write(self.asU64());
     }
 
@@ -160,7 +160,7 @@ pub const Intents = packed struct(u64) {
         return @bitCast(self);
     }
 
-    pub fn jsonStringify(self: Intents, jw: anytype) !void {
+    pub fn jsonStringify(self: Intents, jw: *std.json.Stringify) !void {
         const int: u64 = @bitCast(self);
         try jw.write(int);
     }
