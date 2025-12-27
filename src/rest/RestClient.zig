@@ -77,6 +77,9 @@ fn handleResponse(
     if (ResponseT == void and status_class == .success) {
         return Result(ResponseT){ .ok = .{ .status = status, .value = void{}, .parsed = null } };
     }
+    if (ResponseT != void and status == .no_content) {
+        return error.ResponseJsonParseError;
+    }
 
     var buf: [2000]u8 = undefined;
     var decompress: std.http.Decompress = undefined;
@@ -141,7 +144,12 @@ pub fn request(self: *RestClient, comptime ResponseT: type, method: std.http.Met
     var http_request = try self.setupRequest(&buf, method, url, .{ .none = void{} }, null, null);
     defer http_request.deinit();
 
-    http_request.sendBodiless() catch return error.RequestSendBodyError;
+    switch (method) {
+        .GET, .DELETE => http_request.sendBodiless() catch return error.RequestSendBodyError,
+        .POST, .PUT, .PATCH => http_request.sendBodyComplete("") catch return error.RequestSendBodyError,
+        else => return error.RequestSendBodyError, // unsupported http method
+    }
+
     var response = http_request.receiveHead(&.{}) catch return error.ResponseReceiveHeadError;
 
     return try handleResponse(self.allocator, self.config, ResponseT, &response);
