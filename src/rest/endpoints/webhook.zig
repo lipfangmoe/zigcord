@@ -316,7 +316,7 @@ pub const ExecuteWebhookFormBody = struct {
     applied_tags: ?[]const model.Snowflake = null,
     poll: ?model.Poll = null,
 
-    pub fn format(self: ExecuteWebhookFormBody, writer: anytype) !void {
+    pub fn format(self: ExecuteWebhookFormBody, writer: *std.Io.Writer) !void {
         rest.writeMultipartFormDataBody(self, "files", writer) catch return error.WriteFailed;
     }
 };
@@ -347,7 +347,7 @@ pub const EditWebhookMessageFormBody = struct {
     attachments: ?[]const jconfig.Partial(model.Message.Attachment) = null,
     poll: ?model.Poll = null, // Polls can only be added when editing a deferred interaction response.
 
-    pub fn format(self: EditWebhookMessageFormBody, writer: anytype) !void {
+    pub fn format(self: EditWebhookMessageFormBody, writer: *std.Io.Writer) !void {
         rest.writeMultipartFormDataBody(self, "files", writer) catch return error.WriteFailed;
     }
 };

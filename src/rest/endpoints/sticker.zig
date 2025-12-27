@@ -83,7 +83,7 @@ pub const CreateGuildStickerFormBody = struct {
     tags: []const u8,
     file: *std.Io.Reader,
 
-    pub fn format(self: CreateGuildStickerFormBody, writer: anytype) !void {
+    pub fn format(self: CreateGuildStickerFormBody, writer: *std.Io.Writer) !void {
         rest.writeMultipartFormDataBody(self, "file", writer) catch return error.WriteFailed;
     }
 };

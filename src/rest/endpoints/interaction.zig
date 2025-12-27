@@ -141,7 +141,7 @@ pub const CreateInteractionResponseFormBody = struct {
     data: ?model.interaction.InteractionCallbackData = null,
     files: ?[]const *std.Io.Reader = null,
 
-    pub fn format(self: CreateInteractionResponseFormBody, writer: anytype) !void {
+    pub fn format(self: CreateInteractionResponseFormBody, writer: *std.Io.Writer) !void {
         rest.writeMultipartFormDataBody(self, "files", writer) catch return error.WriteFailed;
     }
 };

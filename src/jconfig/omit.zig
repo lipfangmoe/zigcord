@@ -45,7 +45,7 @@ pub fn Omittable(comptime T: type) type {
             return .initSome(try std.json.innerParseFromValue(T, allocator, source, options));
         }
 
-        pub fn jsonStringify(_: Omittable(T), _: anytype) !void {
+        pub fn jsonStringify(_: Omittable(T), _: *std.json.Stringify) !void {
             std.debug.panic("make sure to use jconfig.stringifyWithOmit or jconfig.OmittableFieldsMixin on any types that use Omittable. (problematic type {s})", .{@typeName(T)});
         }
     };
@@ -53,7 +53,7 @@ pub fn Omittable(comptime T: type) type {
 
 pub fn OmittableFieldsMixin(comptime T: type) type {
     return struct {
-        pub fn jsonStringify(self: T, json_writer: anytype) @typeInfo(@TypeOf(json_writer)).pointer.child.Error!void {
+        pub fn jsonStringify(self: T, json_writer: *std.json.Stringify) @typeInfo(@TypeOf(json_writer)).pointer.child.Error!void {
             return stringifyWithOmit(self, json_writer);
         }
     };
@@ -62,7 +62,7 @@ pub fn OmittableFieldsMixin(comptime T: type) type {
 /// Utility function to enable `Omittable` to work on structs.
 ///
 /// Intended usage: add a declaration in your container as `pub const jsonStringify = stringifyWithOmit`.
-pub fn stringifyWithOmit(self: anytype, json_writer: anytype) @typeInfo(@TypeOf(json_writer)).pointer.child.Error!void {
+pub fn stringifyWithOmit(self: anytype, json_writer: *std.json.Stringify) @typeInfo(@TypeOf(json_writer)).pointer.child.Error!void {
     const struct_info: std.builtin.Type.Struct = comptime blk: {
         const self_typeinfo = @typeInfo(@TypeOf(self));
         switch (self_typeinfo) {
@@ -89,7 +89,7 @@ pub fn stringifyWithOmit(self: anytype, json_writer: anytype) @typeInfo(@TypeOf(
     try json_writer.endObject();
 }
 
-pub fn writePossiblyOmittableFieldToStream(field: std.builtin.Type.StructField, value: anytype, json_writer: anytype) !void {
+pub fn writePossiblyOmittableFieldToStream(field: std.builtin.Type.StructField, value: anytype, json_writer: *std.json.Stringify) !void {
     const is_omittable = comptime blk: {
         if (@typeInfo(field.type) != .@"union") {
             break :blk false;

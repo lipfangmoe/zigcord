@@ -82,7 +82,7 @@ fn printPayloadJson(value: anytype, comptime upload_field_name: []const u8, writ
     try writer.writeAll("\r\n");
 }
 
-fn printHeader(field_name: []const u8, writer: anytype) !void {
+fn printHeader(field_name: []const u8, writer: *std.Io.Writer) !void {
     try writer.writeAll("--" ++ boundary ++ "\r\n");
     try writer.print("Content-Disposition: form-data; name=\"{s}\"\r\n\r\n", .{field_name});
 }
@@ -93,7 +93,7 @@ test "multipart single upload" {
         bar: []const u8,
         baz: ?i64 = null,
 
-        pub fn format(self: @This(), writer: anytype) !void {
+        pub fn format(self: @This(), writer: *std.Io.Writer) !void {
             writeMultipartFormDataBody(self, "foo", writer) catch return error.WriteFailed;
         }
         pub const jsonStringify = zigcord.jconfig.stringifyWithOmit;
@@ -125,7 +125,7 @@ test "multipart multi upload" {
         bar: []const u8,
         baz: ?i64 = null,
 
-        pub fn format(self: @This(), writer: anytype) !void {
+        pub fn format(self: @This(), writer: *std.Io.Writer) !void {
             writeMultipartFormDataBody(self, "foo", writer) catch return error.WriteFailed;
         }
         pub const jsonStringify = zigcord.jconfig.stringifyWithOmit;
@@ -163,7 +163,7 @@ test "multipart optional single upload - present" {
         bar: []const u8,
         baz: ?i64 = null,
 
-        pub fn format(self: @This(), writer: anytype) !void {
+        pub fn format(self: @This(), writer: *std.Io.Writer) !void {
             writeMultipartFormDataBody(self, "foo", writer) catch return error.WriteFailed;
         }
         pub const jsonStringify = zigcord.jconfig.stringifyWithOmit;
@@ -195,7 +195,7 @@ test "multipart optional single upload - null" {
         bar: []const u8,
         baz: ?i64 = null,
 
-        pub fn format(self: @This(), writer: anytype) !void {
+        pub fn format(self: @This(), writer: *std.Io.Writer) !void {
             writeMultipartFormDataBody(self, "foo", writer) catch return error.WriteFailed;
         }
         pub const jsonStringify = zigcord.jconfig.stringifyWithOmit;
@@ -221,7 +221,7 @@ test "multipart optional multi upload" {
         bar: []const u8,
         baz: ?i64 = null,
 
-        pub fn format(self: @This(), writer: anytype) !void {
+        pub fn format(self: @This(), writer: *std.Io.Writer) !void {
             writeMultipartFormDataBody(self, "foo", writer) catch return error.WriteFailed;
         }
         pub const jsonStringify = zigcord.jconfig.stringifyWithOmit;

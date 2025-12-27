@@ -1,7 +1,7 @@
 const std = @import("std");
 
 /// A jsonStringify function which inlines the value in a tagged union
-pub fn stringifyUnionInline(self: anytype, json_writer: anytype) !void {
+pub fn stringifyUnionInline(self: anytype, json_writer: *std.json.Stringify) !void {
     const self_typeinfo = @typeInfo(@TypeOf(self));
     switch (self_typeinfo) {
         .pointer => |ptr| {
@@ -30,7 +30,7 @@ pub fn InlineUnionJsonMixin(comptime T: type) type {
     }
 
     return struct {
-        pub fn jsonStringify(self: T, jw: anytype) !void {
+        pub fn jsonStringify(self: T, jw: *std.json.Stringify) !void {
             switch (self) {
                 inline else => |value| {
                     if (@TypeOf(value) == void) {
