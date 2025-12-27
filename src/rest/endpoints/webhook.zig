@@ -98,7 +98,7 @@ pub fn deleteWebhook(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithAuditLogReason(void, .PATCH, uri, audit_log_reason);
+    return client.rest_client.requestWithAuditLogReason(void, .DELETE, uri, audit_log_reason);
 }
 
 pub fn deleteWebhookWithToken(
@@ -111,7 +111,7 @@ pub fn deleteWebhookWithToken(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithAuditLogReason(void, .PATCH, uri, audit_log_reason);
+    return client.rest_client.requestWithAuditLogReason(void, .DELETE, uri, audit_log_reason);
 }
 
 pub fn executeWebhookWait(
