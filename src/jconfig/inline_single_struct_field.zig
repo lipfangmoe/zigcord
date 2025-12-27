@@ -48,14 +48,16 @@ pub fn InlineSingleStructFieldMixin(comptime T: type, comptime inline_field: []c
             return t;
         }
 
-        pub fn jsonStringify(self: T, jw: anytype) !void {
+        pub fn jsonStringify(self: T, jw: *std.json.Stringify) !void {
             try jw.beginObject();
             inline for (std.meta.fields(T)) |outer_field| {
                 const outer_field_value = @field(self, outer_field.name);
                 if (comptime std.mem.eql(u8, outer_field.name, inline_field)) {
                     if (comptime std.meta.hasMethod(outer_field.type, "jsonStringify")) {
-                        var jw_inline_obj = inlineFieldsJsonWriteStream(jw);
-                        try outer_field_value.jsonStringify(&jw_inline_obj);
+                        var buf: [100]u8 = undefined;
+                        var substring_writer: SubstringWriter = .init(jw.writer, &buf);
+                        try std.json.Stringify.value(outer_field_value, jw.options, &substring_writer.interface);
+                        try substring_writer.interface.flush();
                         continue;
                     }
                     inline for (std.meta.fields(outer_field.type)) |inner_field| {
@@ -71,63 +73,67 @@ pub fn InlineSingleStructFieldMixin(comptime T: type, comptime inline_field: []c
     };
 }
 
-// not public because this should work for my specific use-case, but may be incorrect on other use-cases
-fn inlineFieldsJsonWriteStream(jw: anytype) InlineFieldsJsonWriteStream(@TypeOf(jw)) {
-    return .{ .underlying_write_stream = jw };
-}
-fn InlineFieldsJsonWriteStream(UnderlyingWriteStream: type) type {
-    return struct {
-        underlying_write_stream: UnderlyingWriteStream,
-        nesting_level: u64 = 0,
+// trims the first and last characters of whatever is written to it
+const SubstringWriter = struct {
+    underlying_writer: *std.Io.Writer,
+    start_trimmed: bool,
+    interface: std.Io.Writer,
 
-        const Self = @This();
+    pub fn init(underlying_writer: *std.Io.Writer, buf: []u8) SubstringWriter {
+        std.debug.assert(buf.len > 0);
 
-        pub const Error = @typeInfo(UnderlyingWriteStream).pointer.child.Error;
+        return SubstringWriter{
+            .underlying_writer = underlying_writer,
+            .start_trimmed = false,
+            .interface = std.Io.Writer{
+                .buffer = buf,
+                .vtable = &std.Io.Writer.VTable{
+                    .drain = drain,
+                    .flush = flush,
+                },
+            },
+        };
+    }
 
-        // changed methods
-        pub fn beginObject(self: *Self) !void {
-            if (self.nesting_level > 0) {
-                try self.underlying_write_stream.beginObject();
-            }
-            self.nesting_level += 1;
-        }
-        pub fn endObject(self: *Self) !void {
-            if (self.nesting_level > 1) {
-                try self.underlying_write_stream.endObject();
-            }
-            self.nesting_level -= 1;
-        }
-        pub fn beginArray(self: *Self) !void {
-            if (self.nesting_level > 0) {
-                try self.underlying_write_stream.beginArray();
-            }
-            self.nesting_level += 1;
-        }
-        pub fn endArray(self: *Self) !void {
-            if (self.nesting_level > 1) {
-                try self.underlying_write_stream.endArray();
-            }
-            self.nesting_level -= 1;
+    pub fn drain(w: *std.Io.Writer, data: []const []const u8, splat: usize) std.Io.Writer.Error!usize {
+        var self: *SubstringWriter = @alignCast(@fieldParentPtr("interface", w));
+
+        if (!self.start_trimmed and self.interface.buffered().len > 0) {
+            _ = self.interface.consume(1);
+            self.start_trimmed = true;
+            return 0;
         }
 
-        // unchanged methods
-        pub fn print(self: *Self, comptime fmt: []const u8, args: anytype) !void {
-            return self.underlying_write_stream.print(fmt, args);
+        const full_length = self.interface.buffered().len + std.Io.Writer.countSplat(data, splat);
+        if (full_length <= 1) {
+            return 0;
         }
-        pub fn write(self: *Self, value: anytype) !void {
-            return self.underlying_write_stream.write(value);
+
+        const limit: std.Io.Limit = .limited(full_length - 1);
+        const n = try self.underlying_writer.writeSplatHeaderLimit(self.interface.buffered(), data, splat, limit);
+        return self.interface.consume(n);
+    }
+
+    pub fn flush(w: *std.Io.Writer) std.Io.Writer.Error!void {
+        var self: *SubstringWriter = @alignCast(@fieldParentPtr("interface", w));
+
+        if (!self.start_trimmed and self.interface.buffered().len > 0) {
+            _ = self.interface.consume(1);
+            self.start_trimmed = true;
+            return;
         }
-        pub fn objectField(self: *Self, name: []const u8) !void {
-            return self.underlying_write_stream.objectField(name);
+
+        if (self.interface.buffered().len <= 1) {
+            return;
         }
-        pub fn objectFieldRaw(self: *Self, name: []const u8) !void {
-            return self.underlying_write_stream.objectFieldRaw(name);
-        }
-        pub fn deinit(self: *Self) void {
-            self.underlying_write_stream.deinit();
-        }
-    };
-}
+
+        const limit: std.Io.Limit = .limited(self.interface.buffered().len - 1);
+        const writable = limit.slice(self.interface.buffered());
+
+        try self.underlying_writer.writeAll(writable);
+        _ = self.interface.consume(writable.len);
+    }
+};
 
 test "InlineFieldJsonMixin - stringify" {
     const TestStruct = struct {
