@@ -45,7 +45,9 @@ The best way to look at examples is to look at the [examples](./examples/) direc
 The examples are also runnable with `zig build examples:gateway` and `zig build examples:interaction` (or simply `zig build examples` to build all examples)
 
 # TODO
-
+ - Better documentation with examples for harder-to-use methods (ie multipart endpoints)
+ - Some way to test endpoints
+ - Refactor `zigcord.gateway.ReadEventData` to not use unnecessary comptime
  - HTTP Interaction Server:
    - Standalone HTTPS support (for now, you will need a reverse-proxy to provide HTTPS support)
    - Cloud function support (i.e. Cloudflare Workers)
