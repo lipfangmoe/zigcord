@@ -1,6 +1,6 @@
 const std = @import("std");
 
-const version = std.SemanticVersion.parse("0.5.6") catch unreachable; // TODO: get from build.zig.zon
+const version = std.SemanticVersion.parse("0.5.7") catch unreachable; // TODO: get from build.zig.zon
 const use_llvm = true;
 
 // Although this function looks imperative, note that its job is to
