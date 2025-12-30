@@ -58,17 +58,24 @@ pub fn createGuildSticker(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    const headers: []const std.http.Header = if (audit_log_reason) |reason|
-        &.{std.http.Header{ .name = "X-Audit-Log-Reason", .value = reason }}
-    else
-        &.{};
+    const transfer_encoding = try rest.getTransferEncoding(body, "file");
+
+    // https://codeberg.org/ziglang/zig/issues/30623 - for now, we will write the file
+    // to an allocatingwriter and send it all in one shot. once streaming to body_writer is fixed,
+    // this should be updated to write directly to body_writer instead of allocating the entire file.
+    var aw: std.Io.Writer.Allocating = switch (transfer_encoding) {
+        .content_length => |len| try .initCapacity(client.rest_client.allocator, len),
+        .chunked => .init(client.rest_client.allocator),
+        .none => unreachable,
+    };
+    defer aw.deinit();
+
+    try rest.writeMultipartFormDataBody(body, "file", &aw.writer);
 
     var buf: [1028]u8 = undefined;
-    var pending_request = try client.rest_client.beginMultipartRequest(model.Sticker, .POST, uri, .chunked, rest.multipart_boundary, headers, &buf);
+    var pending_request = try client.rest_client.beginMultipartRequestWithAuditLogReason(model.Sticker, .POST, uri, transfer_encoding, rest.multipart_boundary, &buf, audit_log_reason);
 
-    var body_writer = try pending_request.request.sendBodyUnflushed("");
-    try body_writer.writer.print("{f}", .{body});
-    try body_writer.end();
+    try pending_request.request.sendBodyComplete(aw.written());
 
     return pending_request.waitForResponse();
 }
@@ -81,9 +88,5 @@ pub const CreateGuildStickerFormBody = struct {
     name: []const u8,
     description: []const u8,
     tags: []const u8,
-    file: *std.Io.Reader,
-
-    pub fn format(self: CreateGuildStickerFormBody, writer: *std.Io.Writer) !void {
-        rest.writeMultipartFormDataBody(self, "file", writer) catch return error.WriteFailed;
-    }
+    file: rest.Upload,
 };

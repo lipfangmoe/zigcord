@@ -45,7 +45,7 @@ pub fn modifyGuild(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBodyAndAuditLogReason(Guild, .PATCH, uri, body, .{}, audit_log_reason);
+    return client.rest_client.requestWithJsonBodyAndAuditLogReason(Guild, .PATCH, uri, body, .{}, audit_log_reason);
 }
 
 pub fn deleteGuild(
@@ -80,7 +80,7 @@ pub fn createGuildChannel(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBodyAndAuditLogReason(model.Channel, .POST, uri, body, .{}, audit_log_reason);
+    return client.rest_client.requestWithJsonBodyAndAuditLogReason(model.Channel, .POST, uri, body, .{}, audit_log_reason);
 }
 
 pub fn modifyGuildChannelPositions(
@@ -92,7 +92,7 @@ pub fn modifyGuildChannelPositions(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBody(void, .PATCH, uri, body, .{});
+    return client.rest_client.requestWithJsonBody(void, .PATCH, uri, body, .{});
 }
 
 pub fn listActiveGuildThreads(
@@ -104,7 +104,7 @@ pub fn listActiveGuildThreads(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBody([]const model.Channel, .GET, uri, body, .{});
+    return client.rest_client.requestWithJsonBody([]const model.Channel, .GET, uri, body, .{});
 }
 
 pub fn getGuildMember(
@@ -153,7 +153,7 @@ pub fn addGuildMember(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBody(model.guild.Member, .PUT, uri, body, .{});
+    return client.rest_client.requestWithJsonBody(model.guild.Member, .PUT, uri, body, .{});
 }
 
 pub fn modifyGuildMember(
@@ -167,7 +167,7 @@ pub fn modifyGuildMember(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBodyAndAuditLogReason(model.guild.Member, .PATCH, uri, body, .{}, audit_log_reason);
+    return client.rest_client.requestWithJsonBodyAndAuditLogReason(model.guild.Member, .PATCH, uri, body, .{}, audit_log_reason);
 }
 
 pub fn modifyCurrentMember(
@@ -180,7 +180,7 @@ pub fn modifyCurrentMember(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBodyAndAuditLogReason(model.guild.Member, .PATCH, uri, body, .{}, audit_log_reason);
+    return client.rest_client.requestWithJsonBodyAndAuditLogReason(model.guild.Member, .PATCH, uri, body, .{}, audit_log_reason);
 }
 
 pub fn addGuildMemberRole(
@@ -284,7 +284,7 @@ pub fn bulkGuildBan(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBodyAndAuditLogReason(BulkGuildBanResponse, .POST, uri, body, .{}, audit_log_reason);
+    return client.rest_client.requestWithJsonBodyAndAuditLogReason(BulkGuildBanResponse, .POST, uri, body, .{}, audit_log_reason);
 }
 
 pub fn getGuildRoles(
@@ -320,7 +320,7 @@ pub fn createGuildRole(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBodyAndAuditLogReason([]model.Role, .POST, uri, body, .{}, audit_log_reason);
+    return client.rest_client.requestWithJsonBodyAndAuditLogReason([]model.Role, .POST, uri, body, .{}, audit_log_reason);
 }
 
 pub fn modifyGuildRolePositions(
@@ -333,7 +333,7 @@ pub fn modifyGuildRolePositions(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBodyAndAuditLogReason([]model.Role, .PATCH, uri, body, .{}, audit_log_reason);
+    return client.rest_client.requestWithJsonBodyAndAuditLogReason([]model.Role, .PATCH, uri, body, .{}, audit_log_reason);
 }
 
 pub fn modifyGuildRole(
@@ -347,7 +347,7 @@ pub fn modifyGuildRole(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBodyAndAuditLogReason(model.Role, .PATCH, uri, body, .{}, audit_log_reason);
+    return client.rest_client.requestWithJsonBodyAndAuditLogReason(model.Role, .PATCH, uri, body, .{}, audit_log_reason);
 }
 
 pub fn modifyGuildMfaLevel(
@@ -360,7 +360,7 @@ pub fn modifyGuildMfaLevel(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBodyAndAuditLogReason(model.guild.MfaLevel, .POST, uri, body, .{}, audit_log_reason);
+    return client.rest_client.requestWithJsonBodyAndAuditLogReason(model.guild.MfaLevel, .POST, uri, body, .{}, audit_log_reason);
 }
 
 pub fn deleteGuildRole(
@@ -374,7 +374,7 @@ pub fn deleteGuildRole(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBodyAndAuditLogReason(model.guild.MfaLevel, .DELETE, uri, body, .{}, audit_log_reason);
+    return client.rest_client.requestWithJsonBodyAndAuditLogReason(model.guild.MfaLevel, .DELETE, uri, body, .{}, audit_log_reason);
 }
 
 pub fn getGuildPruneCount(
@@ -399,7 +399,7 @@ pub fn beginGuildPrune(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBodyAndAuditLogReason(BeginGuildPruneResponse, .GET, uri, body, .{}, audit_log_reason);
+    return client.rest_client.requestWithJsonBodyAndAuditLogReason(BeginGuildPruneResponse, .GET, uri, body, .{}, audit_log_reason);
 }
 
 pub fn getGuildVoiceRegions(
@@ -469,7 +469,7 @@ pub fn modifyGuildWidget(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBodyAndAuditLogReason(model.guild.WidgetSettings, .PATCH, uri, body, .{}, audit_log_reason);
+    return client.rest_client.requestWithJsonBodyAndAuditLogReason(model.guild.WidgetSettings, .PATCH, uri, body, .{}, audit_log_reason);
 }
 
 pub fn getGuildWidget(
@@ -533,7 +533,7 @@ pub fn modifyGuildWelcomeScreen(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBodyAndAuditLogReason(model.guild.WelcomeScreen, .PATCH, uri, body, .{}, audit_log_reason);
+    return client.rest_client.requestWithJsonBodyAndAuditLogReason(model.guild.WelcomeScreen, .PATCH, uri, body, .{}, audit_log_reason);
 }
 
 pub fn getGuildOnboarding(
@@ -557,7 +557,7 @@ pub fn modifyGuildOnboarding(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBodyAndAuditLogReason(model.guild.Onboarding, .PUT, uri, body, .{}, audit_log_reason);
+    return client.rest_client.requestWithJsonBodyAndAuditLogReason(model.guild.Onboarding, .PUT, uri, body, .{}, audit_log_reason);
 }
 
 // BODY / QUERY CONTRACTS

@@ -80,6 +80,12 @@ pub fn build(b: *std.Build) !void {
     example_thumbsup_step.dependOn(&thumbsup_artifact.step);
     example_thumbsup_step.dependOn(generate_step);
 
+    // zig build examples:createsticker
+    const createsticker_artifact = createExample(b, "createsticker", b.path("./examples/createsticker_bot.zig"), optimize, target, example_imports);
+    const example_createsticker_step = b.step("examples:createsticker", "Builds an example createsticker reaction bot");
+    example_createsticker_step.dependOn(&createsticker_artifact.step);
+    example_createsticker_step.dependOn(generate_step);
+
     // zig build examples
     const examples_step = b.step("examples", "Builds all examples");
     examples_step.dependOn(example_gateway_logger_step);

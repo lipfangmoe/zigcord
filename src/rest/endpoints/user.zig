@@ -29,7 +29,7 @@ pub fn modifyCurrentUser(
 ) !rest.RestClient.Result(model.User) {
     const uri = try std.Uri.parse(rest.base_url ++ "/users/@me");
 
-    return client.rest_client.requestWithValueBody(model.User, .PATCH, uri, body, .{});
+    return client.rest_client.requestWithJsonBody(model.User, .PATCH, uri, body, .{});
 }
 
 pub fn getCurrentUserGuilds(
@@ -62,7 +62,7 @@ pub fn createDm(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBody(model.Channel, .POST, uri, body, .{});
+    return client.rest_client.requestWithJsonBody(model.Channel, .POST, uri, body, .{});
 }
 
 pub fn createGroupDm(
@@ -73,7 +73,7 @@ pub fn createGroupDm(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return try client.rest_client.requestWithValueBody(model.Channel, .POST, uri, body, .{});
+    return try client.rest_client.requestWithJsonBody(model.Channel, .POST, uri, body, .{});
 }
 
 pub fn getCurrentUserConnections(
@@ -104,7 +104,7 @@ pub fn updateCurrentUserApplicationRoleConnection(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBody(model.User.ApplicationRoleConnection, .PUT, uri, body, .{});
+    return client.rest_client.requestWithJsonBody(model.User.ApplicationRoleConnection, .PUT, uri, body, .{});
 }
 
 pub const ModifyCurrentUserBody = struct {

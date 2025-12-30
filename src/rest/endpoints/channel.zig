@@ -24,7 +24,7 @@ pub fn modifyChannel(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBodyAndAuditLogReason(Channel, .PATCH, uri, body, .{}, audit_log_reason);
+    return client.rest_client.requestWithJsonBodyAndAuditLogReason(Channel, .PATCH, uri, body, .{}, audit_log_reason);
 }
 
 pub fn deleteChannel(
@@ -76,7 +76,7 @@ pub fn createMessage(
 
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBody(model.Message, .POST, uri, body, .{});
+    return client.rest_client.requestWithJsonBody(model.Message, .POST, uri, body, .{});
 }
 
 /// Note - the CreateMessageFormBody type has several helpers for creating messages easily
@@ -90,12 +90,24 @@ pub fn createMessageMultipart(
 
     const uri = try std.Uri.parse(uri_str);
 
-    var buf: [1028]u8 = undefined;
-    var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .POST, uri, .chunked, rest.multipart_boundary, null, &buf);
+    const transfer_encoding = try rest.getTransferEncoding(body, "files");
 
-    var body_writer = try pending_request.request.sendBodyUnflushed("");
-    try body_writer.writer.print("{f}", .{body});
-    try body_writer.end();
+    // https://codeberg.org/ziglang/zig/issues/30623 - for now, we will write the file
+    // to an allocatingwriter and send it all in one shot. once streaming to body_writer is fixed,
+    // this should be updated to write directly to body_writer instead of allocating the entire file.
+    var aw: std.Io.Writer.Allocating = switch (transfer_encoding) {
+        .content_length => |len| try .initCapacity(client.rest_client.allocator, len),
+        .chunked => .init(client.rest_client.allocator),
+        .none => unreachable,
+    };
+    defer aw.deinit();
+
+    try rest.writeMultipartFormDataBody(body, "files", &aw.writer);
+
+    var buf: [1028]u8 = undefined;
+    var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .POST, uri, transfer_encoding, rest.multipart_boundary, &buf);
+
+    try pending_request.request.sendBodyComplete(aw.written());
 
     return pending_request.waitForResponse();
 }
@@ -209,7 +221,7 @@ pub fn editMessage(
 
     const uri = try std.Uri.parse(uri_str);
 
-    return try client.rest_client.requestWithValueBody(model.Message, .PATCH, uri, body, .{});
+    return try client.rest_client.requestWithJsonBody(model.Message, .PATCH, uri, body, .{});
 }
 
 pub fn editMessageMultipart(
@@ -223,12 +235,24 @@ pub fn editMessageMultipart(
 
     const uri = try std.Uri.parse(uri_str);
 
-    var buf: [1028]u8 = undefined;
-    var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .PATCH, uri, .chunked, rest.multipart_boundary, null, &buf);
+    const transfer_encoding = try rest.getTransferEncoding(body, "files");
 
-    var body_writer = try pending_request.request.sendBodyUnflushed("");
-    try body_writer.writer.print("{f}", .{body});
-    try body_writer.end();
+    // https://codeberg.org/ziglang/zig/issues/30623 - for now, we will write the file
+    // to an allocatingwriter and send it all in one shot. once streaming to body_writer is fixed,
+    // this should be updated to write directly to body_writer instead of allocating the entire file.
+    var aw: std.Io.Writer.Allocating = switch (transfer_encoding) {
+        .content_length => |len| try .initCapacity(client.rest_client.allocator, len),
+        .chunked => .init(client.rest_client.allocator),
+        .none => unreachable,
+    };
+    defer aw.deinit();
+
+    try rest.writeMultipartFormDataBody(body, "files", &aw.writer);
+
+    var buf: [1028]u8 = undefined;
+    var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .PATCH, uri, transfer_encoding, rest.multipart_boundary, &buf);
+
+    try pending_request.request.sendBodyComplete(aw.written());
 
     return pending_request.waitForResponse();
 }
@@ -258,7 +282,7 @@ pub fn bulkDeleteMessages(
 
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBodyAndAuditLogReason(void, .POST, uri, message_ids, .{}, audit_log_reason);
+    return client.rest_client.requestWithJsonBodyAndAuditLogReason(void, .POST, uri, message_ids, .{}, audit_log_reason);
 }
 
 pub fn getChannelPins(
@@ -286,7 +310,7 @@ pub fn editChannelPermissions(
 
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBodyAndAuditLogReason(void, .PUT, uri, body, .{}, audit_log_reason);
+    return client.rest_client.requestWithJsonBodyAndAuditLogReason(void, .PUT, uri, body, .{}, audit_log_reason);
 }
 
 pub fn getChannelInvites(client: *rest.EndpointClient, channel_id: Snowflake) !rest.RestClient.Result([]const model.Invite.WithMetadata) {
@@ -309,7 +333,7 @@ pub fn createChannelInvite(
 
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBodyAndAuditLogReason(model.Invite, .PUT, uri, body, .{ .emit_null_optional_fields = false }, audit_log_reason);
+    return client.rest_client.requestWithJsonBodyAndAuditLogReason(model.Invite, .PUT, uri, body, .{ .emit_null_optional_fields = false }, audit_log_reason);
 }
 
 pub fn deleteChannelPermission(
@@ -340,7 +364,7 @@ pub fn followAnnouncementChannel(
     const Body = struct { webhook_channel_id: Snowflake };
     const body = Body{ .webhook_channel_id = target_channel_id };
 
-    return client.rest_client.requestWithValueBodyAndAuditLogReason(Channel.Followed, .POST, uri, body, .{}, audit_log_reason);
+    return client.rest_client.requestWithJsonBodyAndAuditLogReason(Channel.Followed, .POST, uri, body, .{}, audit_log_reason);
 }
 
 pub fn triggerTypingIndicator(
@@ -396,7 +420,7 @@ pub fn groupDmAddRecipient(
     const Body = struct { access_token: []const u8, nick: []const u8 };
     const body = Body{ .access_token = access_token, .nick = nick };
 
-    return client.rest_client.requestWithValueBody(void, .PUT, uri, body, .{});
+    return client.rest_client.requestWithJsonBody(void, .PUT, uri, body, .{});
 }
 
 pub fn groupDmRemoveRecipient(
@@ -424,7 +448,7 @@ pub fn startThreadFromMessage(
 
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBodyAndAuditLogReason(Channel, .POST, uri, body, .{}, audit_log_reason);
+    return client.rest_client.requestWithJsonBodyAndAuditLogReason(Channel, .POST, uri, body, .{}, audit_log_reason);
 }
 
 pub fn startThreadWithoutMessage(
@@ -438,7 +462,7 @@ pub fn startThreadWithoutMessage(
 
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBodyAndAuditLogReason(Channel, .POST, uri, body, .{}, audit_log_reason);
+    return client.rest_client.requestWithJsonBodyAndAuditLogReason(Channel, .POST, uri, body, .{}, audit_log_reason);
 }
 
 pub fn startThreadInForumOrMediaChannel(
@@ -452,7 +476,7 @@ pub fn startThreadInForumOrMediaChannel(
 
     const uri = try std.Uri.parse(uri_str);
 
-    return try client.rest_client.requestWithValueBodyAndAuditLogReason(Channel, .POST, uri, body, .{}, audit_log_reason);
+    return try client.rest_client.requestWithJsonBodyAndAuditLogReason(Channel, .POST, uri, body, .{}, audit_log_reason);
 }
 
 pub fn startThreadInForumOrMediaChannelMultipart(
@@ -465,17 +489,24 @@ pub fn startThreadInForumOrMediaChannelMultipart(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    const headers: []const std.http.Header = if (audit_log_reason) |reason|
-        &.{std.http.Header{ .name = "X-Audit-Log-Reason", .value = reason }}
-    else
-        &.{};
+    const transfer_encoding = try rest.getTransferEncoding(body, "files");
+
+    // https://codeberg.org/ziglang/zig/issues/30623 - for now, we will write the file
+    // to an allocatingwriter and send it all in one shot. once streaming to body_writer is fixed,
+    // this should be updated to write directly to body_writer instead of allocating the entire file.
+    var aw: std.Io.Writer.Allocating = switch (transfer_encoding) {
+        .content_length => |len| try .initCapacity(client.rest_client.allocator, len),
+        .chunked => .init(client.rest_client.allocator),
+        .none => unreachable,
+    };
+    defer aw.deinit();
+
+    try rest.writeMultipartFormDataBody(body, "files", &aw.writer);
 
     var buf: [1028]u8 = undefined;
-    var pending_request = try client.rest_client.beginMultipartRequest(Channel, .POST, uri, .chunked, rest.multipart_boundary, headers, &buf);
+    var pending_request = try client.rest_client.beginMultipartRequestWithAuditLogReason(Channel, .POST, uri, transfer_encoding, rest.multipart_boundary, &buf, audit_log_reason);
 
-    var body_writer = try pending_request.request.sendBodyUnflushed("");
-    try body_writer.writer.print("{f}", .{body});
-    try body_writer.end();
+    try pending_request.request.sendBodyComplete(aw.written());
 
     return pending_request.waitForResponse();
 }
@@ -486,7 +517,7 @@ pub fn joinThread(client: *rest.EndpointClient, channel_id: Snowflake) !rest.Res
 
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBody(void, .PUT, uri, .{}, .{});
+    return client.rest_client.requestWithJsonBody(void, .PUT, uri, .{}, .{});
 }
 
 pub fn addThreadMember(client: *rest.EndpointClient, channel_id: Snowflake, user_id: Snowflake) !rest.RestClient.Result(void) {
@@ -693,15 +724,11 @@ pub const CreateMessageFormBody = struct {
     message_reference: ?model.Message.Reference = null,
     components: ?[]const model.MessageComponent = null,
     sticker_ids: ?[]const Snowflake = null,
-    files: ?[]const *std.Io.Reader = null,
+    files: ?[]const rest.Upload = null,
     attachments: ?[]const jconfig.Partial(model.Message.Attachment) = null,
     flags: ?model.Message.Flags = null,
     enforce_nonce: ?bool = null,
     poll: ?model.Poll = null,
-
-    pub fn format(self: CreateMessageFormBody, writer: *std.Io.Writer) !void {
-        rest.writeMultipartFormDataBody(self, "files", writer) catch return error.WriteFailed;
-    }
 
     /// Creates a text-only message
     pub fn initTextOnly(message: []const u8) CreateMessageFormBody {
@@ -711,7 +738,7 @@ pub const CreateMessageFormBody = struct {
     /// Creates a text message with a file upload. The length of `files` and `attachments` must be equal.
     pub fn initMessageWithFiles(
         message: ?[]const u8,
-        files: []const *std.Io.Reader,
+        files: []const rest.Upload,
         attachments: []const jconfig.Partial(model.Message.Attachment),
     ) CreateMessageFormBody {
         std.debug.assert(files.len == attachments.len);
@@ -787,13 +814,9 @@ pub const EditMessageFormBody = struct {
     flags: ?model.Message.Flags = null,
     allowed_mentions: ?model.Message.AllowedMentions = null,
     /// set a file to `null` to not affect it
-    files: ?[]const ?*std.io.Reader = null,
+    files: ?[]const ?rest.Upload = null,
     /// must also include already-uploaded files
     attachments: ?[]const model.Message.Attachment = null,
-
-    pub fn format(self: EditMessageFormBody, writer: *std.Io.Writer) !void {
-        rest.writeMultipartFormDataBody(self, "files", writer) catch return error.WriteFailed;
-    }
 };
 
 pub const EditChannelPermissions = struct {
@@ -866,11 +889,7 @@ pub const StartThreadInForumOrMediaChannelFormBody = struct {
     rate_limit_per_user: ?i64 = null,
     message: ForumAndMediaThreadMessage,
     applied_tags: ?[]const Snowflake = null,
-    files: ?[]const *std.Io.Reader = null,
-
-    pub fn format(self: StartThreadInForumOrMediaChannelFormBody, writer: *std.Io.Writer) !void {
-        rest.writeMultipartFormDataBody(self, "files", writer) catch return error.WriteFailed;
-    }
+    files: ?[]const rest.Upload = null,
 
     pub const ForumAndMediaThreadMessage = struct {
         content: jconfig.Omittable([]const u8) = .omit,

@@ -37,7 +37,7 @@ pub fn modifyCurrentUserVoiceState(
     defer client.rest_client.allocator.free(url_str);
     const url = try std.Uri.parse(url_str);
 
-    return client.rest_client.requestWithValueBody(void, .PATCH, url, body, .{});
+    return client.rest_client.requestWithJsonBody(void, .PATCH, url, body, .{});
 }
 
 pub fn modifyUserVoiceState(
@@ -50,7 +50,7 @@ pub fn modifyUserVoiceState(
     defer client.rest_client.allocator.free(url_str);
     const url = try std.Uri.parse(url_str);
 
-    return client.rest_client.requestWithValueBody(void, .PATCH, url, body, .{});
+    return client.rest_client.requestWithJsonBody(void, .PATCH, url, body, .{});
 }
 
 pub const ModifyCurrentUserVoiceStateBody = struct {

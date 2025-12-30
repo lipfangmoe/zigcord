@@ -9,7 +9,7 @@ pub fn sendSoundboardSound(client: *rest.EndpointClient, channel_id: model.Snowf
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBody(void, .POST, uri, body, .{});
+    return client.rest_client.requestWithJsonBody(void, .POST, uri, body, .{});
 }
 
 pub fn listDefaultSoundboardSounds(client: *rest.EndpointClient) !rest.RestClient.Result([]model.SoundboardSound) {
@@ -44,7 +44,7 @@ pub fn createGuildSoundboardSound(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBodyAndAuditLogReason(model.SoundboardSound, .POST, uri, body, .{}, audit_log_reason);
+    return client.rest_client.requestWithJsonBodyAndAuditLogReason(model.SoundboardSound, .POST, uri, body, .{}, audit_log_reason);
 }
 
 pub fn modifyGuildSoundboardSound(
@@ -58,7 +58,7 @@ pub fn modifyGuildSoundboardSound(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBodyAndAuditLogReason(model.SoundboardSound, .PATCH, uri, body, .{}, audit_log_reason);
+    return client.rest_client.requestWithJsonBodyAndAuditLogReason(model.SoundboardSound, .PATCH, uri, body, .{}, audit_log_reason);
 }
 
 pub fn deleteGuildSoundboardSound(

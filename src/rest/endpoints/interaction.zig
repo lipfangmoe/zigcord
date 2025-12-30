@@ -13,7 +13,7 @@ pub fn createInteractionResponse(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBody(void, .POST, uri, body, .{});
+    return client.rest_client.requestWithJsonBody(void, .POST, uri, body, .{});
 }
 
 pub fn createInteractionResponseMultipart(
@@ -26,12 +26,24 @@ pub fn createInteractionResponseMultipart(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    var buf: [1028]u8 = undefined;
-    var pending_request = try client.rest_client.beginMultipartRequest(void, .POST, uri, .chunked, rest.multipart_boundary, null, &buf);
+    const transfer_encoding = try rest.getTransferEncoding(form, "files");
 
-    var body_writer = try pending_request.request.sendBodyUnflushed("");
-    try body_writer.writer.print("{f}", .{form});
-    try body_writer.end();
+    // https://codeberg.org/ziglang/zig/issues/30623 - for now, we will write the file
+    // to an allocatingwriter and send it all in one shot. once streaming to body_writer is fixed,
+    // this should be updated to write directly to body_writer instead of allocating the entire file.
+    var aw: std.Io.Writer.Allocating = switch (transfer_encoding) {
+        .content_length => |len| try .initCapacity(client.rest_client.allocator, len),
+        .chunked => .init(client.rest_client.allocator),
+        .none => unreachable,
+    };
+    defer aw.deinit();
+
+    try rest.writeMultipartFormDataBody(form, "files", &aw.writer);
+
+    var buf: [1028]u8 = undefined;
+    var pending_request = try client.rest_client.beginMultipartRequest(void, .POST, uri, transfer_encoding, rest.multipart_boundary, &buf);
+
+    try pending_request.request.sendBodyComplete(aw.written());
 
     return pending_request.waitForResponse();
 }
@@ -58,12 +70,24 @@ pub fn editOriginalInteractionResponse(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    var buf: [1028]u8 = undefined;
-    var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .PATCH, uri, .chunked, rest.multipart_boundary, null, &buf);
+    const transfer_encoding = try rest.getTransferEncoding(body, "files");
 
-    var body_writer = try pending_request.request.sendBodyUnflushed("");
-    try body_writer.writer.print("{f}", .{body});
-    try body_writer.end();
+    // https://codeberg.org/ziglang/zig/issues/30623 - for now, we will write the file
+    // to an allocatingwriter and send it all in one shot. once streaming to body_writer is fixed,
+    // this should be updated to write directly to body_writer instead of allocating the entire file.
+    var aw: std.Io.Writer.Allocating = switch (transfer_encoding) {
+        .content_length => |len| try .initCapacity(client.rest_client.allocator, len),
+        .chunked => .init(client.rest_client.allocator),
+        .none => unreachable,
+    };
+    defer aw.deinit();
+
+    try rest.writeMultipartFormDataBody(body, "files", &aw.writer);
+
+    var buf: [1028]u8 = undefined;
+    var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .PATCH, uri, transfer_encoding, rest.multipart_boundary, &buf);
+
+    try pending_request.request.sendBodyComplete(aw.written());
 
     return pending_request.waitForResponse();
 }
@@ -139,9 +163,5 @@ pub fn deleteFollowupMessage(
 pub const CreateInteractionResponseFormBody = struct {
     type: model.interaction.InteractionResponse.Type,
     data: ?model.interaction.InteractionCallbackData = null,
-    files: ?[]const *std.Io.Reader = null,
-
-    pub fn format(self: CreateInteractionResponseFormBody, writer: *std.Io.Writer) !void {
-        rest.writeMultipartFormDataBody(self, "files", writer) catch return error.WriteFailed;
-    }
+    files: ?[]const rest.Upload = null,
 };

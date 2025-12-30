@@ -24,7 +24,7 @@ pub fn createGuildFromGuildTemplate(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBody(model.guild.Guild, .POST, uri, body, .{});
+    return client.rest_client.requestWithJsonBody(model.guild.Guild, .POST, uri, body, .{});
 }
 
 pub fn getGuildTemplates(
@@ -47,7 +47,7 @@ pub fn createGuildTemplate(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBody(model.GuildTemplate, .POST, uri, body, .{});
+    return client.rest_client.requestWithJsonBody(model.GuildTemplate, .POST, uri, body, .{});
 }
 
 pub fn syncGuildTemplate(
@@ -72,7 +72,7 @@ pub fn modifyGuildTemplate(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBody(model.GuildTemplate, .PATCH, uri, body, .{});
+    return client.rest_client.requestWithJsonBody(model.GuildTemplate, .PATCH, uri, body, .{});
 }
 
 pub fn deleteGuildTemplate(

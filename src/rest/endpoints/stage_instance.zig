@@ -13,7 +13,7 @@ pub fn createStageInstance(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBodyAndAuditLogReason(model.StageInstance, .POST, uri, body, .{}, audit_log_reason);
+    return client.rest_client.requestWithJsonBodyAndAuditLogReason(model.StageInstance, .POST, uri, body, .{}, audit_log_reason);
 }
 
 pub fn getStageInstance(
@@ -37,7 +37,7 @@ pub fn modifyStageInstance(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBodyAndAuditLogReason(model.StageInstance, .PATCH, uri, body, .{}, audit_log_reason);
+    return client.rest_client.requestWithJsonBodyAndAuditLogReason(model.StageInstance, .PATCH, uri, body, .{}, audit_log_reason);
 }
 
 pub fn deleteStageInstance(
