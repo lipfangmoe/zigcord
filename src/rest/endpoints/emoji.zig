@@ -37,7 +37,7 @@ pub fn createGuildEmoji(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBodyAndAuditLogReason(model.Emoji, .POST, uri, body, .{}, audit_log_reason);
+    return client.rest_client.requestWithJsonBodyAndAuditLogReason(model.Emoji, .POST, uri, body, .{}, audit_log_reason);
 }
 
 pub fn modifyGuildEmoji(
@@ -51,7 +51,7 @@ pub fn modifyGuildEmoji(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBodyAndAuditLogReason(model.Emoji, .PATCH, uri, body, .{}, audit_log_reason);
+    return client.rest_client.requestWithJsonBodyAndAuditLogReason(model.Emoji, .PATCH, uri, body, .{}, audit_log_reason);
 }
 
 pub fn deleteGuildEmoji(
@@ -93,7 +93,7 @@ pub fn modifyApplicationEmoji(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBody(model.Emoji, .PATCH, uri, body, .{});
+    return client.rest_client.requestWithJsonBody(model.Emoji, .PATCH, uri, body, .{});
 }
 
 pub fn deleteApplicationEmoji(client: *rest.EndpointClient, application_id: model.Snowflake, emoji_id: model.Snowflake) !rest.RestClient.Result(void) {

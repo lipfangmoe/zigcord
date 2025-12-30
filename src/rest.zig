@@ -7,6 +7,7 @@ pub const base_url = if (@import("builtin").is_test) "http://127.0.0.1/api/v10" 
 pub const RestClient = @import("./rest/RestClient.zig");
 pub const EndpointClient = @import("./rest/EndpointClient.zig");
 pub const HttpInteractionServer = @import("./interaction_server/HttpServer.zig");
+pub const Upload = @import("./rest/upload.zig").Upload;
 
 const multipart = @import("./rest/multipart.zig");
 
@@ -31,6 +32,7 @@ pub fn discordApiCallUri(allocator: std.mem.Allocator, path: []const u8, query: 
     return uri;
 }
 
+pub const getTransferEncoding = multipart.getTransferEncoding;
 pub const writeMultipartFormDataBody = multipart.writeMultipartFormDataBody;
 
 pub fn QueryStringFormatMixin(comptime T: type) type {

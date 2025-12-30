@@ -25,5 +25,5 @@ pub fn updateApplicationRoleConnectionMetadataRecords(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBody([]ApplicationRoleConnectionMetadata, .PUT, uri, new_records, .{});
+    return client.rest_client.requestWithJsonBody([]ApplicationRoleConnectionMetadata, .PUT, uri, new_records, .{});
 }

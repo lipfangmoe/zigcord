@@ -12,7 +12,7 @@ pub fn getCurrentApplication(client: *rest.EndpointClient) !rest.RestClient.Resu
 pub fn editCurrentApplication(client: *rest.EndpointClient, params: EditParams) !rest.RestClient.Result(Application) {
     const url = rest.base_url ++ "/applications/@me";
 
-    return client.rest_client.requestWithValueBody(Application, .PATCH, try std.Uri.parse(url), params, .{});
+    return client.rest_client.requestWithJsonBody(Application, .PATCH, try std.Uri.parse(url), params, .{});
 }
 
 pub const EditParams = struct {

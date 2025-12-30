@@ -27,7 +27,7 @@ pub fn createGuildScheduledEvent(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBodyAndAuditLogReason(model.GuildScheduledEvent, .POST, uri, body, .{}, audit_log_reason);
+    return client.rest_client.requestWithJsonBodyAndAuditLogReason(model.GuildScheduledEvent, .POST, uri, body, .{}, audit_log_reason);
 }
 
 pub fn getGuildScheduledEvent(
@@ -55,7 +55,7 @@ pub fn modifyGuildScheduledEvent(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBodyAndAuditLogReason(model.GuildScheduledEvent, .PATCH, uri, body, .{}, audit_log_reason);
+    return client.rest_client.requestWithJsonBodyAndAuditLogReason(model.GuildScheduledEvent, .PATCH, uri, body, .{}, audit_log_reason);
 }
 
 pub fn deleteGuildScheduledEvent(

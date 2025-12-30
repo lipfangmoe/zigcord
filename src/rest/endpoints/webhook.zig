@@ -14,7 +14,7 @@ pub fn createWebhook(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBodyAndAuditLogReason(model.Webhook, .POST, uri, body, .{}, audit_log_reason);
+    return client.rest_client.requestWithJsonBodyAndAuditLogReason(model.Webhook, .POST, uri, body, .{}, audit_log_reason);
 }
 
 pub fn getChannelWebhooks(
@@ -72,7 +72,7 @@ pub fn modifyWebhook(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBodyAndAuditLogReason(model.Webhook, .PATCH, uri, body, .{}, audit_log_reason);
+    return client.rest_client.requestWithJsonBodyAndAuditLogReason(model.Webhook, .PATCH, uri, body, .{}, audit_log_reason);
 }
 
 pub fn modifyWebhookWithToken(
@@ -86,7 +86,7 @@ pub fn modifyWebhookWithToken(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBodyAndAuditLogReason(model.Webhook, .PATCH, uri, body, .{}, audit_log_reason);
+    return client.rest_client.requestWithJsonBodyAndAuditLogReason(model.Webhook, .PATCH, uri, body, .{}, audit_log_reason);
 }
 
 pub fn deleteWebhook(
@@ -128,7 +128,7 @@ pub fn executeWebhookWait(
 
     const uri = try std.Uri.parse(uri_str);
 
-    return try client.rest_client.requestWithValueBody(model.Message, .POST, uri, body, .{});
+    return try client.rest_client.requestWithJsonBody(model.Message, .POST, uri, body, .{});
 }
 
 pub fn executeWebhookNoWait(
@@ -145,7 +145,7 @@ pub fn executeWebhookNoWait(
 
     const uri = try std.Uri.parse(uri_str);
 
-    return try client.rest_client.requestWithValueBody(void, .POST, uri, body, .{});
+    return try client.rest_client.requestWithJsonBody(void, .POST, uri, body, .{});
 }
 
 pub fn executeWebhookWaitMultipart(
@@ -161,12 +161,24 @@ pub fn executeWebhookWaitMultipart(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    var buf: [1028]u8 = undefined;
-    var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .POST, uri, .chunked, rest.multipart_boundary, null, &buf);
+    const transfer_encoding = try rest.getTransferEncoding(body, "files");
 
-    var body_writer = try pending_request.request.sendBodyUnflushed("");
-    try body_writer.writer.print("{f}", .{body});
-    try body_writer.end();
+    // https://codeberg.org/ziglang/zig/issues/30623 - for now, we will write the file
+    // to an allocatingwriter and send it all in one shot. once streaming to body_writer is fixed,
+    // this should be updated to write directly to body_writer instead of allocating the entire file.
+    var aw: std.Io.Writer.Allocating = switch (transfer_encoding) {
+        .content_length => |len| try .initCapacity(client.rest_client.allocator, len),
+        .chunked => .init(client.rest_client.allocator),
+        .none => unreachable,
+    };
+    defer aw.deinit();
+
+    try rest.writeMultipartFormDataBody(body, "files", &aw.writer);
+
+    var buf: [1028]u8 = undefined;
+    var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .POST, uri, transfer_encoding, rest.multipart_boundary, &buf);
+
+    try pending_request.request.sendBodyComplete(aw.written());
 
     return pending_request.waitForResponse();
 }
@@ -184,12 +196,24 @@ pub fn executeWebhookNoWaitMultipart(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    var buf: [1028]u8 = undefined;
-    var pending_request = try client.rest_client.beginMultipartRequest(void, .POST, uri, .chunked, rest.multipart_boundary, null, &buf);
+    const transfer_encoding = try rest.getTransferEncoding(body, "files");
 
-    var body_writer = try pending_request.request.sendBodyUnflushed("");
-    try body_writer.writer.print("{f}", .{body});
-    try body_writer.end();
+    // https://codeberg.org/ziglang/zig/issues/30623 - for now, we will write the file
+    // to an allocatingwriter and send it all in one shot. once streaming to body_writer is fixed,
+    // this should be updated to write directly to body_writer instead of allocating the entire file.
+    var aw: std.Io.Writer.Allocating = switch (transfer_encoding) {
+        .content_length => |len| try .initCapacity(client.rest_client.allocator, len),
+        .chunked => .init(client.rest_client.allocator),
+        .none => unreachable,
+    };
+    defer aw.deinit();
+
+    try rest.writeMultipartFormDataBody(body, "files", &aw.writer);
+
+    var header_buf: [1028]u8 = undefined;
+    var pending_request = try client.rest_client.beginMultipartRequest(void, .POST, uri, transfer_encoding, rest.multipart_boundary, &header_buf);
+
+    try pending_request.request.sendBodyComplete(aw.written());
 
     return pending_request.waitForResponse();
 }
@@ -223,7 +247,7 @@ pub fn editWebhookMessage(
 
     const uri = try std.Uri.parse(uri_str);
 
-    return try client.rest_client.requestWithValueBody(model.Message, .PATCH, uri, body, .{});
+    return try client.rest_client.requestWithJsonBody(model.Message, .PATCH, uri, body, .{});
 }
 
 pub fn editWebhookMessageMultipart(
@@ -238,12 +262,23 @@ pub fn editWebhookMessageMultipart(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    var buf: [1028]u8 = undefined;
-    var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .PATCH, uri, .chunked, rest.multipart_boundary, null, &buf);
+    const transfer_encoding = try rest.getTransferEncoding(body, "files");
 
-    var body_writer = try pending_request.request.sendBodyUnflushed("");
-    try body_writer.writer.print("{f}", .{body});
-    try body_writer.end();
+    // https://codeberg.org/ziglang/zig/issues/30623 - for now, we will write the file
+    // to an allocatingwriter and send it all in one shot. once streaming to body_writer is fixed,
+    // this should be updated to write directly to body_writer instead of allocating the entire file.
+    var aw: std.Io.Writer.Allocating = switch (transfer_encoding) {
+        .content_length => |len| try .initCapacity(client.rest_client.allocator, len),
+        .chunked => .init(client.rest_client.allocator),
+        .none => unreachable,
+    };
+    defer aw.deinit();
+
+    try rest.writeMultipartFormDataBody(body, "files", &aw.writer);
+
+    var buf: [1028]u8 = undefined;
+    var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .PATCH, uri, transfer_encoding, rest.multipart_boundary, &buf);
+    try pending_request.request.sendBodyComplete(aw.written());
 
     return pending_request.waitForResponse();
 }
@@ -309,16 +344,12 @@ pub const ExecuteWebhookFormBody = struct {
     embeds: ?[]const model.Message.Embed = null,
     allowed_mentions: ?model.Message.AllowedMentions = null,
     components: ?[]const model.MessageComponent = null,
-    files: ?[]const ?*std.Io.Reader = null,
+    files: ?[]const ?rest.Upload = null,
     attachments: ?[]const jconfig.Partial(model.Message.Attachment) = null,
     flags: ?model.Message.Flags = null,
     thread_name: ?[]const u8 = null,
     applied_tags: ?[]const model.Snowflake = null,
     poll: ?model.Poll = null,
-
-    pub fn format(self: ExecuteWebhookFormBody, writer: *std.Io.Writer) !void {
-        rest.writeMultipartFormDataBody(self, "files", writer) catch return error.WriteFailed;
-    }
 };
 
 pub const PossiblyInThreadQuery = struct {
@@ -343,11 +374,7 @@ pub const EditWebhookMessageFormBody = struct {
     embeds: ?[]const model.Message.Embed = null,
     allowed_mentions: ?model.Message.AllowedMentions = null,
     components: ?[]const model.MessageComponent = null,
-    files: ?[]const ?*std.Io.Reader = null,
+    files: ?[]const ?rest.Upload = null,
     attachments: ?[]const jconfig.Partial(model.Message.Attachment) = null,
     poll: ?model.Poll = null, // Polls can only be added when editing a deferred interaction response.
-
-    pub fn format(self: EditWebhookMessageFormBody, writer: *std.Io.Writer) !void {
-        rest.writeMultipartFormDataBody(self, "files", writer) catch return error.WriteFailed;
-    }
 };

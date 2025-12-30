@@ -33,7 +33,7 @@ pub fn createGlobalApplicationCommand(client: *rest.EndpointClient, application_
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBody(ApplicationCommand, .POST, uri, body, .{});
+    return client.rest_client.requestWithJsonBody(ApplicationCommand, .POST, uri, body, .{});
 }
 
 /// Fetch a global command for your application. Returns an application command object.
@@ -52,7 +52,7 @@ pub fn editGlobalApplicationCommand(client: *rest.EndpointClient, application_id
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBody(ApplicationCommand, .PATCH, uri, body, .{});
+    return client.rest_client.requestWithJsonBody(ApplicationCommand, .PATCH, uri, body, .{});
 }
 
 /// Deletes a global command. Returns `204 No Content` on success.
@@ -74,7 +74,7 @@ pub fn bulkOverwriteGlobalApplicationCommands(client: *rest.EndpointClient, appl
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBody([]ApplicationCommand, .PUT, uri, new_commands, .{});
+    return client.rest_client.requestWithJsonBody([]ApplicationCommand, .PUT, uri, new_commands, .{});
 }
 
 pub fn getGuildApplicationCommands(client: *rest.EndpointClient, application_id: Snowflake, guild_id: Snowflake, with_localizations: ?bool) !rest.RestClient.Result([]ApplicationCommand) {
@@ -91,7 +91,7 @@ pub fn createGuildApplicationCommand(client: *rest.EndpointClient, application_i
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBody(ApplicationCommand, .POST, uri, body, .{});
+    return client.rest_client.requestWithJsonBody(ApplicationCommand, .POST, uri, body, .{});
 }
 
 pub fn getGuildApplicationCommand(client: *rest.EndpointClient, application_id: Snowflake, guild_id: Snowflake, command_id: Snowflake) !rest.RestClient.Result(ApplicationCommand) {
@@ -107,7 +107,7 @@ pub fn editGuildApplicationCommand(client: *rest.EndpointClient, application_id:
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBody(ApplicationCommand, .PATCH, uri, body, .{});
+    return client.rest_client.requestWithJsonBody(ApplicationCommand, .PATCH, uri, body, .{});
 }
 
 pub fn deleteGuildApplicationCommand(
@@ -133,7 +133,7 @@ pub fn bulkOverwriteGuildApplicationCommands(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBody([]const ApplicationCommand, .PUT, uri, new_commands, .{});
+    return client.rest_client.requestWithJsonBody([]const ApplicationCommand, .PUT, uri, new_commands, .{});
 }
 
 pub fn getGuildApplicationCommandPermissions(
@@ -172,7 +172,7 @@ pub fn editApplicationCommandPermissions(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithValueBody(model.interaction.command.ApplicationCommandPermission, .PUT, uri, body, .{});
+    return client.rest_client.requestWithJsonBody(model.interaction.command.ApplicationCommandPermission, .PUT, uri, body, .{});
 }
 
 pub const CreateGlobalApplicationCommandBody = struct {
