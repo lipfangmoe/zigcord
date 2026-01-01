@@ -6,4 +6,5 @@ pub const SendEvent = @import("./gateway/SendEvent.zig");
 pub const ReceiveEvent = @import("./gateway/ReceiveEvent.zig");
 pub const event_data = @import("./gateway/event_data.zig");
 
-pub const ReadEventData = event_data.AnyReceiveEvent;
+pub const ReadEventData = event_data.ReceiveEventData;
+pub const WriteEventData = event_data.SendEventData;

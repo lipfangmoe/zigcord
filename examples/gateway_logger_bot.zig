@@ -30,7 +30,7 @@ pub fn main() !void {
         defer event.deinit();
 
         switch (event.event orelse continue) {
-            .MessageCreate => |msg_event| {
+            .message_create => |msg_event| {
                 if (std.mem.eql(u8, msg_event.message.content, "send error")) {
                     return error.UserRestart;
                 }

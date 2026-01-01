@@ -4,7 +4,7 @@ const jconfig = @import("../root.zig").jconfig;
 const SendEvent = @This();
 
 op: event_data.Opcode,
-d: event_data.AnySendEvent,
+d: event_data.SendEventData,
 s: ?i64,
 t: ?[]const u8,
 
@@ -13,7 +13,7 @@ pub fn identify(data: event_data.send_events.Identify) SendEvent {
         .op = .identify,
         .t = null,
         .s = null,
-        .d = .{ .Identify = data },
+        .d = .{ .identify = data },
     };
 }
 
@@ -22,7 +22,7 @@ pub fn @"resume"(data: event_data.send_events.Resume) SendEvent {
         .op = .@"resume",
         .t = null,
         .s = null,
-        .d = .{ .Resume = data },
+        .d = .{ .@"resume" = data },
     };
 }
 
@@ -31,16 +31,16 @@ pub fn heartbeat(data: event_data.send_events.Heartbeat) SendEvent {
         .op = .heartbeat,
         .t = null,
         .s = null,
-        .d = .{ .Heartbeat = data },
+        .d = .{ .heartbeat = data },
     };
 }
 
 pub fn requestGuildMembers(data: event_data.send_events.RequestGuildMembers) SendEvent {
     return .{
-        .op = .heartbeat,
+        .op = .request_guild_members,
         .t = null,
         .s = null,
-        .d = .{ .RequestGuildMembers = data },
+        .d = .{ .request_guild_members = data },
     };
 }
 
@@ -49,7 +49,7 @@ pub fn updateVoiceState(data: event_data.send_events.UpdateVoiceState) SendEvent
         .op = .voice_state_update,
         .t = null,
         .s = null,
-        .d = .{ .UpdateVoiceState = data },
+        .d = .{ .update_voice_state = data },
     };
 }
 
@@ -58,7 +58,7 @@ pub fn updatePresence(data: event_data.send_events.UpdatePresence) SendEvent {
         .op = .presence_update,
         .t = null,
         .s = null,
-        .d = .{ .UpdatePresence = data },
+        .d = .{ .update_presence = data },
     };
 }
 
