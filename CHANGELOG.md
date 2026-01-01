@@ -1,4 +1,13 @@
+# v0.7.1
+
+This release contains no breaking changes.
+
+ * new permission added: bypass_slowmode
+ * new endpoint added: getGuildRoleMemberCounts
+
 # v0.7.0
+
+This release contains major breaking changes.
 
  * **breaking**: the gateway's ReadEventData union fields have been renamed to be snake_case instead of UpperCamelCase
    * this is more consistent with how union fields are traditionally named
@@ -18,6 +27,8 @@
    the file is generated from different platforms
 
 # v0.6.0
+
+This release contains minor breaking changes.
 
  * **breaking(?)**: fixes an issue where EndpointClient methods which allowed uploading files did not work properly
    * this is only questionably a breaking change because affected methods used to panic.
