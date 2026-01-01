@@ -265,6 +265,16 @@ pub const GuildSoundboardSoundDelete = struct {
     guild_id: model.Snowflake,
 };
 
+pub const GuildSoundboardSoundsUpdate = struct {
+    soundboard_sounds: []const model.SoundboardSound,
+    guild_id: model.Snowflake,
+};
+
+pub const SoundboardSounds = struct {
+    soundboard_sounds: []const model.SoundboardSound,
+    guild_id: model.Snowflake,
+};
+
 pub const IntegrationCreate = struct {
     integration: model.guild.Integration,
     guild_id: model.Snowflake,
@@ -452,7 +462,11 @@ pub const StageInstanceUpdate = model.StageInstance;
 
 pub const StageInstanceDelete = model.StageInstance;
 
-// TODO subscription events
+pub const SubscriptionCreate = model.Subscription;
+
+pub const SubscriptionUpdate = model.Subscription;
+
+pub const SubscriptionDelete = model.Subscription;
 
 pub const TypingStart = struct {
     channel_id: model.Snowflake,

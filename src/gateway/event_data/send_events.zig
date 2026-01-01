@@ -40,6 +40,10 @@ pub const RequestGuildMembers = struct {
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
+pub const RequestSoundboardSounds = struct {
+    guild_ids: []const model.Snowflake,
+};
+
 pub const UpdateVoiceState = struct {
     guild_id: model.Snowflake,
     channel_id: ?model.Snowflake,
