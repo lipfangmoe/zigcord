@@ -47,7 +47,7 @@ pub fn main() !void {
         defer event.deinit();
 
         switch (event.event orelse continue) {
-            .MessageCreate => |msg_event| {
+            .message_create => |msg_event| {
                 const value = try endpoint_client.createGuildSticker(msg_event.guild_id.some, .{
                     .name = "sticker test",
                     .description = "fun sticker",

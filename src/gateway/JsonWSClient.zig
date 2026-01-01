@@ -133,7 +133,7 @@ pub fn authenticate(self: *JsonWSClient, token: []const u8, intents: model.Inten
         defer event.deinit();
 
         switch (event.value.d) {
-            .Hello => |hello| break hello.heartbeat_interval,
+            .hello => |hello| break hello.heartbeat_interval,
             else => {
                 zigcord.logger.warn("unexpected event while waiting for hello: {}", .{event});
                 continue;
@@ -162,7 +162,7 @@ pub fn authenticate(self: *JsonWSClient, token: []const u8, intents: model.Inten
         errdefer event.deinit();
 
         switch (event.value.d) {
-            .Ready => |ready| {
+            .ready => |ready| {
                 self.ready_event = .{
                     .json_parsed = event,
                     .event = ready,
@@ -170,7 +170,7 @@ pub fn authenticate(self: *JsonWSClient, token: []const u8, intents: model.Inten
                 zigcord.logger.info("authentication complete", .{});
                 return;
             },
-            .HeartbeatACK => {
+            .heartbeat_ack => {
                 event.deinit();
             },
             else => {
@@ -189,7 +189,7 @@ pub fn @"resume"(self: *JsonWSClient, token: []const u8, seq: i64, ready: ReadyE
         defer event.deinit();
 
         switch (event.value.d) {
-            .Hello => |hello| break hello.heartbeat_interval,
+            .hello => |hello| break hello.heartbeat_interval,
             else => {
                 zigcord.logger.warn("unexpected event while waiting for hello event: {}", .{event});
                 continue;

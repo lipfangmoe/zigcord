@@ -38,7 +38,7 @@ pub fn main() !void {
         defer event.deinit();
 
         switch (event.event orelse continue) {
-            .MessageCreate => |msg_event| {
+            .message_create => |msg_event| {
                 std.log.info("message created with content \"{s}\"", .{msg_event.message.content});
                 if (std.mem.eql(u8, msg_event.message.content, "fetch")) {
                     _ = try endpoint_client.createMessage(msg_event.message.channel_id, zigcord.EndpointClient.CreateMessageJsonBody{

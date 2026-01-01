@@ -4,11 +4,12 @@ const jconfig = @import("../root.zig").jconfig;
 pub const send_events = @import("./event_data/send_events.zig");
 pub const receive_events = @import("./event_data/receive_events.zig");
 
-pub const ReceiveEvent = union(enum) {
+pub const ReceiveEventData = union(enum) {
     hello: receive_events.Hello,
     ready: receive_events.Ready,
     resumed: receive_events.Resumed,
-    reconnect: receive_events.HeartbeatACK,
+    reconnect: receive_events.Reconnect,
+    heartbeat_ack: receive_events.HeartbeatACK,
     invalid_session: receive_events.InvalidSession,
     application_command_permissions_update: receive_events.ApplicationCommandPermissionsUpdate,
     auto_moderation_rule_create: receive_events.AutoModerationRuleCreate,
@@ -82,9 +83,10 @@ pub const ReceiveEvent = union(enum) {
     webhooks_update: receive_events.WebhooksUpdate,
     message_poll_vote_add: receive_events.MessagePollVoteAdd,
     message_poll_vote_remove: receive_events.MessagePollVoteRemove,
+    undocumented: receive_events.Undocumented,
 };
 
-pub const SendEvent = union(enum) {
+pub const SendEventData = union(enum) {
     identify: send_events.Identify,
     @"resume": send_events.Resume,
     heartbeat: send_events.Heartbeat,
