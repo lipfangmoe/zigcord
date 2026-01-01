@@ -80,12 +80,13 @@ pub const Permissions = packed struct(u64) {
     create_events: bool = false,
     use_external_sounds: bool = false,
     send_voice_messages: bool = false, // 1 << 46
-    _unknown: u2 = 0,
+    _unknown: u2 = 0, // 1 << {47,48}: mysterious permissions no one knows what they are
     send_polls: bool = false, // 1 << 49
     use_external_apps: bool = false, // 1 << 50
     pin_messages: bool = false,
+    bypass_slowmode: bool = false, // 1 << 52
 
-    _unknown2: u12 = 0,
+    _unknown2: u11 = 0,
 
     pub fn fromU64(int: u64) Permissions {
         return @bitCast(int);
@@ -121,6 +122,7 @@ pub const Permissions = packed struct(u64) {
         try std.testing.expectEqual(1 << 40, (Permissions{ .moderate_members = true }).asU64());
         try std.testing.expectEqual(1 << 46, (Permissions{ .send_voice_messages = true }).asU64());
         try std.testing.expectEqual(1 << 50, (Permissions{ .use_external_apps = true }).asU64());
+        try std.testing.expectEqual(1 << 52, (Permissions{ .bypass_slowmode = true }).asU64());
     }
 };
 
