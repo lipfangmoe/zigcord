@@ -119,10 +119,6 @@ pub const EntitlementUpdate = model.Entitlement;
 
 pub const EntitlementDelete = model.Entitlement;
 
-// TODO subscription events
-
-// TODO soundboard events
-
 pub const GuildCreate = model.guild.MaybeAvailable(struct {
     guild: model.guild.AvailableGuild,
 
@@ -257,6 +253,15 @@ pub const GuildScheduledEventUserAdd = struct {
 pub const GuildScheduledEventUserRemove = struct {
     guild_scheduled_event_id: model.Snowflake,
     user_id: model.Snowflake,
+    guild_id: model.Snowflake,
+};
+
+pub const GuildSoundboardSoundCreate = model.SoundboardSound;
+
+pub const GuildSoundboardSoundUpdate = model.SoundboardSound;
+
+pub const GuildSoundboardSoundDelete = struct {
+    sound_id: model.Snowflake,
     guild_id: model.Snowflake,
 };
 
@@ -446,6 +451,8 @@ pub const StageInstanceCreate = model.StageInstance;
 pub const StageInstanceUpdate = model.StageInstance;
 
 pub const StageInstanceDelete = model.StageInstance;
+
+// TODO subscription events
 
 pub const TypingStart = struct {
     channel_id: model.Snowflake,

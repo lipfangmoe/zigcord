@@ -4,32 +4,56 @@ const jconfig = @import("../root.zig").jconfig;
 pub const send_events = @import("./event_data/send_events.zig");
 pub const receive_events = @import("./event_data/receive_events.zig");
 
-fn AnyNamespaceDecl(namespace: type) type {
-    const module_decls = @typeInfo(namespace).@"struct".decls;
+pub const ReceiveEvent = union(enum) {
+    hello: receive_events.Hello,
+    ready: receive_events.Ready,
+    resumed: receive_events.Resumed,
+    reconnect: receive_events.HeartbeatACK,
+    invalid_session: receive_events.InvalidSession,
+    application_command_permissions_update: receive_events.ApplicationCommandPermissionsUpdate,
+    auto_moderation_rule_create: receive_events.AutoModerationRuleCreate,
+    auto_moderation_rule_update: receive_events.AutoModerationRuleUpdate,
+    auto_moderation_rule_delete: receive_events.AutoModerationRuleDelete,
+    auto_moderation_action_execution: receive_events.AutoModerationActionExecution,
+    channel_create: receive_events.ChannelCreate,
+    channel_update: receive_events.ChannelUpdate,
+    channel_delete: receive_events.ChannelDelete,
+    thread_create: receive_events.ThreadCreate,
+    thread_update: receive_events.ThreadUpdate,
+    thread_delete: receive_events.ThreadDelete,
+    thread_list_sync: receive_events.ThreadListSync,
+    thread_member_update: receive_events.ThreadMemberUpdate,
+    thread_members_update: receive_events.ThreadMembersUpdate,
+    entitlement_create: receive_events.EntitlementCreate,
+    entitlement_update: receive_events.EntitlementUpdate,
+    entitlement_delete: receive_events.EntitlementDelete,
+    guild_create: receive_events.GuildCreate,
+    guild_update: receive_events.GuildUpdate,
+    guild_delete: receive_events.GuildDelete,
+    guild_audit_log_entry_create: receive_events.GuildAuditLogEntryCreate,
+    guild_ban_add: receive_events.GuildBanAdd,
+    guild_ban_remove: receive_events.GuildBanRemove,
+    guild_emojis_update: receive_events.GuildEmojisUpdate,
+    guild_stickers_update: receive_events.GuildStickersUpdate,
+    guild_integrations_update: receive_events.GuildIntegrationsUpdate,
+    guild_member_add: receive_events.GuildMemberAdd,
+    guild_member_remove: receive_events.GuildMemberRemove,
+    guild_member_update: receive_events.GuildMemberUpdate,
+    guild_members_chunk: receive_events.GuildMembersChunk,
+    guild_role_create: receive_events.GuildRoleCreate,
+    guild_role_update: receive_events.GuildRoleUpdate,
+    guild_role_delete: receive_events.GuildRoleDelete,
+    guild_scheduled_event_create: receive_events.GuildScheduledEventCreate,
+    guild_scheduled_event_update: receive_events.GuildScheduledEventUpdate,
+    guild_scheduled_event_delete: receive_events.GuildScheduledEventDelete,
+    guild_scheduled_event_user_add: receive_events.GuildScheduledEventUserAdd,
+    guild_scheduled_event_user_remove: receive_events.GuildScheduledEventUserRemove,
+    guild_soundboard_sound_create: receive_events.GuildSoundboardSoundCreate,
+    guild_soundboard_sound_update: receive_events.GuildSoundboardSoundUpdate,
+    guild_soundboard_sound_delete: receive_events.GuildSoundboardSoundDelete,
+};
 
-    const Enum = std.meta.DeclEnum(namespace);
-
-    var union_fields: [module_decls.len]std.builtin.Type.UnionField = undefined;
-    for (module_decls, 0..) |decl, idx| {
-        const decl_value: type = @field(namespace, decl.name);
-        union_fields[idx] = std.builtin.Type.UnionField{
-            .name = decl.name,
-            .type = decl_value,
-            .alignment = @alignOf(decl_value),
-        };
-    }
-
-    return @Type(std.builtin.Type{ .@"union" = std.builtin.Type.Union{
-        .tag_type = Enum,
-        .fields = &union_fields,
-        .layout = .auto,
-        .decls = &.{},
-    } });
-}
-
-pub const AnyReceiveEvent = AnyNamespaceDecl(receive_events);
-
-pub const AnySendEvent = AnyNamespaceDecl(send_events);
+pub const SendEvent = AnyNamespaceDecl(send_events);
 
 pub const Opcode = enum(u64) {
     dispatch = 0,
