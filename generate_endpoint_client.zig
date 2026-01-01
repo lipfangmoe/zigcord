@@ -43,6 +43,8 @@ fn getEndpointFileNames(arena: *std.heap.ArenaAllocator) ![][]u8 {
         try file_names.append(allocator, try allocator.dupe(u8, file.name));
     }
 
+    std.sort.insertion([]u8, file_names.items, .{}, asciiLessThanWithCtx);
+
     return file_names.toOwnedSlice(allocator);
 }
 
@@ -57,16 +59,16 @@ fn endpointDecls(arena: *std.heap.ArenaAllocator, endpoint_files: []const []cons
         const endpoint_from_cwd = try std.fmt.allocPrint(allocator, "./src/rest/endpoints/{s}", .{endpoint_file});
         const endpoint = endpoint_file[0 .. endpoint_file.len - ".zig".len];
         try new_contents.print("pub const {s} = @import(\"./endpoints/{s}\");\n", .{ endpoint, endpoint_file });
-        for (try publicTopLevelFunctions(arena, endpoint_from_cwd)) |func_name| {
+        for (try publicTopLevelDecls(arena, endpoint_from_cwd)) |func_name| {
             try new_contents.print("pub const {s} = {s}.{0s};\n", .{ func_name, endpoint });
         }
     }
     return try new_contents_aw.toOwnedSlice();
 }
 
-fn publicTopLevelFunctions(arena: *std.heap.ArenaAllocator, file_path: []const u8) ![][]u8 {
+fn publicTopLevelDecls(arena: *std.heap.ArenaAllocator, file_path: []const u8) ![][]u8 {
     const allocator = arena.allocator();
-    var funcs: std.ArrayList([]u8) = try .initCapacity(allocator, 100);
+    var decls: std.ArrayList([]u8) = try .initCapacity(allocator, 100);
 
     var buf: [10_000]u8 = undefined;
     var file = try std.fs.cwd().openFile(file_path, .{});
@@ -76,15 +78,21 @@ fn publicTopLevelFunctions(arena: *std.heap.ArenaAllocator, file_path: []const u
             const start = "pub fn ".len;
             const end = std.mem.indexOfScalar(u8, line, '(') orelse return error.NoParenthesis;
             const func_name = try allocator.dupe(u8, line[start..end]);
-            try funcs.append(allocator, func_name);
+            try decls.append(allocator, func_name);
         }
         if (std.mem.startsWith(u8, line, "pub const")) {
             const start = "pub const ".len;
             const end = std.mem.indexOfScalarPos(u8, line, start, ' ') orelse return error.NoIdentifierEnd;
             const const_name = try allocator.dupe(u8, line[start..end]);
-            try funcs.append(allocator, const_name);
+            try decls.append(allocator, const_name);
         }
     }
 
-    return funcs.toOwnedSlice(allocator);
+    std.sort.insertion([]u8, decls.items, .{}, asciiLessThanWithCtx);
+
+    return decls.toOwnedSlice(allocator);
+}
+
+fn asciiLessThanWithCtx(_: @TypeOf(.{}), lhs: []u8, rhs: []u8) bool {
+    return std.ascii.lessThanIgnoreCase(lhs, rhs);
 }
