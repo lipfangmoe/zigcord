@@ -310,6 +310,17 @@ pub fn getGuildRole(
     return client.rest_client.request(model.Role, .GET, uri);
 }
 
+pub fn getGuildRoleMemberCounts(
+    client: *rest.EndpointClient,
+    guild_id: model.Snowflake,
+) !rest.RestClient.Result(std.json.ArrayHashMap(u64)) {
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/roles/member_counts", .{guild_id});
+    defer client.rest_client.allocator.free(uri_str);
+    const uri = try std.Uri.parse(uri_str);
+
+    return client.rest_client.request(std.json.ArrayHashMap(u64), .GET, uri);
+}
+
 pub fn createGuildRole(
     client: *rest.EndpointClient,
     guild_id: model.Snowflake,

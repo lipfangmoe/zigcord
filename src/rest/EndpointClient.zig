@@ -184,6 +184,7 @@ pub const getGuildPruneCount = guild.getGuildPruneCount;
 pub const GetGuildPruneCountQuery = guild.GetGuildPruneCountQuery;
 pub const GetGuildPruneCountResponse = guild.GetGuildPruneCountResponse;
 pub const getGuildRole = guild.getGuildRole;
+pub const getGuildRoleMemberCounts = guild.getGuildRoleMemberCounts;
 pub const getGuildRoles = guild.getGuildRoles;
 pub const getGuildVanityUrl = guild.getGuildVanityUrl;
 pub const getGuildVoiceRegions = guild.getGuildVoiceRegions;
