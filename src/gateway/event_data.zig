@@ -51,9 +51,48 @@ pub const ReceiveEvent = union(enum) {
     guild_soundboard_sound_create: receive_events.GuildSoundboardSoundCreate,
     guild_soundboard_sound_update: receive_events.GuildSoundboardSoundUpdate,
     guild_soundboard_sound_delete: receive_events.GuildSoundboardSoundDelete,
+    guild_soundboard_sounds_update: receive_events.GuildSoundboardSoundsUpdate,
+    soundboard_sounds: receive_events.SoundboardSounds,
+    integration_create: receive_events.IntegrationCreate,
+    integration_update: receive_events.IntegrationUpdate,
+    integration_delete: receive_events.IntegrationDelete,
+    interaction_create: receive_events.InteractionCreate,
+    invite_create: receive_events.InviteCreate,
+    invite_delete: receive_events.InviteDelete,
+    message_create: receive_events.MessageCreate,
+    message_update: receive_events.MessageUpdate,
+    message_delete: receive_events.MessageDelete,
+    message_delete_bulk: receive_events.MessageDeleteBulk,
+    message_reaction_add: receive_events.MessageReactionAdd,
+    message_reaction_remove: receive_events.MessageReactionRemove,
+    message_reaction_remove_all: receive_events.MessageReactionRemoveAll,
+    message_reaction_remove_emoji: receive_events.MessageReactionRemoveEmoji,
+    presence_update: receive_events.PresenceUpdate,
+    stage_instance_create: receive_events.StageInstanceCreate,
+    stage_instance_update: receive_events.StageInstanceUpdate,
+    stage_instance_delete: receive_events.StageInstanceDelete,
+    subscription_create: receive_events.SubscriptionCreate,
+    subscription_update: receive_events.SubscriptionUpdate,
+    subscription_delete: receive_events.SubscriptionDelete,
+    typing_start: receive_events.TypingStart,
+    user_update: receive_events.UserUpdate,
+    voice_channel_effect_send: receive_events.VoiceChannelEffectSend,
+    voice_state_update: receive_events.VoiceStateUpdate,
+    voice_server_update: receive_events.VoiceServerUpdate,
+    webhooks_update: receive_events.WebhooksUpdate,
+    message_poll_vote_add: receive_events.MessagePollVoteAdd,
+    message_poll_vote_remove: receive_events.MessagePollVoteRemove,
 };
 
-pub const SendEvent = AnyNamespaceDecl(send_events);
+pub const SendEvent = union(enum) {
+    identify: send_events.Identify,
+    @"resume": send_events.Resume,
+    heartbeat: send_events.Heartbeat,
+    request_guild_members: send_events.RequestGuildMembers,
+    request_soundboard_sounds: send_events.RequestSoundboardSounds,
+    update_voice_state: send_events.UpdateVoiceState,
+    update_presence: send_events.UpdatePresence,
+};
 
 pub const Opcode = enum(u64) {
     dispatch = 0,
@@ -71,14 +110,3 @@ pub const Opcode = enum(u64) {
 
     pub const jsonStringify = jconfig.stringifyEnumAsInt;
 };
-
-test "AnyNamespaceDecl" {
-    const TestNamespace = struct {
-        pub const Foo = struct { foo: []const u8 };
-        pub const Bar = struct { bar: i64 };
-    };
-    const AnyTest = AnyNamespaceDecl(TestNamespace);
-
-    _ = AnyTest{ .Foo = TestNamespace.Foo{ .foo = "lol" } };
-    _ = AnyTest{ .Bar = TestNamespace.Bar{ .bar = 5 } };
-}
