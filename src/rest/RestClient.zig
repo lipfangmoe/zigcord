@@ -152,12 +152,15 @@ pub fn beginMultipartRequestWithAuditLogReason(
     buf: *[1028]u8,
     audit_log_reason: ?[]const u8,
 ) BeginRequestError!PendingRequest(ResponseT) {
-    const extra_headers: []const std.http.Header = if (audit_log_reason) |reason|
-        &.{std.http.Header{ .name = "X-Audit-Log-Reason", .value = reason }}
-    else
-        &.{};
-
     var fba: std.heap.FixedBufferAllocator = .init(buf);
+
+    var extra_headers: []const std.http.Header = &.{};
+    if (audit_log_reason) |reason| {
+        const headers = try fba.allocator().alloc(std.http.Header, 1);
+        headers[0] = .{ .name = "X-Audit-Log-Reason", .value = reason };
+        extra_headers = headers;
+    }
+
     var content_type: std.Io.Writer.Allocating = .init(fba.allocator());
     content_type.writer.print("multipart/form-data; boundary={s}", .{boundary}) catch return std.mem.Allocator.Error.OutOfMemory;
 
