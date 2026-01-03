@@ -1,3 +1,10 @@
+# v0.7.2
+
+This release contains no breaking changes.
+
+ * bug fixed where using `setupMultipartRequestWithAuditLogReason` could segfault since
+   the extra_headers is not sent until `request.sendBody*()` is called
+
 # v0.7.1
 
 This release contains no breaking changes.
