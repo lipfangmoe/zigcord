@@ -3,14 +3,14 @@
 A Discord API for the Zig programming language.
 
 Currently built off of Zig Version `0.15.2`. If you notice that it is broken
-on a more recent patch of Zig, please create an [issue](https://codeberg.org/lipfang/zigcord/issues)!
+on a more recent version of Zig, please create an [issue](https://codeberg.org/lipfang/zigcord/issues)!
 
 # Including in your project
 
 To include this in your zig project, use the Zig Package Manager:
 
 ```sh
-# you can get a specific version by replacing "main" with the version number, ie #v0.2.3
+# you can get a lock a specific version by replacing "#main" with the version number, ie "#v0.7.2"
 zig fetch --save 'git+https://codeberg.org/lipfang/zigcord#main'
 ```
 
@@ -30,23 +30,27 @@ Then, make sure something similar to the following is in your `build.zig`:
 
 # Feature Support
 
- - All Discord API features up to October 15, 2025
+ - All Discord API features up to January 1st, 2026
  - Uses Zig 0.15.x `std.Io.Reader` and `std.Io.Writer` interfaces
  - [User-installable Apps](https://discord.com/developers/docs/tutorials/developing-a-user-installable-app#developing-a-userinstallable-app)
  - [Components V2](https://discord.com/developers/docs/components/overview)
- - WebSocket Gateway
+ - WebSocket Gateway Client
  - Interaction Server
  - Rest Client
 
 # Basic Usage
 
-The best way to look at examples is to look at the [examples](./examples/) directory.
+This project is still in early development, so formal documentation isn't made yet. but the [list of curated examples](./examples/) are always kept up-to-date. These are located under the [examples](./examples/) directory.
 
-The examples are also runnable with `zig build examples:gateway` and `zig build examples:interaction` (or simply `zig build examples` to build all examples)
+These examples are runnable with `zig build examples:gateway` and `zig build examples:interaction` (or simply `zig build examples` to build all examples), and then execute the example using the `zig-out/bin/<examplename>` executable.
+
+# Changelog
+
+This project is still in early development, so breaking changes happen often. However, all changes are recorded in the [CHANGELOG.md](./CHANGELOG.md) file, which should make upgrading versions easy.
 
 # TODO
- - Better documentation with examples for harder-to-use methods (ie multipart endpoints)
+ - Formal documentation site once the API is stabilized
  - Some way to test endpoints
  - HTTP Interaction Server:
    - Standalone HTTPS support (for now, you will need a reverse-proxy to provide HTTPS support)
-   - Cloud function support (i.e. Cloudflare Workers)
+   - Native cloud function support (i.e. Cloudflare Workers)
