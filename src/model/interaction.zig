@@ -45,7 +45,7 @@ pub const InteractionType = enum(u8) {
 pub const InteractionData = union(InteractionType) {
     application_command: ApplicationCommandInteractionData,
     message_component: MessageComponentData,
-    application_command_autocomplete: ApplicationCommandAutocompleteInteractionData,
+    application_command_autocomplete: ApplicationCommandInteractionData,
     modal_submit: ModalSubmitData,
     ping: void, // `ping` at the end because otherwise InlineUnionMixin will always deserialize into `void`
 
@@ -101,28 +101,6 @@ pub const MessageComponentData = struct {
 pub const ModalSubmitData = struct {
     custom_id: []const u8,
     components: []const model.MessageComponent,
-};
-
-pub const ApplicationCommandAutocompleteInteractionData = struct {
-    name: []const u8,
-    type: command_option.ApplicationCommandOptionType,
-    value: jconfig.Omittable(Value) = .omit,
-    options: jconfig.Omittable([]const jconfig.Partial(ApplicationCommandInteractionData)) = .omit,
-    focused: jconfig.Omittable(bool) = .omit,
-
-    pub const jsonStringify = jconfig.stringifyWithOmit;
-
-    pub const Value = union(enum) {
-        string: []const u8,
-        int: i64,
-        double: f64,
-        boolean: bool,
-
-        const Mixin = jconfig.InlineUnionMixin(@This());
-        pub const jsonStringify = Mixin.jsonStringify;
-        pub const jsonParse = Mixin.jsonParse;
-        pub const jsonParseFromValue = Mixin.jsonParseFromValue;
-    };
 };
 
 pub const ResolvedData = struct {
