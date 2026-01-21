@@ -44,7 +44,7 @@ pub fn initWithRestClient(allocator: std.mem.Allocator, client: *zigcord.Endpoin
     const url = switch (gateway_resp.value()) {
         .ok => |value| value.url,
         .err => |err| {
-            zigcord.logger.err("Error while opening gateway response: {}", .{err});
+            zigcord.logger.err("Error while opening gateway response: {f}", .{err});
             return error.GetGatwayError;
         },
     };

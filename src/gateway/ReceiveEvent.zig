@@ -134,7 +134,28 @@ test "undocumented event" {
 }
 
 test "message1.test.json" {
-    const input = @embedFile("message1.test.json");
+    const input = @embedFile("./test/message1.test.json");
+
+    const parsed = try std.json.parseFromSlice(ReceiveEvent, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
+    parsed.deinit();
+}
+
+test "message2.test.json" {
+    const input = @embedFile("./test/message2.test.json");
+
+    const parsed = try std.json.parseFromSlice(ReceiveEvent, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
+    parsed.deinit();
+}
+
+test "interaction1.test.json" {
+    const input = @embedFile("./test/interaction1.test.json");
+
+    const parsed = try std.json.parseFromSlice(ReceiveEvent, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
+    parsed.deinit();
+}
+
+test "interaction2.test.json" {
+    const input = @embedFile("./test/interaction2.test.json");
 
     const parsed = try std.json.parseFromSlice(ReceiveEvent, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
     parsed.deinit();

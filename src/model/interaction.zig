@@ -132,18 +132,153 @@ pub const ApplicationCommandInteractionDataOption = struct {
     };
 };
 
-pub const MessageComponentData = struct {
+pub const ModalSubmitData = struct {
     custom_id: []const u8,
-    component_type: model.MessageComponent.Type,
-    values: jconfig.Omittable(model.MessageComponent.StringSelect.Option) = .omit,
+    components: []const ModalComponentInteractionResponse,
     resolved: jconfig.Omittable(ResolvedData) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
-pub const ModalSubmitData = struct {
+pub const MessageComponentData = union(enum) {
+    button: ButtonInteractionResponse,
+    string_select: StringSelectMessageInteractionResponse,
+    text_input: TextInputInteractionResponse,
+    user_select: GenericSelectMessageInteractionResponse,
+    role_select: GenericSelectMessageInteractionResponse,
+    mentionable_select: GenericSelectMessageInteractionResponse,
+    channel_select: GenericSelectMessageInteractionResponse,
+
+    pub const jsonStringify = jconfig.stringifyUnionInline;
+
+    pub fn jsonParse(allocator: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) std.json.ParseError(@TypeOf(source.*))!MessageComponentData {
+        const value = try std.json.innerParse(std.json.Value, allocator, source, options);
+        return try std.json.innerParseFromValue(MessageComponentData, allocator, value, options);
+    }
+
+    // i should make a generic version of this
+    pub fn jsonParseFromValue(allocator: std.mem.Allocator, source: std.json.Value, options: std.json.ParseOptions) std.json.ParseFromValueError!MessageComponentData {
+        const obj = switch (source) {
+            .object => |obj| obj,
+            else => return error.UnexpectedToken,
+        };
+
+        const type_value = obj.get("component_type") orelse return error.MissingField;
+        const type_int = switch (type_value) {
+            .integer => |i| i,
+            else => return error.UnexpectedToken,
+        };
+        const type_enum = std.meta.intToEnum(model.MessageComponent.Type, type_int) catch return error.InvalidEnumTag;
+        const prong = std.meta.stringToEnum(std.meta.Tag(MessageComponentData), @tagName(type_enum)) orelse return error.InvalidEnumTag;
+        switch (prong) {
+            inline else => |ctime_prong| {
+                const ProngT = @FieldType(MessageComponentData, @tagName(ctime_prong));
+                const value = try std.json.innerParseFromValue(ProngT, allocator, source, options);
+                return @unionInit(MessageComponentData, @tagName(ctime_prong), value);
+            },
+        }
+    }
+};
+
+pub const ModalComponentInteractionResponse = union(enum) {
+    string_select: StringSelectModalInteractionResponse,
+    text_input: TextInputInteractionResponse,
+    user_select: GenericSelectModalInteractionResponse,
+    role_select: GenericSelectModalInteractionResponse,
+    mentionable_select: GenericSelectModalInteractionResponse,
+    channel_select: GenericSelectModalInteractionResponse,
+    text_display: TextDisplayInteractionResponse,
+    label: LabelInteractionResponse,
+    file_upload: FileUploadInteractionResponse,
+
+    pub const jsonStringify = jconfig.stringifyUnionInline;
+
+    pub fn jsonParse(allocator: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) std.json.ParseError(source.*)!ModalComponentInteractionResponse {
+        const value = try std.json.innerParse(std.json.Value, allocator, source, options);
+        return try std.json.innerParseFromValue(ModalComponentInteractionResponse, allocator, value, options);
+    }
+
+    pub fn jsonParseFromValue(allocator: std.mem.Allocator, source: std.json.Value, options: std.json.ParseOptions) std.json.ParseFromValueError!ModalComponentInteractionResponse {
+        const obj = switch (source) {
+            .object => |obj| obj,
+            else => return error.UnexpectedToken,
+        };
+
+        const type_value = obj.get("type") orelse return error.MissingField;
+        const type_int = switch (type_value) {
+            .integer => |i| i,
+            else => return error.UnexpectedToken,
+        };
+        const type_enum = std.meta.intToEnum(model.MessageComponent.Type, type_int) catch return error.InvalidEnumTag;
+        const prong = std.meta.stringToEnum(std.meta.Tag(ModalComponentInteractionResponse), @tagName(type_enum)) orelse return error.InvalidEnumTag;
+        switch (prong) {
+            inline else => |ctime_prong| {
+                const ProngT = @FieldType(ModalComponentInteractionResponse, @tagName(ctime_prong));
+                const value = try std.json.innerParseFromValue(ProngT, allocator, source, options);
+                return @unionInit(ModalComponentInteractionResponse, @tagName(ctime_prong), value);
+            },
+        }
+    }
+};
+
+pub const ButtonInteractionResponse = struct {
+    component_type: model.MessageComponent.Type,
+    id: u64,
     custom_id: []const u8,
-    components: []const model.MessageComponent,
+};
+
+pub const GenericSelectModalInteractionResponse = struct {
+    type: model.MessageComponent.Type,
+    id: u64,
+    custom_id: []const u8,
+    values: []const model.Snowflake,
+};
+
+pub const GenericSelectMessageInteractionResponse = struct {
+    component_type: model.MessageComponent.Type,
+    id: u64,
+    custom_id: []const u8,
+    resolved: model.interaction.ResolvedData,
+    values: []const model.Snowflake,
+};
+
+pub const StringSelectModalInteractionResponse = struct {
+    type: model.MessageComponent.Type,
+    id: i32,
+    custom_id: []const u8,
+    values: []const []const u8,
+};
+
+pub const StringSelectMessageInteractionResponse = struct {
+    component_type: model.MessageComponent.Type,
+    id: i32,
+    custom_id: []const u8,
+    values: []const []const u8,
+};
+
+pub const TextInputInteractionResponse = struct {
+    type: model.MessageComponent.Type,
+    id: i32,
+    custom_id: []const u8,
+    value: []const u8,
+};
+
+pub const TextDisplayInteractionResponse = struct {
+    type: model.MessageComponent.Type,
+    id: u64,
+};
+
+pub const LabelInteractionResponse = struct {
+    type: model.MessageComponent.Type,
+    id: u64,
+    component: *model.interaction.ModalComponentInteractionResponse,
+};
+
+pub const FileUploadInteractionResponse = struct {
+    type: model.MessageComponent.Type,
+    id: u64,
+    custom_id: []const u8,
+    values: []const model.Snowflake,
 };
 
 pub const ResolvedData = struct {

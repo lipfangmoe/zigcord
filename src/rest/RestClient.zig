@@ -398,6 +398,10 @@ pub const DiscordError = struct {
 
     pub const Code = ErrorCode;
 
+    pub fn format(self: DiscordError, w: *std.Io.Writer) !void {
+        try w.print("{f}", .{std.json.fmt(self, .{})});
+    }
+
     pub fn jsonStringify(self: DiscordError, jw: *std.json.Stringify) !void {
         try jw.beginObject();
 
