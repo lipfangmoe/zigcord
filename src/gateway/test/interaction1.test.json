@@ -1,0 +1,49 @@
+{
+    "t": "INTERACTION_CREATE",
+    "s": 3,
+    "op": 0,
+    "d": {
+        "version": 1,
+        "type": 5,
+        "token": "redacted",
+        "locale": "en-US",
+        "id": "0",
+        "guild_locale": "en-US",
+        "entitlements": [],
+        "entitlement_sku_ids": [],
+        "data": {
+            "custom_id": "button-modal",
+            "components": [
+                {
+                    "type": 18,
+                    "id": 1,
+                    "component": {
+                        "values": [
+                            "foo"
+                        ],
+                        "type": 3,
+                        "id": 2,
+                        "custom_id": "select-message"
+                    }
+                },
+                {
+                    "type": 18,
+                    "id": 3,
+                    "component": {
+                        "value": "lmao",
+                        "type": 4,
+                        "id": 4,
+                        "custom_id": "extra-message"
+                    }
+                }
+            ]
+        },
+        "context": 0,
+        "authorizing_integration_owners": {
+            "0": "0"
+        },
+        "attachment_size_limit": 524288000,
+        "application_id": "0",
+        "app_permissions": "0"
+    }
+}

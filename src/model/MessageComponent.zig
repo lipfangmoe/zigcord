@@ -6,8 +6,76 @@ const omittable_util = @import("../jconfig/omit.zig");
 const MessageComponent = @This();
 
 type: Type,
-id: jconfig.Omittable(i32) = .omit,
+id: jconfig.Omittable(u64) = .omit,
 other_props: TypedProps,
+
+pub fn initActionRow(id: ?u64, action_row: ActionRow) MessageComponent {
+    return .{ .type = .action_row, .id = .initNullable(id), .other_props = .{ .action_row = action_row } };
+}
+
+pub fn initButton(id: ?u64, button: Button) MessageComponent {
+    return .{ .type = .button, .id = .initNullable(id), .other_props = .{ .button = button } };
+}
+
+pub fn initStringSelect(id: ?u64, string_select: StringSelect) MessageComponent {
+    return .{ .type = .string_select, .id = .initNullable(id), .other_props = .{ .string_select = string_select } };
+}
+
+pub fn initTextInput(id: ?u64, text_input: TextInput) MessageComponent {
+    return .{ .type = .text_input, .id = .initNullable(id), .other_props = .{ .text_input = text_input } };
+}
+
+pub fn initUserSelect(id: ?u64, user_select: GenericSelect) MessageComponent {
+    return .{ .type = .user_select, .id = .initNullable(id), .other_props = .{ .user_select = user_select } };
+}
+
+pub fn initRoleSelect(id: ?u64, role_select: GenericSelect) MessageComponent {
+    return .{ .type = .role_select, .id = .initNullable(id), .other_props = .{ .role_select = role_select } };
+}
+
+pub fn initMentionableSelect(id: ?u64, mentionable_select: GenericSelect) MessageComponent {
+    return .{ .type = .mentionable_select, .id = .initNullable(id), .other_props = .{ .mentionable_select = mentionable_select } };
+}
+
+pub fn initChannelSelect(id: ?u64, channel_select: ChannelSelect) MessageComponent {
+    return .{ .type = .channel_select, .id = .initNullable(id), .other_props = .{ .channel_select = channel_select } };
+}
+
+pub fn initSection(id: ?u64, section: Section) MessageComponent {
+    return .{ .type = .section, .id = .initNullable(id), .other_props = .{ .section = section } };
+}
+
+pub fn initTextDisplay(id: ?u64, text_display: TextDisplay) MessageComponent {
+    return .{ .type = .text_display, .id = .initNullable(id), .other_props = .{ .text_display = text_display } };
+}
+
+pub fn initThumbnail(id: ?u64, thumbnail: Thumbnail) MessageComponent {
+    return .{ .type = .thumbnail, .id = .initNullable(id), .other_props = .{ .thumbnail = thumbnail } };
+}
+
+pub fn initMediaGallery(id: ?u64, media_gallery: MediaGallery) MessageComponent {
+    return .{ .type = .media_gallery, .id = .initNullable(id), .other_props = .{ .media_gallery = media_gallery } };
+}
+
+pub fn initFile(id: ?u64, file: File) MessageComponent {
+    return .{ .type = .file, .id = .initNullable(id), .other_props = .{ .file = file } };
+}
+
+pub fn initSeparator(id: ?u64, separator: Separator) MessageComponent {
+    return .{ .type = .separator, .id = .initNullable(id), .other_props = .{ .separator = separator } };
+}
+
+pub fn initContainer(id: ?u64, container: Container) MessageComponent {
+    return .{ .type = .container, .id = .initNullable(id), .other_props = .{ .container = container } };
+}
+
+pub fn initLabel(id: ?u64, label: Label) MessageComponent {
+    return .{ .type = .label, .id = .initNullable(id), .other_props = .{ .label = label } };
+}
+
+pub fn initFileUpload(id: ?u64, file_upload: FileUpload) MessageComponent {
+    return .{ .type = .file_upload, .id = .initNullable(id), .other_props = .{ .file_upload = file_upload } };
+}
 
 pub fn jsonStringify(self: MessageComponent, jw: *std.json.Stringify) !void {
     try jw.beginObject();
@@ -51,7 +119,7 @@ pub fn jsonParseFromValue(allocator: std.mem.Allocator, source: std.json.Value, 
     const type_value = root_obj.get("type") orelse return error.MissingField;
     new.type = try std.json.innerParseFromValue(Type, allocator, type_value, options);
 
-    new.id = if (root_obj.get("id")) |id_value| .initSome(try std.json.innerParseFromValue(i32, allocator, id_value, options)) else .omit;
+    new.id = if (root_obj.get("id")) |id_value| .initSome(try std.json.innerParseFromValue(u64, allocator, id_value, options)) else .omit;
 
     switch (new.type) {
         inline else => |tag| {
@@ -123,6 +191,72 @@ pub const Button = struct {
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 
+    pub fn initPrimaryButton(custom_id: []const u8, options: InitButtonOptions) Button {
+        return .{
+            .custom_id = .initSome(custom_id),
+            .style = .primary,
+            .label = .initNullable(options.label),
+            .emoji = .initNullable(options.emoji),
+            .disabled = .initNullable(options.disabled),
+        };
+    }
+
+    pub fn initSecondaryButton(custom_id: []const u8, options: InitButtonOptions) Button {
+        return .{
+            .custom_id = .initSome(custom_id),
+            .style = .secondary,
+            .label = .initNullable(options.label),
+            .emoji = .initNullable(options.emoji),
+            .disabled = .initNullable(options.disabled),
+        };
+    }
+
+    pub fn initSuccessButton(custom_id: []const u8, options: InitButtonOptions) Button {
+        return .{
+            .custom_id = .initSome(custom_id),
+            .style = .success,
+            .label = .initNullable(options.label),
+            .emoji = .initNullable(options.emoji),
+            .disabled = .initNullable(options.disabled),
+        };
+    }
+
+    pub fn initDangerButton(custom_id: []const u8, options: InitButtonOptions) Button {
+        return .{
+            .custom_id = .initSome(custom_id),
+            .style = .danger,
+            .label = .initNullable(options.label),
+            .emoji = .initNullable(options.emoji),
+            .disabled = .initNullable(options.disabled),
+        };
+    }
+
+    pub fn initLinkButton(url: []const u8, options: InitButtonOptions) Button {
+        return .{
+            .url = .initSome(url),
+            .style = .link,
+            .label = .initNullable(options.label),
+            .emoji = .initNullable(options.emoji),
+            .disabled = .initNullable(options.disabled),
+        };
+    }
+
+    pub fn initPremiumButton(sku_id: model.Snowflake, options: InitButtonOptions) Button {
+        return .{
+            .sku_id = .initSome(sku_id),
+            .style = .premium,
+            .label = .initNullable(options.label),
+            .emoji = .initNullable(options.emoji),
+            .disabled = .initNullable(options.disabled),
+        };
+    }
+
+    pub const InitButtonOptions = struct {
+        label: ?[]const u8 = null,
+        emoji: ?jconfig.Partial(model.Emoji) = null,
+        disabled: ?bool = null,
+    };
+
     // https://discord.com/developers/docs/interactions/message-components#button-object-button-styles
     pub const ButtonStyle = enum(u8) {
         primary = 1,
@@ -131,6 +265,8 @@ pub const Button = struct {
         danger = 4,
         link = 5,
         premium = 6,
+
+        pub const jsonStringify = jconfig.stringifyEnumAsInt;
     };
 };
 
@@ -169,7 +305,7 @@ pub const ChannelSelect = struct {
 
 pub const StringSelect = struct {
     custom_id: []const u8,
-    options: Option,
+    options: []const Option,
     placeholder: jconfig.Omittable([]const u8) = .omit,
     min_values: jconfig.Omittable(i64) = .omit,
     max_values: jconfig.Omittable(i64) = .omit,
@@ -191,7 +327,6 @@ pub const StringSelect = struct {
 pub const TextInput = struct {
     custom_id: []const u8,
     style: Style,
-    label: []const u8,
     min_length: jconfig.Omittable(u12) = .omit,
     max_length: jconfig.Omittable(u12) = .omit,
     required: jconfig.Omittable(bool) = .omit,
@@ -279,22 +414,10 @@ pub const Container = struct {
 pub const Label = struct {
     label: []const u8,
     description: jconfig.Omittable([]const u8) = .omit,
-    component: ChildComponent,
+    /// must be one of text_input, string_select, user_select, role_select, mentionable_select, channel_select, file_upload.
+    component: *const MessageComponent,
 
-    pub const ChildComponent = union(enum) {
-        text_input: TextInput,
-        string_select: StringSelect,
-        user_select: GenericSelect,
-        role_select: GenericSelect,
-        mentionable_select: GenericSelect,
-        channel_select: ChannelSelect,
-        file_upload: FileUpload,
-
-        const Mixin = jconfig.InlineUnionMixin(@This());
-        pub const jsonStringify = Mixin.jsonStringify;
-        pub const jsonParse = Mixin.jsonParse;
-        pub const jsonParseFromValue = Mixin.jsonParseFromValue;
-    };
+    pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
 };
 
 pub const FileUpload = struct {
