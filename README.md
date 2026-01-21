@@ -52,6 +52,7 @@ This project is still in early development, so breaking changes happen often. Ho
  - Formal documentation site once the API is stabilized
  - Some way to test endpoints
  - Better error handling to allow to get a `std.json.Value` from http responses if we fail to parse into a static type, similar to gateway
+ - Removal of logging from zigcord+weebsocket
  - HTTP Interaction Server:
    - Standalone HTTPS support (for now, you will need a reverse-proxy to provide HTTPS support)
    - Native cloud function support (i.e. Cloudflare Workers)
