@@ -77,26 +77,25 @@ pub const Interaction = struct {
 };
 
 pub const InteractionType = enum(u8) {
+    ping = 1,
     application_command = 2,
     message_component = 3,
     application_command_autocomplete = 4,
     modal_submit = 5,
-    ping = 1, // `ping` at the end because otherwise InlineUnionMixin will always deserialize into `void`
 
     pub const jsonStringify = jconfig.stringifyEnumAsInt;
 };
 
 pub const InteractionData = union(InteractionType) {
+    ping: void,
     application_command: ApplicationCommandInteractionData,
     message_component: MessageComponentData,
     application_command_autocomplete: ApplicationCommandInteractionData,
     modal_submit: ModalSubmitData,
-    ping: void, // `ping` at the end because otherwise InlineUnionMixin will always deserialize into `void`
 
     const Mixin = jconfig.InlineUnionMixin(@This());
     pub const jsonStringify = Mixin.jsonStringify;
-    pub const jsonParse = Mixin.jsonParse;
-    pub const jsonParseFromValue = Mixin.jsonParseFromValue;
+    // jsonParse/jsonParseFromValue are not needed since inline parsing is handled by Interaction
 };
 
 pub const ApplicationCommandInteractionData = struct {
