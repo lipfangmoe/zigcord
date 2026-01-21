@@ -98,7 +98,7 @@ pub fn receiveInteraction(self: *Server, alloc: std.mem.Allocator) !InteractionR
             return error.InteractionParseError;
         };
         if (req.interaction.type == .ping) {
-            try req.respond(zigcord.model.interaction.InteractionResponse{ .type = .pong });
+            try req.respond(.initPong());
             continue;
         }
 

@@ -16,6 +16,10 @@ pub const Snowflake = packed struct {
         return @bitCast(num);
     }
 
+    pub fn fromString(str: []const u8) error{Invalid}!Snowflake {
+        return .fromU64(std.fmt.parseInt(u64, str, 10) catch return error.Invalid);
+    }
+
     /// this snowflake bitcast as a u64
     pub fn asU64(self: Snowflake) u64 {
         return @bitCast(self);

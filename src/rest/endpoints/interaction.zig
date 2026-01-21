@@ -162,6 +162,6 @@ pub fn deleteFollowupMessage(
 
 pub const CreateInteractionResponseFormBody = struct {
     type: model.interaction.InteractionResponse.Type,
-    data: ?model.interaction.InteractionCallbackData = null,
+    data: ?model.interaction.InteractionCallbackAny = null,
     files: ?[]const rest.Upload = null,
 };
