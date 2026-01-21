@@ -369,6 +369,15 @@ pub fn Result(T: type) type {
             };
         }
 
+        /// similar to `self.value()`, but returns the actual value without being wrapped in a union type.
+        /// an error is returned if the union is in the error state.
+        pub fn valueOk(self: Result(T)) error{DiscordError}!T {
+            return switch (self) {
+                .ok => |ok| ok.value,
+                .err => error.DiscordError,
+            };
+        }
+
         pub fn deinit(self: Result(T)) void {
             switch (self) {
                 inline else => |val| {

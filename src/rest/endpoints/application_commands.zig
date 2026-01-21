@@ -178,7 +178,12 @@ pub fn editApplicationCommandPermissions(
 pub const CreateGlobalApplicationCommandBody = struct {
     name: []const u8,
     name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
-    description: Omittable([]const u8) = .omit,
+    /// This field is technically omittable, as it's not required for user/message commands.
+    /// However, given the prevalence of chat_input commands ("slash commands"), it is less error-prone
+    /// if we require this field to always be present.
+    ///
+    /// If you are not creating a slash command, you may set it to an empty-string.
+    description: []const u8,
     description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     options: Omittable([]const ApplicationCommandOption) = .omit,
     default_member_permissions: Omittable(?model.Permissions) = .omit,

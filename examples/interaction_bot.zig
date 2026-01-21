@@ -2,108 +2,152 @@ const std = @import("std");
 const zigcord = @import("zigcord");
 
 pub const std_options: std.Options = .{ .log_level = switch (@import("builtin").mode) {
-    .Debug => .debug,
-    .ReleaseSafe => .info,
+    .Debug, .ReleaseSafe => .debug,
     .ReleaseFast, .ReleaseSmall => .err,
 } };
 
 pub fn main() !void {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    var gpa = std.heap.GeneralPurposeAllocator(.{ .stack_trace_frames = if (std.debug.sys_can_stack_trace) 100 else 0 }){};
     defer _ = gpa.deinit();
-
     const allocator = gpa.allocator();
 
-    var env = try std.process.getEnvMap(allocator);
-    defer env.deinit();
+    const token = try getEnvVarOwned(allocator, "TOKEN");
+    defer allocator.free(token);
 
-    const application_public_key = env.get("APPLICATION_PUBLIC_KEY") orelse {
-        std.log.err("environment variable APPLICATION_PUBLIC_KEY is required", .{});
-        return error.MissingEnv;
-    };
-    const token = env.get("TOKEN") orelse {
-        std.log.err("environment variable TOKEN (set to bot token) is required", .{});
-        return error.MissingEnv;
-    };
-    const application_id_str = env.get("APPLICATION_ID") orelse {
-        std.log.err("environment variable APPLICATION_ID is required", .{});
-        return error.MissingEnv;
-    };
-    const port_str = env.get("PORT") orelse "8080";
-    const port = std.fmt.parseInt(u16, port_str, 10) catch {
-        std.log.err("environment variable PORT must be a number", .{});
-        return error.InvalidEnv;
-    };
-    const application_id = zigcord.model.Snowflake.fromU64(try std.fmt.parseInt(u64, application_id_str, 10));
+    const app_id_str = try getEnvVarOwned(allocator, "APP_ID");
+    defer allocator.free(app_id_str);
+    const app_id: zigcord.model.Snowflake = try .fromString(app_id_str);
 
-    var client = zigcord.EndpointClient.init(allocator, zigcord.Authorization{ .bot = token });
-    defer client.deinit();
+    var endpoint_client = zigcord.EndpointClient.init(allocator, .{ .bot = token });
+    defer endpoint_client.deinit();
 
-    var server = try zigcord.HttpInteractionServer.init(std.net.Address.initIp4(.{ 0, 0, 0, 0 }, port), application_public_key[0..64].*);
+    var gateway_client = try zigcord.gateway.Client.init(
+        allocator,
+        token,
+        zigcord.model.Intents{ .guild_messages = true, .message_content = true },
+    );
+    defer gateway_client.deinit();
+    std.log.info("authenticated as user {f}", .{gateway_client.json_ws_client.ready_event.?.event.user.id});
 
-    const cmd_id = try createTestCommand(&client, application_id);
+    const echo_id = try registerEchoCommand(app_id, &endpoint_client);
 
     while (true) {
-        var req = server.receiveInteraction(allocator) catch |err| {
-            std.log.err("error when receiving interaction: {}", .{err});
-            const trace = @errorReturnTrace() orelse continue;
-            std.debug.dumpStackTrace(trace.*);
-            continue;
-        };
-        defer req.deinit();
+        const event = try gateway_client.readEvent();
+        defer event.deinit();
 
-        const interaction = req.interaction;
-        if (interaction.type == .application_command) {
-            const data = interaction.data.asSome() orelse {
-                std.log.warn("data expected from application command: {f}", .{std.json.fmt(interaction, .{})});
-                continue;
-            };
-            const command_data = data.application_command;
-            if (command_data.id.asU64() == cmd_id.asU64()) {
-                if (data.application_command.options.asSome()) |options| {
-                    const lol_opt = for (options) |opt| {
-                        if (std.mem.eql(u8, opt.name, "lol")) break opt;
-                    } else continue;
-                    if (lol_opt.value.asSome()) |value| {
-                        const str = switch (value) {
-                            .string => |str| str,
-                            else => continue,
-                        };
-                        if (std.mem.eql(u8, str, "quit")) {
-                            break;
-                        } else {
-                            try req.respond(zigcord.model.interaction.InteractionResponse{
-                                .type = .channel_message_with_source,
-                                .data = .initSome(.{ .content = .initSome(str) }),
-                            });
+        switch (event.event orelse continue) {
+            .interaction_create => |interaction| {
+                switch (interaction.data.asSome() orelse continue) {
+                    .application_command => |cmd| {
+                        if (cmd.id == echo_id) {
+                            try executeEchoCommand(&endpoint_client, interaction, cmd);
                         }
-                    }
+                    },
+                    .application_command_autocomplete => |autocomplete| {
+                        if (autocomplete.id == echo_id) {
+                            try executeEchoAutocomplete(&endpoint_client, interaction, autocomplete);
+                        }
+                    },
+                    else => continue,
                 }
-            }
+            },
+            else => continue,
         }
     }
 }
 
-fn createTestCommand(client: *zigcord.EndpointClient, application_id: zigcord.model.Snowflake) !zigcord.model.Snowflake {
-    const command_result = try client.createGlobalApplicationCommand(
-        application_id,
-        zigcord.rest.EndpointClient.application_commands.CreateGlobalApplicationCommandBody{
-            .name = "test",
-            .type = .initSome(.chat_input),
-            .description = .initSome("test"),
-            .options = .initSome(&.{
-                .initStringOption(zigcord.model.interaction.command_option.StringOptionBuilder{ .name = "weee", .description = "wowie!" }),
-            }),
-        },
-    );
+fn getEnvVarOwned(allocator: std.mem.Allocator, name: []const u8) ![]const u8 {
+    return std.process.getEnvVarOwned(allocator, name) catch |err| {
+        switch (err) {
+            error.EnvironmentVariableNotFound => {
+                std.log.err("environment variable {s} is required", .{name});
+                std.process.exit(1);
+            },
+            else => return err,
+        }
+    };
+}
+
+fn registerEchoCommand(application_id: zigcord.model.Snowflake, endpoint_client: *zigcord.EndpointClient) !zigcord.model.Snowflake {
+    const command_result = try endpoint_client.createGlobalApplicationCommand(application_id, .{
+        .name = "echo",
+        .description = "echoes your message back to you",
+        .options = .initSome(&.{.initStringOption(.{
+            .name = "text",
+            .description = "text to echo",
+            .required = .initSome(true),
+            .autocomplete = .initSome(true),
+        })}),
+    });
     defer command_result.deinit();
 
     const command = switch (command_result.value()) {
-        .ok => |cmd| cmd,
-        .err => |discord_err| {
-            std.log.err("error creating command: {f}", .{std.json.fmt(discord_err, .{})});
-            return error.RestError;
+        .ok => |ok| ok,
+        .err => |err| {
+            std.log.err("error: {f}", .{std.json.fmt(err, .{})});
+            return error.DiscordError;
         },
     };
-
     return command.id;
+}
+
+fn executeEchoCommand(
+    endpoint_client: *zigcord.EndpointClient,
+    interaction: zigcord.model.interaction.Interaction,
+    command_data: zigcord.model.interaction.ApplicationCommandInteractionData,
+) !void {
+    std.log.debug("received echo command", .{});
+
+    const text_option = getOption("text", command_data.options.asSome() orelse return error.NoOptions) orelse return error.NoTextOption;
+    const text_value = text_option.value.asSome() orelse return error.NoTextOption;
+    const text = switch (text_value) {
+        .string => |str| str,
+        else => return error.InvalidTextOption,
+    };
+
+    const result = try endpoint_client.createInteractionResponse(interaction.id, interaction.token, .initChannelMessageWithSource(.{ .content = .initSome(text) }));
+    defer result.deinit();
+
+    std.log.debug("echoed {s}", .{text});
+}
+
+const echo_autocompletes = [_][]const u8{ "aaaab", "aaabb", "aabbb", "abbbb", "bbbbb" };
+
+fn executeEchoAutocomplete(
+    endpoint_client: *zigcord.EndpointClient,
+    interaction: zigcord.model.interaction.Interaction,
+    autocomplete_data: zigcord.model.interaction.ApplicationCommandInteractionData,
+) !void {
+    std.log.debug("received echo autocomplete", .{});
+
+    const text_option = getOption("text", autocomplete_data.options.asSome() orelse return error.NoOptions) orelse return error.NoTextOption;
+    const text_value = text_option.value.asSome() orelse return error.NoTextOption;
+    const text = switch (text_value) {
+        .string => |str| str,
+        else => return error.InvalidTextOption,
+    };
+
+    std.log.debug("partial option: {s}", .{text});
+
+    var filtered_echoes_buf: [echo_autocompletes.len]zigcord.model.interaction.command_option.StringChoice = undefined;
+    var filtered_echoes: std.ArrayList(zigcord.model.interaction.command_option.StringChoice) = .initBuffer(&filtered_echoes_buf);
+    for (echo_autocompletes) |echo| {
+        if (std.mem.startsWith(u8, echo, text)) {
+            std.log.debug("valid option: {s}", .{echo});
+            try filtered_echoes.appendBounded(.{ .name = echo, .value = echo });
+        }
+    }
+
+    const result = try endpoint_client.createInteractionResponse(interaction.id, interaction.token, .initApplicationCommandAutocompleteResultString(.{ .choices = filtered_echoes.items }));
+    defer result.deinit();
+}
+
+fn getOption(option_name: []const u8, options: []const zigcord.model.interaction.ApplicationCommandInteractionDataOption) ?zigcord.model.interaction.ApplicationCommandInteractionDataOption {
+    for (options) |option| {
+        if (std.mem.eql(u8, option.name, option_name)) {
+            return option;
+        }
+    }
+
+    return null;
 }
