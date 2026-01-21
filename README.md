@@ -10,7 +10,7 @@ on a more recent version of Zig, please create an [issue](https://codeberg.org/l
 To include this in your zig project, use the Zig Package Manager:
 
 ```sh
-# you can get a lock a specific version by replacing "#main" with the version number, ie "#v0.7.2"
+# you can get a lock a specific version by replacing "#main" with the version number, ie "#v0.8.0"
 zig fetch --save 'git+https://codeberg.org/lipfang/zigcord#main'
 ```
 
@@ -51,6 +51,7 @@ This project is still in early development, so breaking changes happen often. Ho
 # TODO
  - Formal documentation site once the API is stabilized
  - Some way to test endpoints
+ - Better error handling to allow to get a `std.json.Value` from http responses if we fail to parse into a static type, similar to gateway
  - HTTP Interaction Server:
    - Standalone HTTPS support (for now, you will need a reverse-proxy to provide HTTPS support)
    - Native cloud function support (i.e. Cloudflare Workers)
