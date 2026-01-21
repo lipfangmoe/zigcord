@@ -1,14 +1,26 @@
+# v0.9.0
+
+This release contains breaking changes to the interaction model and error printing.
+
+ * **breaking**: `rest.RestClient.DiscordError` now implements `format`
+   * migration: printing `rest.RestClient.DiscordError` must be done with `{}` to `{f}`
+   * this prints the discord error in JSON format, which is useful since that is the format it was orginally presented in.
+ * **breaking**: `model.MessageComponent.id` now takes a `u64` instead of a `i32`
+   * i mean, it just makes sense. it isn't even allowed to be zero
+ * **breaking**: `model.interaction.MessageComponentData` is now a union instead of a struct
+   * this was added to make distinctions between different kinds of message components
+ * non-breaking: `model.interaction.ModalComponentData` has been added for modal components
+ * non-breaking: more types which use the tagged-data pattern have been given `initXyz` construction methods similar to `InteractionResponse`
+
 # v0.8.0
 
 This release contains breaking changes to the interaction model.
 
- * **breaking**: `model.interaction.Interaction.data` is no longer always a message.
+ * **breaking**: `model.interaction.Interaction.data` is no longer assumed to be a message interaction.
  * **breaking**: `model.interaction.InteractionResponse` is now a union type, rather than a struct.
    * InteractionResponse now has an `initXyz` construction method for each type of interaction response.
-   * This allows InteractionResponse to allow more than just Message responses
+   * This allows InteractionResponse to allow for more than just Message responses.
  * **breaking**: `EndpointClient.CreateInteractionResponseFormBody.data` now takes `InteractionCallbackAny` instead of `InteractionCallbackData`
-   * 
- * A new method
 
 # v0.7.2
 
