@@ -1,3 +1,15 @@
+# v0.8.0
+
+This release contains breaking changes to the interaction model.
+
+ * **breaking**: `model.interaction.Interaction.data` is no longer always a message.
+ * **breaking**: `model.interaction.InteractionResponse` is now a union type, rather than a struct.
+   * InteractionResponse now has an `initXyz` construction method for each type of interaction response.
+   * This allows InteractionResponse to allow more than just Message responses
+ * **breaking**: `EndpointClient.CreateInteractionResponseFormBody.data` now takes `InteractionCallbackAny` instead of `InteractionCallbackData`
+   * 
+ * A new method
+
 # v0.7.2
 
 This release contains no breaking changes.
