@@ -1,3 +1,15 @@
+# v0.9.1
+
+This release contains a breaking change to followup messages.
+
+Because this is a relatively minor change and may not even break many people (and zigcord is still `v0`),
+I've decided to make this a patch bump instead of a minor version bump.
+
+ * **breaking** `EndpointClient.editOriginalInteractionResponse` has been changed from taking a `EditWebhookMessageFormBody` to a `EditWebhookMessageJsonBody`
+   * There are two ways you can choose to migrate:
+     * Change from `EndpointClient.editOriginalInteractionResponse` to `EndpointClient.editOriginalInteractionResponseMultipart`
+     * Continue using `EndpointClient.editOriginalInteractionResponse`, but change optional fields to use `.initSome(...)` to match the JSON-based contract
+
 # v0.9.0
 
 This release contains breaking changes to the interaction model and error printing.
