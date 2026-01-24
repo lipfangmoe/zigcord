@@ -64,6 +64,19 @@ pub fn editOriginalInteractionResponse(
     client: *rest.EndpointClient,
     application_id: model.Snowflake,
     interaction_token: []const u8,
+    body: rest.EndpointClient.webhook.EditWebhookMessageJsonBody,
+) !rest.RestClient.Result(model.Message) {
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}/messages/@original", .{ application_id, interaction_token });
+    defer client.rest_client.allocator.free(uri_str);
+    const uri = try std.Uri.parse(uri_str);
+
+    return client.rest_client.requestWithJsonBody(model.Message, .PATCH, uri, body, .{});
+}
+
+pub fn editOriginalInteractionResponseMultipart(
+    client: *rest.EndpointClient,
+    application_id: model.Snowflake,
+    interaction_token: []const u8,
     body: rest.EndpointClient.webhook.EditWebhookMessageFormBody,
 ) !rest.RestClient.Result(model.Message) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}/messages/@original", .{ application_id, interaction_token });
