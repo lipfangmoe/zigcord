@@ -1,6 +1,12 @@
+# v0.9.2
+
+This release contains no breaking changes.
+
+ * `EditWebhookMessageFormBody` and `EditWebhookMessageJsonBody` now both have a `flags` field.
+
 # v0.9.1
 
-This release contains a breaking change to followup messages.
+This release contains a minor breaking change to followup messages.
 
 Because this is a relatively minor change and may not even break many people (and zigcord is still `v0`),
 I've decided to make this a patch bump instead of a minor version bump.
