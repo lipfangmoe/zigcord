@@ -1,3 +1,9 @@
+# v0.9.4
+
+This release contains no breaking changes.
+
+ * A new optional field has been added to EditMessageJsonBody and EditMessageFormBody: `components` for use with Message Components V2
+
 # v0.9.3
 
 This release contains a minor breaking change.
