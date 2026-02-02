@@ -1,0 +1,27 @@
+{
+    "id": 1,
+    "type": 12,
+    "items": [
+        {
+            "spoiler": false,
+            "media": {
+                "width": 1300,
+                "url": "https://example.com",
+                "proxy_url": "https://example.com",
+                "placeholder_version": 1,
+                "placeholder": "redacted",
+                "loading_state": 2,
+                "id": "0",
+                "height": 541,
+                "flags": 0,
+                "content_type": "image/jpeg",
+                "content_scan_metadata": {
+                    "version": 4,
+                    "flags": 0
+                },
+                "attachment_id": "0"
+            },
+            "description": null
+        }
+    ]
+}
