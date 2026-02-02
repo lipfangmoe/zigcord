@@ -254,6 +254,7 @@ pub const deleteOriginalInteractionResponse = interaction.deleteOriginalInteract
 pub const editFollowupMessage = interaction.editFollowupMessage;
 pub const editFollowupMessageMultipart = interaction.editFollowupMessageMultipart;
 pub const editOriginalInteractionResponse = interaction.editOriginalInteractionResponse;
+pub const editOriginalInteractionResponseMultipart = interaction.editOriginalInteractionResponseMultipart;
 pub const getFollowupMessage = interaction.getFollowupMessage;
 pub const getOriginalInteractionResponse = interaction.getOriginalInteractionResponse;
 pub const invite = @import("./endpoints/invite.zig");

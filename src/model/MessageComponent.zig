@@ -367,7 +367,7 @@ pub const TextDisplay = struct {
 /// Message.Flag.is_components_v2 must be set to use this
 pub const Thumbnail = struct {
     media: UnfurledMediaItem,
-    description: jconfig.Omittable([]const u8) = .omit,
+    description: jconfig.Omittable(?[]const u8) = .omit,
     spoiler: jconfig.Omittable(bool) = .omit,
 
     pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
@@ -379,7 +379,7 @@ pub const MediaGallery = struct {
 
     pub const Item = struct {
         media: UnfurledMediaItem,
-        description: jconfig.Omittable([]const u8) = .omit,
+        description: jconfig.Omittable(?[]const u8) = .omit,
         spoiler: jconfig.Omittable(bool) = .omit,
 
         pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
@@ -432,7 +432,8 @@ pub const UnfurledMediaItem = struct {
     proxy_url: jconfig.Omittable([]const u8) = .omit,
     height: jconfig.Omittable(?i64) = .omit,
     width: jconfig.Omittable(?i64) = .omit,
-    content_type: jconfig.Omittable(?i64) = .omit,
+    content_type: jconfig.Omittable([]const u8) = .omit,
+    attachment_id: jconfig.Omittable(model.Snowflake) = .omit,
 
     pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
 };
@@ -458,23 +459,51 @@ test "discord example" {
         \\]
     ;
 
-    const expected = &.{
-        MessageComponent{
-            .type = .text_display,
-            .other_props = .{ .text_display = .{ .content = "This is a message with components." } },
-        },
-        MessageComponent{
-            .type = .action_row,
-            .other_props = .{ .action_row = .{ .components = &.{
-                MessageComponent{
-                    .type = .button,
-                    .other_props = .{ .button = Button{ .label = .initSome("Click me!"), .style = .primary, .custom_id = .initSome("click_one") } },
-                },
-            } } },
-        },
+    const expected: []const MessageComponent = &.{
+        .initTextDisplay(null, .{ .content = "This is a message with components." }),
+        .initActionRow(null, .{ .components = &.{
+            .initButton(null, .{
+                .label = .initSome("Click me!"),
+                .style = .primary,
+                .custom_id = .initSome("click_one"),
+            }),
+        } }),
     };
 
     const actual = try std.json.parseFromSlice([]const MessageComponent, std.testing.allocator, input, .{});
     defer actual.deinit();
     try std.testing.expectEqualDeep(expected, actual.value);
+}
+
+test "actual example" {
+    const input = @embedFile("./test/components.test.json");
+    try expectParsedSuccessfully(MessageComponent, std.testing.allocator, input, .{});
+}
+
+fn expectParsedSuccessfully(comptime T: type, allocator: std.mem.Allocator, input: []const u8, options: std.json.ParseOptions) !void {
+    var reader: std.Io.Reader = .fixed(input);
+    var json_reader: std.json.Reader = .init(allocator, &reader);
+    defer json_reader.deinit();
+
+    var diag: std.json.Diagnostics = .{};
+    json_reader.enableDiagnostics(&diag);
+
+    const parsed = std.json.parseFromTokenSource(T, allocator, &json_reader, options) catch |err| {
+        std.debug.print("error while parsing json: {} (at {d}:{d})\n", .{ err, diag.getLine(), diag.getColumn() });
+        std.debug.print("surrounding json at parse error:\n", .{});
+
+        const surroundings = 10;
+        const start = if (diag.getByteOffset() > surroundings) diag.getByteOffset() - 10 else 0;
+        const end = if (diag.getByteOffset() < input.len - 10) diag.getByteOffset() + 10 else input.len;
+        std.debug.print("{s}\n", .{input[start..end]});
+
+        const padding = @min(start, surroundings);
+        for (0..padding) |_| {
+            std.debug.print(" ", .{});
+        }
+        std.debug.print("^", .{});
+
+        return err;
+    };
+    defer parsed.deinit();
 }
