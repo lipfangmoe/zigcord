@@ -1,3 +1,11 @@
+# v0.9.3
+
+This release contains a minor breaking change.
+
+ * Media descriptions in Message Components were considered omittable, but not nullable. They are now considered nullable.
+   * This is a minor breaking change that I don't think will actually break anyone, since unfortunately media descriptions
+     are seldomn used.
+
 # v0.9.2
 
 This release contains no breaking changes.
