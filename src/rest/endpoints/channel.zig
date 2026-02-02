@@ -802,6 +802,7 @@ pub const EditMessageJsonBody = struct {
     embeds: jconfig.Omittable(?[]const model.Message.Embed) = .omit,
     flags: jconfig.Omittable(?model.Message.Flags) = .omit,
     allowed_mentions: jconfig.Omittable(?model.Message.AllowedMentions) = .omit,
+    components: jconfig.Omittable(?[]const model.MessageComponent) = .omit,
     /// must also include already-uploaded files
     attachments: jconfig.Omittable(?[]const model.Message.Attachment) = .omit,
 
@@ -813,6 +814,7 @@ pub const EditMessageFormBody = struct {
     embeds: ?[]const model.Message.Embed = null,
     flags: ?model.Message.Flags = null,
     allowed_mentions: ?model.Message.AllowedMentions = null,
+    components: ?[]const model.MessageComponent = null,
     /// set a file to `null` to not affect it
     files: ?[]const ?rest.Upload = null,
     /// must also include already-uploaded files
