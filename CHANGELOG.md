@@ -1,3 +1,10 @@
+# v0.10.0
+
+This release contains breaking changes related to Attachments
+
+ * Instances of `jconfig.Partial(model.Message.Attachment)` have been replaced with `PartialAttachment`
+   * Migration: use the new struct. `jconfig.Partial` sucked to use anyway, and the new struct only accepts fields useful for attachment uploads.
+
 # v0.9.4
 
 This release contains no breaking changes.

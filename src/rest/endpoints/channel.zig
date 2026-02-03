@@ -670,7 +670,7 @@ pub const CreateMessageJsonBody = struct {
     message_reference: jconfig.Omittable(model.Message.Reference) = .omit,
     components: jconfig.Omittable([]const model.MessageComponent) = .omit,
     sticker_ids: jconfig.Omittable([]const Snowflake) = .omit,
-    attachments: jconfig.Omittable([]const jconfig.Partial(model.Message.Attachment)) = .omit,
+    attachments: jconfig.Omittable([]const PartialAttachment) = .omit,
     flags: jconfig.Omittable(model.Message.Flags) = .omit,
     enforce_nonce: jconfig.Omittable(bool) = .omit,
     poll: jconfig.Omittable(model.Poll) = .omit,
@@ -725,7 +725,7 @@ pub const CreateMessageFormBody = struct {
     components: ?[]const model.MessageComponent = null,
     sticker_ids: ?[]const Snowflake = null,
     files: ?[]const rest.Upload = null,
-    attachments: ?[]const jconfig.Partial(model.Message.Attachment) = null,
+    attachments: ?[]const PartialAttachment = null,
     flags: ?model.Message.Flags = null,
     enforce_nonce: ?bool = null,
     poll: ?model.Poll = null,
@@ -739,7 +739,7 @@ pub const CreateMessageFormBody = struct {
     pub fn initMessageWithFiles(
         message: ?[]const u8,
         files: []const rest.Upload,
-        attachments: []const jconfig.Partial(model.Message.Attachment),
+        attachments: []const PartialAttachment,
     ) CreateMessageFormBody {
         std.debug.assert(files.len == attachments.len);
         return CreateMessageFormBody{ .content = message, .files = files, .attachments = attachments };
@@ -804,7 +804,7 @@ pub const EditMessageJsonBody = struct {
     allowed_mentions: jconfig.Omittable(?model.Message.AllowedMentions) = .omit,
     components: jconfig.Omittable(?[]const model.MessageComponent) = .omit,
     /// must also include already-uploaded files
-    attachments: jconfig.Omittable(?[]const model.Message.Attachment) = .omit,
+    attachments: jconfig.Omittable(?[]const PartialAttachment) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
@@ -818,7 +818,15 @@ pub const EditMessageFormBody = struct {
     /// set a file to `null` to not affect it
     files: ?[]const ?rest.Upload = null,
     /// must also include already-uploaded files
-    attachments: ?[]const model.Message.Attachment = null,
+    attachments: ?[]const PartialAttachment = null,
+};
+
+pub const PartialAttachment = struct {
+    id: u64,
+    filename: []const u8,
+    description: jconfig.Omittable([]const u8) = .omit,
+
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const EditChannelPermissions = struct {
@@ -878,7 +886,7 @@ pub const StartThreadInForumOrMediaChannelJsonBody = struct {
         allowed_mentions: jconfig.Omittable([]const model.Message.AllowedMentions) = .omit,
         components: jconfig.Omittable([]const model.MessageComponent) = .omit,
         sticker_ids: jconfig.Omittable([]const Snowflake) = .omit,
-        attachments: jconfig.Omittable([]const jconfig.Partial(model.Message.Attachment)) = .omit,
+        attachments: jconfig.Omittable([]const PartialAttachment) = .omit,
         flags: jconfig.Omittable(model.Message.Flags) = .omit,
 
         pub const jsonStringify = jconfig.stringifyWithOmit;
@@ -899,7 +907,7 @@ pub const StartThreadInForumOrMediaChannelFormBody = struct {
         allowed_mentions: jconfig.Omittable([]const model.Message.AllowedMentions) = .omit,
         components: jconfig.Omittable([]const model.MessageComponent) = .omit,
         sticker_ids: jconfig.Omittable([]const Snowflake) = .omit,
-        attachments: jconfig.Omittable([]const jconfig.Partial(model.Message.Attachment)) = .omit,
+        attachments: jconfig.Omittable([]const PartialAttachment) = .omit,
         flags: jconfig.Omittable(model.Message.Flags) = .omit,
 
         pub const jsonStringify = jconfig.stringifyWithOmit;
