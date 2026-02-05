@@ -1,3 +1,15 @@
+# v0.10.1
+
+This release contains a minor breaking change.
+
+ * The `Application` struct has slightly changed, allowing it to be correctly parsed by the Get Current Application endpoint.
+   * Existing omittable field `interactions_endpoint_url` was also made nullable
+   * Existing omittable field `role_connections_verification_url` was also made nullable
+   * New omittable fields `event_webhooks_url`, `event_webhooks_status`, `event_webhooks_types`, and `integration_types_config` were added
+   * The type `Application.TeamMember` has also changed:
+     * Existing field `user` was changed from `model.User` to `jconfig.Partial(model.User)`
+     * New omittable field `permissions` was added. While this field isn't documented under [Team Member Object](https://discord.com/developers/docs/topics/teams#data-models-team-member-object), it is documented under [Example Application Object](https://discord.com/developers/docs/resources/application#application-object-example-application-object)
+
 # v0.10.0
 
 This release contains breaking changes related to Attachments
