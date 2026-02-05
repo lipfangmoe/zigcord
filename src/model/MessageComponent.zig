@@ -477,33 +477,5 @@ test "discord example" {
 
 test "actual example" {
     const input = @embedFile("./test/components.test.json");
-    try expectParsedSuccessfully(MessageComponent, std.testing.allocator, input, .{});
-}
-
-fn expectParsedSuccessfully(comptime T: type, allocator: std.mem.Allocator, input: []const u8, options: std.json.ParseOptions) !void {
-    var reader: std.Io.Reader = .fixed(input);
-    var json_reader: std.json.Reader = .init(allocator, &reader);
-    defer json_reader.deinit();
-
-    var diag: std.json.Diagnostics = .{};
-    json_reader.enableDiagnostics(&diag);
-
-    const parsed = std.json.parseFromTokenSource(T, allocator, &json_reader, options) catch |err| {
-        std.debug.print("error while parsing json: {} (at {d}:{d})\n", .{ err, diag.getLine(), diag.getColumn() });
-        std.debug.print("surrounding json at parse error:\n", .{});
-
-        const surroundings = 10;
-        const start = if (diag.getByteOffset() > surroundings) diag.getByteOffset() - 10 else 0;
-        const end = if (diag.getByteOffset() < input.len - 10) diag.getByteOffset() + 10 else input.len;
-        std.debug.print("{s}\n", .{input[start..end]});
-
-        const padding = @min(start, surroundings);
-        for (0..padding) |_| {
-            std.debug.print(" ", .{});
-        }
-        std.debug.print("^", .{});
-
-        return err;
-    };
-    defer parsed.deinit();
+    try jconfig.testing.expectParsedSuccessfully(MessageComponent, std.testing.allocator, input, .{});
 }

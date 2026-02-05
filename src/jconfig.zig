@@ -43,3 +43,4 @@ pub const OmittableFieldsMixin = @import("./jconfig/omit.zig").OmittableFieldsMi
 pub const Partial = @import("./jconfig/partial.zig").Partial;
 pub const stringifyEnumAsInt = @import("./jconfig/enums.zig").stringifyEnumAsInt;
 pub const InlineSingleStructFieldMixin = @import("./jconfig/inline_single_struct_field.zig").InlineSingleStructFieldMixin;
+pub const testing = @import("./jconfig/testing.zig");

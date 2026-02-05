@@ -1,0 +1,153 @@
+{
+    "id": "0",
+    "name": "redacted",
+    "icon": "redacted",
+    "description": "redacted",
+    "type": null,
+    "bot": {
+        "id": "0",
+        "username": "redacted",
+        "avatar": "0",
+        "discriminator": "0",
+        "public_flags": 0,
+        "flags": 0,
+        "bot": true,
+        "banner": null,
+        "accent_color": null,
+        "global_name": null,
+        "avatar_decoration_data": null,
+        "collectibles": null,
+        "display_name_styles": null,
+        "banner_color": null,
+        "clan": null,
+        "primary_guild": null
+    },
+    "summary": "",
+    "is_monetized": false,
+    "is_verified": false,
+    "is_discoverable": false,
+    "bot_public": true,
+    "bot_require_code_grant": false,
+    "install_params": {
+        "scopes": [
+            "applications.commands"
+        ],
+        "permissions": "0"
+    },
+    "integration_types_config": {
+        "0": {
+            "oauth2_install_params": {
+                "scopes": [
+                    "applications.commands"
+                ],
+                "permissions": "0"
+            }
+        },
+        "1": {
+            "oauth2_install_params": {
+                "scopes": [
+                    "applications.commands"
+                ],
+                "permissions": "0"
+            }
+        }
+    },
+    "verify_key": "redacted",
+    "flags": 0,
+    "tags": [
+        "redacted0",
+        "redacted1",
+        "redacted2"
+    ],
+    "hook": true,
+    "storefront_available": false,
+    "redirect_uris": [],
+    "interactions_endpoint_url": null,
+    "role_connections_verification_url": null,
+    "owner": {
+        "id": "0",
+        "username": "redacted",
+        "avatar": null,
+        "discriminator": "0000",
+        "public_flags": 0,
+        "flags": 0,
+        "banner": null,
+        "accent_color": null,
+        "global_name": null,
+        "avatar_decoration_data": null,
+        "collectibles": null,
+        "display_name_styles": null,
+        "banner_color": null,
+        "clan": null,
+        "primary_guild": null
+    },
+    "approximate_guild_count": 0,
+    "approximate_user_install_count": 0,
+    "approximate_user_authorization_count": 0,
+    "interactions_event_types": [],
+    "interactions_version": 0,
+    "explicit_content_filter": 0,
+    "rpc_application_state": 0,
+    "store_application_state": 0,
+    "verification_state": 0,
+    "integration_public": true,
+    "integration_require_code_grant": false,
+    "discoverability_state": 0,
+    "discovery_eligibility_flags": 0,
+    "monetization_state": 0,
+    "verification_eligibility_flags": 0,
+    "monetization_eligibility_flags": 0,
+    "bot_approximate_guild_count": 0,
+    "team": {
+        "id": "0",
+        "icon": null,
+        "name": "redacted",
+        "owner_user_id": "0",
+        "members": [
+            {
+                "user": {
+                    "id": "0",
+                    "username": "redacted",
+                    "avatar": "redacted",
+                    "discriminator": "0",
+                    "public_flags": 0,
+                    "flags": 0,
+                    "banner": null,
+                    "accent_color": null,
+                    "global_name": "redacted",
+                    "avatar_decoration_data": null,
+                    "collectibles": null,
+                    "display_name_styles": {
+                        "font_id": 0,
+                        "effect_id": 0,
+                        "colors": [
+                            0
+                        ]
+                    },
+                    "banner_color": null,
+                    "clan": {
+                        "identity_guild_id": "0",
+                        "identity_enabled": true,
+                        "tag": "----",
+                        "badge": "redacted"
+                    },
+                    "primary_guild": {
+                        "identity_guild_id": "0",
+                        "identity_enabled": true,
+                        "tag": "----",
+                        "badge": "0"
+                    }
+                },
+                "team_id": "0",
+                "membership_state": 2,
+                "role": "admin",
+                "permissions": [
+                    "*"
+                ]
+            }
+        ]
+    },
+    "internal_guild_restriction": 2,
+    "approved_consoles": [],
+    "pricing_localization_strategy": "localized_price_sets"
+}
