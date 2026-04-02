@@ -77,6 +77,18 @@ pub fn initFileUpload(id: ?u64, file_upload: FileUpload) MessageComponent {
     return .{ .type = .file_upload, .id = .initNullable(id), .other_props = .{ .file_upload = file_upload } };
 }
 
+pub fn initRadioGroup(id: ?u64, radio_group: RadioGroup) MessageComponent {
+    return .{ .type = .radio_group, .id = .initNullable(id), .other_props = .{ .radio_group = radio_group } };
+}
+
+pub fn initCheckboxGroup(id: ?u64, checkbox_group: CheckboxGroup) MessageComponent {
+    return .{ .type = .checkbox_group, .id = .initNullable(id), .other_props = .{ .checkbox_group = checkbox_group } };
+}
+
+pub fn initCheckbox(id: ?u64, checkbox: Checkbox) MessageComponent {
+    return .{ .type = .checkbox, .id = .initNullable(id), .other_props = .{ .checkbox = checkbox } };
+}
+
 pub fn jsonStringify(self: MessageComponent, jw: *std.json.Stringify) !void {
     try jw.beginObject();
     try jw.objectField("type");
@@ -152,6 +164,9 @@ pub const Type = enum(u8) {
     container = 17,
     label = 18,
     file_upload = 19,
+    radio_group = 21,
+    checkbox_group = 22,
+    checkbox = 23,
 
     pub const jsonStringify = jconfig.stringifyEnumAsInt;
 };
@@ -174,6 +189,9 @@ pub const TypedProps = union(Type) {
     container: Container,
     label: Label,
     file_upload: FileUpload,
+    radio_group: RadioGroup,
+    checkbox_group: CheckboxGroup,
+    checkbox: Checkbox,
 };
 
 pub const ActionRow = struct {
@@ -434,6 +452,49 @@ pub const UnfurledMediaItem = struct {
     width: jconfig.Omittable(?i64) = .omit,
     content_type: jconfig.Omittable([]const u8) = .omit,
     attachment_id: jconfig.Omittable(model.Snowflake) = .omit,
+
+    pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
+};
+
+pub const RadioGroup = struct {
+    custom_id: []const u8,
+    options: []const Option,
+    required: jconfig.Omittable(bool) = .omit,
+
+    pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
+
+    pub const Option = struct {
+        value: []const u8,
+        label: []const u8,
+        description: jconfig.Omittable([]const u8) = .omit,
+        default: jconfig.Omittable(bool) = .omit,
+
+        pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
+    };
+};
+
+pub const CheckboxGroup = struct {
+    custom_id: []const u8,
+    options: []const Option,
+    min_values: jconfig.Omittable(i64) = .omit,
+    max_values: jconfig.Omittable(i64) = .omit,
+    required: jconfig.Omittable(bool) = .omit,
+
+    pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
+
+    pub const Option = struct {
+        value: []const u8,
+        label: []const u8,
+        description: jconfig.Omittable([]const u8) = .omit,
+        default: jconfig.Omittable(bool) = .omit,
+
+        pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
+    };
+};
+
+pub const Checkbox = struct {
+    custom_id: []const u8,
+    default: jconfig.Omittable(bool) = .omit,
 
     pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
 };

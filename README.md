@@ -30,7 +30,7 @@ Then, make sure something similar to the following is in your `build.zig`:
 
 # Feature Support
 
- - All Discord API features up to January 1st, 2026
+ - All Discord API features up to March 30th, 2026
  - Uses Zig 0.15.x `std.Io.Reader` and `std.Io.Writer` interfaces
  - [User-installable Apps](https://discord.com/developers/docs/tutorials/developing-a-user-installable-app#developing-a-userinstallable-app)
  - [Components V2](https://discord.com/developers/docs/components/overview)

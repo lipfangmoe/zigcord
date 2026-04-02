@@ -1,3 +1,21 @@
+# v0.10.2
+
+This release contains minor breaking changes.
+
+ * Adding new features of the Discord API:
+ * [New Invite Endpoints](https://docs.discord.com/developers/change-log#new-invite-endpoints)
+   * minor breaking change: `CreateChannelInvite` struct in EndpointClient has been renamed to `CreateChannelInviteJsonBody`
+   * minor breaking change: fixed typo of `target_type` (used to be `target_tpe`)
+   * added `EndpointClient.createChannelInviteMultipart`, allowing CSV upload of users allowed to use this invite
+   * added `EndpointClient.getTargetUsers`, allowing downloading a CSV of allowed users to use an invite
+   * added `EndpointClient.updateTargetUsers`, allowing updating the CSV of allowed users to use an invite
+   * added `EndpointClient.getTargetUsersJobStatus`, allowing you to check on the status of a CSV being processed
+ * [Community Invites Update](https://docs.discord.com/developers/change-log#community-invites-update)
+   * minor breaking change: `model.Invite.Role` is now a `[]PartialRole` instead of `[]Role` (as documented by Discord)
+ * [Radio Groups, Checkbox Groups, and Checkboxes in Modals](https://docs.discord.com/developers/change-log#radio-groups-checkbox-groups-and-checkboxes-in-modals)
+   * added these components to MessageComponent (for creating components) and interaction (for reading interaction response values)
+ * Regenerated `JsonErrorCodes.zig`
+
 # v0.10.1
 
 This release contains a minor breaking change.

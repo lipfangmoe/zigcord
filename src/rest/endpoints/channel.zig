@@ -325,7 +325,7 @@ pub fn getChannelInvites(client: *rest.EndpointClient, channel_id: Snowflake) !r
 pub fn createChannelInvite(
     client: *rest.EndpointClient,
     channel_id: Snowflake,
-    body: CreateChannelInvite,
+    body: CreateChannelInviteJsonBody,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(model.Invite) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/invites", .{channel_id});
@@ -334,6 +334,37 @@ pub fn createChannelInvite(
     const uri = try std.Uri.parse(uri_str);
 
     return client.rest_client.requestWithJsonBodyAndAuditLogReason(model.Invite, .PUT, uri, body, .{ .emit_null_optional_fields = false }, audit_log_reason);
+}
+
+pub fn createChannelInviteMultipart(
+    client: *rest.EndpointClient,
+    channel_id: Snowflake,
+    body: CreateChannelInviteFormBody,
+    audit_log_reason: ?[]const u8,
+) !rest.RestClient.Result(model.Invite) {
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/invites", .{channel_id});
+    defer client.rest_client.allocator.free(uri_str);
+
+    const uri = try std.Uri.parse(uri_str);
+
+    const transfer_encoding = try rest.getTransferEncoding(body, "target_users_file");
+
+    // https://codeberg.org/ziglang/zig/issues/30623 - for now, we will write the file
+    // to an allocatingwriter and send it all in one shot. once streaming to body_writer is fixed,
+    // this should be updated to write directly to body_writer instead of allocating the entire file.
+    var aw: std.Io.Writer.Allocating = switch (transfer_encoding) {
+        .content_length => |len| try .initCapacity(client.rest_client.allocator, len),
+        .chunked => .init(client.rest_client.allocator),
+        .none => unreachable,
+    };
+    defer aw.deinit();
+
+    var buf: [1028]u8 = undefined;
+    var pending_request = try client.rest_client.beginMultipartRequestWithAuditLogReason(model.Invite, .PUT, uri, transfer_encoding, rest.multipart_boundary, &buf, audit_log_reason);
+
+    try pending_request.request.sendBodyComplete(aw.written());
+
+    return pending_request.waitForResponse();
 }
 
 pub fn deleteChannelPermission(
@@ -842,16 +873,29 @@ pub const EditChannelPermissions = struct {
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
-pub const CreateChannelInvite = struct {
+pub const CreateChannelInviteJsonBody = struct {
     max_age: jconfig.Omittable(i64) = .omit,
     max_uses: jconfig.Omittable(i64) = .omit,
     temporary: jconfig.Omittable(bool) = .omit,
     unique: jconfig.Omittable(bool) = .omit,
-    target_tpe: jconfig.Omittable(i64) = .omit,
+    target_type: jconfig.Omittable(i64) = .omit,
     target_user_id: jconfig.Omittable(Snowflake) = .omit,
     target_application_id: jconfig.Omittable(Snowflake) = .omit,
+    role_ids: jconfig.Omittable(Snowflake) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
+};
+
+pub const CreateChannelInviteFormBody = struct {
+    max_age: ?i64 = null,
+    max_uses: ?i64 = null,
+    temporary: ?i64 = null,
+    unique: ?bool = null,
+    target_type: ?i64 = null,
+    target_user_id: ?Snowflake = null,
+    target_users_file: ?rest.Upload = null,
+    target_application_id: ?Snowflake = null,
+    role_ids: ?Snowflake = null,
 };
 
 pub const StartThreadFromMessage = struct {

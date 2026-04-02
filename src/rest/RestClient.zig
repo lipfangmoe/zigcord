@@ -95,6 +95,18 @@ fn handleResponse(
     };
     const body_reader = response.readerDecompressing(&buf, &decompress, decompress_buffer);
 
+    if (ResponseT == RawBody) {
+        return switch (status_class) {
+            .success => Result(RawBody){ .ok = .{ .status = status, .value = RawBody{ .reader = body_reader }, .parsed = null } },
+            else => blk: {
+                var json_reader = std.json.Reader.init(allocator, body_reader);
+                defer json_reader.deinit();
+                const parsed = std.json.parseFromTokenSource(DiscordError, allocator, &json_reader, .{ .ignore_unknown_fields = true, .max_value_len = config.max_response_length }) catch |err| return reduceJsonParseError(err);
+                break :blk Result(ResponseT){ .err = .{ .status = status, .value = parsed.value, .parsed = parsed } };
+            },
+        };
+    }
+
     var json_reader = std.json.Reader.init(allocator, body_reader);
     defer json_reader.deinit();
 
@@ -470,6 +482,11 @@ pub const DiscordError = struct {
         }
         return discord_error;
     }
+};
+
+/// Can be used in place of ResponseT to be supplied with the raw value for the response rather than a json-parsed one.
+pub const RawBody = struct {
+    reader: *std.Io.Reader,
 };
 
 pub const TestResponse = if (builtin.is_test) struct {
