@@ -50,6 +50,8 @@ This project is still in early development, so breaking changes happen often. Ho
 
 # TODO
  - Formal documentation site once the API is stabilized
+ - Proper namespacing for EndpointClient so code generation is not needed
+   - (ie `endpoint_client.editCurrentApplication()` would instead be `endpoint_client.application.editCurrentApplication()`)
  - Some way to test endpoints
  - Better error handling to allow to get a `std.json.Value` from http responses if we fail to parse into a static type, similar to gateway
  - Removal of logging from zigcord+weebsocket
