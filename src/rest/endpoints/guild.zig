@@ -571,6 +571,18 @@ pub fn modifyGuildOnboarding(
     return client.rest_client.requestWithJsonBodyAndAuditLogReason(model.guild.Onboarding, .PUT, uri, body, .{}, audit_log_reason);
 }
 
+pub fn searchGuildMessages(
+    client: *rest.EndpointClient,
+    guild_id: model.Snowflake,
+    query: SearchGuildMessagesQueryParams,
+) !rest.RestClient.Result([]const model.Message) {
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/messages/search?{f}", .{ guild_id, query });
+    defer client.rest_client.allocator.free(uri_str);
+    const uri = try std.Uri.parse(uri_str);
+
+    return client.rest_client.request([]const model.Message, .GET, uri);
+}
+
 // BODY / QUERY CONTRACTS
 
 pub const ModifyGuildBody = struct {
@@ -821,4 +833,122 @@ pub const ModifyGuildOnboardingBody = struct {
     default_channel_ids: []const model.Snowflake,
     enabled: bool,
     mode: model.guild.Onboarding.Mode,
+};
+
+pub const SearchGuildMessagesQueryParams = struct {
+    limit: ?i64 = null,
+    offset: ?i64 = null,
+    max_id: ?model.Snowflake = null,
+    min_id: ?model.Snowflake = null,
+    slop: ?i64 = null,
+    content: ?[]const u8 = null,
+    channel_id: ?[]const model.Snowflake = null,
+    author_type: ?[]const AuthorType = null,
+    author_id: ?[]const model.Snowflake = null,
+    mentions: ?[]const model.Snowflake = null,
+    mentions_role_id: ?[]const model.Snowflake = null,
+    mention_everyone: ?bool = null,
+    replied_to_user_id: ?[]const model.Snowflake = null,
+    replied_to_message_id: ?[]const model.Snowflake = null,
+    pinned: ?bool = null,
+    has: ?[]const SearchHasType = null,
+    embed_type: ?[]const EmbedType = null,
+    embed_provider: ?[]const []const u8 = null,
+    link_hostname: ?[]const []const u8 = null,
+    attachment_filename: ?[]const []const u8 = null,
+    attachment_extension: ?[]const []const u8 = null,
+    sort_by: ?SearchSortMode = null,
+    sort_order: ?[]const u8 = null,
+    include_nsfw: ?bool = null,
+
+    pub const format = rest.QueryStringFormatMixin(@This()).format;
+
+    pub const AuthorType = enum {
+        user,
+        bot,
+        webhook,
+        not_user,
+        not_bot,
+        not_webhook,
+
+        pub fn format(self: AuthorType, writer: *std.Io.Writer) !void {
+            switch (self) {
+                .user, .bot, .webhook => try writer.writeAll(@tagName(self)),
+                .not_user, .not_bot, .not_webhook => {
+                    try writer.writeByte('_');
+                    try writer.writeAll(@tagName(self)[4..]);
+                },
+            }
+        }
+    };
+
+    pub const SearchHasType = enum {
+        image,
+        sound,
+        video,
+        file,
+        sticker,
+        embed,
+        link,
+        poll,
+        snapshot,
+        not_image,
+        not_sound,
+        not_video,
+        not_file,
+        not_sticker,
+        not_embed,
+        not_link,
+        not_poll,
+        not_snapshot,
+
+        pub fn format(self: SearchHasType, writer: *std.Io.Writer) !void {
+            switch (self) {
+                .image,
+                .sound,
+                .video,
+                .file,
+                .sticker,
+                .embed,
+                .link,
+                .poll,
+                .snapshot,
+                => try writer.writeAll(@tagName(self)),
+                .not_image,
+                .not_sound,
+                .not_video,
+                .not_file,
+                .not_sticker,
+                .not_embed,
+                .not_link,
+                .not_poll,
+                .not_snapshot,
+                => {
+                    try writer.writeByte('_');
+                    try writer.writeAll(@tagName(self)[4..]);
+                },
+            }
+        }
+    };
+
+    pub const EmbedType = enum {
+        image,
+        video,
+        gif,
+        sound,
+        article,
+
+        pub fn format(self: EmbedType, writer: *std.Io.Writer) !void {
+            try writer.writeAll(@tagName(self));
+        }
+    };
+
+    pub const SearchSortMode = enum {
+        timestamp,
+        relevance,
+
+        pub fn format(self: SearchSortMode, writer: *std.Io.Writer) !void {
+            try writer.writeAll(@tagName(self));
+        }
+    };
 };

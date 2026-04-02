@@ -1,12 +1,12 @@
 // generated with the following javascript on `https://discord.com/developers/docs/topics/opcodes-and-status-codes#http`
 // let str = "";
-// for (const rowElem of document.querySelectorAll('#json-json-error-codes + table > tbody > tr')) {
+// for (const rowElem of document.querySelectorAll('#json-json-error-codes + h6 + div[data-table-wrapper="true"] > div > table:first-of-type > tbody > tr')) {
 //   const [code, description] = rowElem.querySelectorAll('td');
 //   const formattedDesc = description.innerText
 //       .toLocaleLowerCase()
 //       .replaceAll('(s)', 's')
 //       .replaceAll(/\(.*\)/g, '')
-//       .replaceAll(/[ -.,/:]/g, '_')
+//       .replaceAll(/[ -.,/:’']/g, '_')
 //       .replaceAll('__', '_')
 //       .replaceAll(/_$/g, '')
 //   str +=`${formattedDesc} = ${code.innerText},\n`
@@ -61,6 +61,8 @@ pub const ErrorCode = enum(u64) {
     unknown_guild_scheduled_event_user = 10071,
     unknown_tag = 10087,
     unknown_sound = 10097,
+    unknown_invite_target_users_job = 10124,
+    unknown_invite_target_users = 10129,
     bots_cannot_use_this_endpoint = 20001,
     only_bots_can_use_this_endpoint = 20002,
     explicit_content_cannot_be_sent_to_the_desired_recipients = 20009,
@@ -200,11 +202,13 @@ pub const ErrorCode = enum(u64) {
     you_cannot_send_voice_messages_in_this_channel = 50173,
     the_user_account_must_first_be_verified = 50178,
     the_provided_file_does_not_have_a_valid_duration = 50192,
+    cannot_send_messages_to_this_user_due_to_having_no_mutual_guilds = 50278,
     you_do_not_have_permission_to_send_this_sticker = 50600,
     two_factor_is_required_for_this_operation = 60003,
     no_users_with_discordtag_exist = 80004,
     reaction_was_blocked = 90001,
     user_cannot_use_burst_reactions = 90002,
+    index_not_yet_available_try_again_later = 110000,
     application_not_yet_available_try_again_later = 110001,
     api_resource_is_currently_overloaded_try_again_a_little_later = 130000,
     the_stage_is_already_open = 150006,
@@ -231,6 +235,7 @@ pub const ErrorCode = enum(u64) {
     message_blocked_by_harmful_links_filter = 240000,
     cannot_enable_onboarding_requirements_are_not_met = 350000,
     cannot_update_onboarding_while_below_requirements = 350001,
+    access_to_file_uploads_has_been_limited_for_this_guild = 400001,
     failed_to_ban_users = 500000,
     poll_voting_blocked = 520000,
     poll_expired = 520001,
@@ -238,6 +243,13 @@ pub const ErrorCode = enum(u64) {
     cannot_edit_a_poll_message = 520003,
     cannot_use_an_emoji_included_with_the_poll = 520004,
     cannot_expire_a_non_poll_message = 520006,
+    your_discord_application_has_not_been_granted_the_permission_to_use_provisional_accounts = 530000,
+    the_id_token_jwt_you_have_provided_is_expired_you_will_need_to_get_another_one_issued_from_the_identity_provider = 530001,
+    the_issuer_in_the_id_token_jwt_you_have_provided_does_not_match_what_you_have_configured = 530002,
+    the_audience_in_the_id_token_jwt_you_have_provided_does_not_match_the_audience_you_specified_in_your_oidc_configuration_either_update_your_configuration_or_pass_in_an_id_token_that_was_issued_to_your_application = 530003,
+    the_id_token_you_provided_was_issued_too_long_ago_discord_will_not_accept_id_tokens_issued_beyond_a_week_ago_you_will_need_to_get_a_new_id_token_issued_from_the_identity_provider = 530004,
+    discord_failed_to_generate_a_unique_username_within_the_allotted_time_this_is_not_a_terminal_error_and_should_resolve_itself_upon_a_retry = 530006,
+    your_client_secret_is_invalid_double_check_what_you_are_sending_or_regenerate_your_client_secret = 530007,
 
     _,
 };

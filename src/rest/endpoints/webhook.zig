@@ -3,6 +3,7 @@ const std = @import("std");
 const model = zigcord.model;
 const rest = zigcord.rest;
 const jconfig = zigcord.jconfig;
+const PartialAttachment = rest.EndpointClient.PartialAttachment;
 
 pub fn createWebhook(
     client: *rest.EndpointClient,
@@ -379,12 +380,4 @@ pub const EditWebhookMessageFormBody = struct {
     files: ?[]const ?rest.Upload = null,
     attachments: ?[]const PartialAttachment = null,
     poll: ?model.Poll = null, // Polls can only be added when editing a deferred interaction response.
-};
-
-pub const PartialAttachment = struct {
-    id: u64,
-    filename: []const u8,
-    description: jconfig.Omittable([]const u8) = .omit,
-
-    pub const jsonStringify = jconfig.stringifyWithOmit;
 };

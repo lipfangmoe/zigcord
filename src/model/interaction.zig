@@ -190,6 +190,9 @@ pub const ModalComponentInteractionResponse = union(enum) {
     text_display: TextDisplayInteractionResponse,
     label: LabelInteractionResponse,
     file_upload: FileUploadInteractionResponse,
+    radio_group: RadioGroupInteractionResponse,
+    checkbox_group: CheckboxGroupInteractionResponse,
+    checkbox: CheckboxInteractionResponse,
 
     pub const jsonStringify = jconfig.stringifyUnionInline;
 
@@ -279,6 +282,27 @@ pub const FileUploadInteractionResponse = struct {
     id: u64,
     custom_id: []const u8,
     values: []const model.Snowflake,
+};
+
+pub const RadioGroupInteractionResponse = struct {
+    type: model.MessageComponent.Type,
+    id: u64,
+    custom_id: []const u8,
+    value: []const u8,
+};
+
+pub const CheckboxGroupInteractionResponse = struct {
+    type: model.MessageComponent.Type,
+    id: u64,
+    custom_id: []const u8,
+    values: []const []const u8,
+};
+
+pub const CheckboxInteractionResponse = struct {
+    type: model.MessageComponent.Type,
+    id: u64,
+    custom_id: []const u8,
+    value: bool,
 };
 
 pub const ResolvedData = struct {
