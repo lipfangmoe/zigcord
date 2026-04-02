@@ -40,9 +40,11 @@ Then, make sure something similar to the following is in your `build.zig`:
 
 # Basic Usage
 
-This project is still in early development, so formal documentation isn't made yet. but the [list of curated examples](./examples/) are always kept up-to-date. These are located under the [examples](./examples/) directory.
+This project is still in early development, so formal documentation isn't made yet.
 
-These examples are runnable with `zig build examples:gateway` and `zig build examples:interaction` (or simply `zig build examples` to build all examples), and then execute the example using the `zig-out/bin/<examplename>` executable.
+The [list of curated examples](./examples/) are always kept up-to-date. These are located under the [examples](./examples/) directory.
+These examples can be built using `zig build examples:<example-name>` (or simply `zig build examples` to build all examples),
+and then execute the example using the `zig-out/bin/<example-name>` executable. They all take `TOKEN` as an environment variable.
 
 # Changelog
 
@@ -52,9 +54,10 @@ This project is still in early development, so breaking changes happen often. Ho
  - Formal documentation site once the API is stabilized
  - Proper namespacing for EndpointClient so code generation is not needed
    - (ie `endpoint_client.editCurrentApplication()` would instead be `endpoint_client.application.editCurrentApplication()`)
+   - Can be done by making `application.zig` take `@This()` instead of `EndpointClient`, then using `@fieldParentPtr` to get the EndpointClient?
  - Some way to test endpoints
+ - Voice Support
  - Better error handling to allow to get a `std.json.Value` from http responses if we fail to parse into a static type, similar to gateway
- - Removal of logging from zigcord+weebsocket
  - HTTP Interaction Server:
    - Standalone HTTPS support (for now, you will need a reverse-proxy to provide HTTPS support)
    - Native cloud function support (i.e. Cloudflare Workers)
