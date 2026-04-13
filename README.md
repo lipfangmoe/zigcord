@@ -16,7 +16,7 @@ zig fetch --save 'git+https://codeberg.org/lipfang/zigcord#main'
 
 Then, make sure something similar to the following is in your `build.zig`:
 
-```rs
+```zig
     const zigcord_dependency = b.dependency("zigcord", .{});
     const zigcord_module = zigcord_dependency.module("zigcord");
 
@@ -48,16 +48,19 @@ and then execute the example using the `zig-out/bin/<example-name>` executable. 
 
 # Changelog
 
-This project is still in early development, so breaking changes happen often. However, all changes are recorded in the [CHANGELOG.md](./CHANGELOG.md) file, which should make upgrading versions easy.
+This project is still in early development, so breaking changes happen often. However,
+all changes are recorded in the [CHANGELOG.md](./CHANGELOG.md) file, which should make upgrading versions easy.
 
 # TODO
- - Formal documentation site once the API is stabilized
+
+ - Add support for asynchrony via `std.Io` (once Zig 0.16 is released)
  - Proper namespacing for EndpointClient so code generation is not needed
    - (ie `endpoint_client.editCurrentApplication()` would instead be `endpoint_client.application.editCurrentApplication()`)
    - Can be done by making `application.zig` take `@This()` instead of `EndpointClient`, then using `@fieldParentPtr` to get the EndpointClient?
+ - Better error handling to allow to get a `std.json.Value` from http responses if we fail to parse into a static type, similar to gateway
+ - Formal documentation site once the API is stabilized
  - Some way to test endpoints
  - Voice Support
- - Better error handling to allow to get a `std.json.Value` from http responses if we fail to parse into a static type, similar to gateway
  - HTTP Interaction Server:
    - Standalone HTTPS support (for now, you will need a reverse-proxy to provide HTTPS support)
-   - Native cloud function support (i.e. Cloudflare Workers)
+   - Cloud function support (i.e. Cloudflare Workers)
