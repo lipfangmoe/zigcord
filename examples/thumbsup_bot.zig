@@ -38,10 +38,11 @@ pub fn main(init: std.process.Init) !void {
 
         switch (event.event orelse continue) {
             .message_create => |msg_event| {
-                _ = try endpoint_client.createReaction(msg_event.message.channel_id, msg_event.message.id, .{ .unicode = "\u{1F44D}" });
                 if (std.mem.eql(u8, msg_event.message.content, "done")) {
+                    _ = try endpoint_client.createReaction(msg_event.message.channel_id, msg_event.message.id, .{ .unicode = "\u{1F44B}" }); // wave emoji
                     return;
                 }
+                _ = try endpoint_client.createReaction(msg_event.message.channel_id, msg_event.message.id, .{ .unicode = "\u{1F44D}" }); // thumbs up emoji
             },
             else => continue,
         }
