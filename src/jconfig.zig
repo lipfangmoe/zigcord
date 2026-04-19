@@ -1,5 +1,7 @@
 //! helpers for common JSON parsers and stringifiers that I've encountered.
 
+const std = @import("std");
+
 // TODO - publish this as a standalone package, might be nice!
 
 // TODO - a declarative API for field-specific parsers/stringifiers, most notably for union-resolving.
@@ -44,3 +46,7 @@ pub const Partial = @import("./jconfig/partial.zig").Partial;
 pub const stringifyEnumAsInt = @import("./jconfig/enums.zig").stringifyEnumAsInt;
 pub const InlineSingleStructFieldMixin = @import("./jconfig/inline_single_struct_field.zig").InlineSingleStructFieldMixin;
 pub const testing = @import("./jconfig/testing.zig");
+
+test {
+    std.testing.refAllDecls(@This());
+}

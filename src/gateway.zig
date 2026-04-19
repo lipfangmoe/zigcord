@@ -8,3 +8,7 @@ pub const event_data = @import("./gateway/event_data.zig");
 
 pub const ReadEventData = event_data.ReceiveEventData;
 pub const WriteEventData = event_data.SendEventData;
+
+test {
+    std.testing.refAllDecls(@This());
+}

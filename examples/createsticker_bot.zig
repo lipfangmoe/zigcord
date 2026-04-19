@@ -6,14 +6,12 @@ pub const std_options: std.Options = .{ .log_level = switch (@import("builtin").
     .ReleaseFast, .ReleaseSmall => .err,
 } };
 
-pub fn main() !void {
-    var gpa = std.heap.GeneralPurposeAllocator(.{ .stack_trace_frames = if (std.debug.sys_can_stack_trace) 100 else 0 }){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
-
-    const token = std.process.getEnvVarOwned(allocator, "TOKEN") catch |err| {
+pub fn main(init: std.process.Init) !void {
+    const io = init.io;
+    const allocator = init.gpa;
+    const token = init.minimal.environ.getAlloc(allocator, "TOKEN") catch |err| {
         switch (err) {
-            error.EnvironmentVariableNotFound => {
+            error.EnvironmentVariableMissing => {
                 std.log.err("environment variable TOKEN is required", .{});
                 return;
             },
@@ -22,19 +20,20 @@ pub fn main() !void {
     };
     defer allocator.free(token);
 
-    const picture = std.fs.cwd().openFile("./examples/klee_small.png", .{ .mode = .read_only }) catch |err| {
+    const picture = std.Io.Dir.cwd().openFile(io, "./examples/klee_small.png", .{ .mode = .read_only }) catch |err| {
         std.log.err("Failed to open sticker file: {any}", .{err});
         return;
     };
-    defer picture.close();
+    defer picture.close(io);
 
     var buffer: [4096]u8 = undefined;
-    var file_reader = picture.reader(&buffer);
+    var file_reader = picture.reader(io, &buffer);
 
-    var endpoint_client = zigcord.EndpointClient.init(allocator, .{ .bot = token });
+    var endpoint_client = zigcord.EndpointClient.init(io, allocator, .{ .bot = token });
     defer endpoint_client.deinit();
 
     var gateway_client = try zigcord.gateway.Client.init(
+        io,
         allocator,
         token,
         zigcord.model.Intents{ .guild_messages = true, .message_content = true },

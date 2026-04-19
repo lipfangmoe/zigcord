@@ -15,7 +15,7 @@ pub const Upload = struct {
     }
 
     /// Creates an `Upload` from a File Reader.
-    pub fn fromFileReader(filename: []const u8, content_type: []const u8, file_reader: *std.fs.File.Reader) error{GetSizeError}!Upload {
+    pub fn fromFileReader(filename: []const u8, content_type: []const u8, file_reader: *std.Io.File.Reader) error{GetSizeError}!Upload {
         return .{
             .filename = filename,
             .content_type = content_type,

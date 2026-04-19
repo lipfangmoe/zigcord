@@ -10,12 +10,12 @@ const send_events = gateway.event_data.send_events;
 const receive_events = gateway.event_data.receive_events;
 const JsonWSClient = @This();
 
+io: std.Io,
 allocator: std.mem.Allocator,
 ws_client: *ws.Client,
 ws_conn: *ws.Connection,
-write_message_mutex: std.Thread.Mutex,
-is_closing: std.Thread.ResetEvent,
-is_closed: std.Thread.ResetEvent,
+heartbeat_future: ?std.Io.Future(void),
+writer_mutex: std.Io.Mutex,
 
 sequence: ?i64,
 ready_event: ?ReadyEvent,
@@ -28,16 +28,16 @@ pub const ReadyEvent = struct {
 const InitError = error{};
 
 /// Initializes a Gateway Client
-pub fn init(allocator: std.mem.Allocator, auth: zigcord.Authorization) !JsonWSClient {
-    var api_client = zigcord.EndpointClient.init(allocator, auth);
+pub fn init(io: std.Io, allocator: std.mem.Allocator, auth: zigcord.Authorization) !JsonWSClient {
+    var api_client = zigcord.EndpointClient.init(io, allocator, auth);
     defer api_client.deinit();
 
-    return try initWithRestClient(allocator, &api_client);
+    return try initWithRestClient(io, allocator, &api_client);
 }
 
 /// Initializes a Gateway Client from an existing Rest Client. The rest client only needs to live as long as this method call, but the
 /// allocator should live as long as the returned Gateway Client.
-pub fn initWithRestClient(allocator: std.mem.Allocator, client: *zigcord.EndpointClient) !JsonWSClient {
+pub fn initWithRestClient(io: std.Io, allocator: std.mem.Allocator, client: *zigcord.EndpointClient) !JsonWSClient {
     const gateway_resp = try client.getGateway();
     defer gateway_resp.deinit();
 
@@ -49,23 +49,23 @@ pub fn initWithRestClient(allocator: std.mem.Allocator, client: *zigcord.Endpoin
         },
     };
 
-    return try initWithUri(allocator, client.rest_client.auth, url);
+    return try initWithUri(io, allocator, client.rest_client.auth, url);
 }
 
 /// Initializes a Gateway Client from an existing Rest Client. The provided URI is copied by the allocator.
-pub fn initWithUri(allocator: std.mem.Allocator, auth: zigcord.Authorization, uri: []const u8) !JsonWSClient {
+pub fn initWithUri(io: std.Io, allocator: std.mem.Allocator, auth: zigcord.Authorization, uri: []const u8) !JsonWSClient {
     const ws_client = try allocator.create(ws.Client);
     errdefer allocator.destroy(ws_client);
     const ws_conn = try allocator.create(ws.Connection);
     errdefer allocator.destroy(ws_conn);
     var client = JsonWSClient{
+        .io = io,
         .allocator = allocator,
         .sequence = null,
         .ws_client = ws_client,
         .ws_conn = ws_conn,
-        .write_message_mutex = std.Thread.Mutex{},
-        .is_closing = std.Thread.ResetEvent{},
-        .is_closed = std.Thread.ResetEvent{},
+        .writer_mutex = .init,
+        .heartbeat_future = null,
         .ready_event = null,
     };
 
@@ -84,8 +84,9 @@ pub fn initWithUri(allocator: std.mem.Allocator, auth: zigcord.Authorization, ur
 
 pub fn deinit(self: *JsonWSClient) void {
     // first, stop heartbeat thread
-    self.is_closing.set();
-    self.is_closed.wait();
+    if (self.heartbeat_future) |*hbf| {
+        hbf.cancel(self.io);
+    }
 
     // now we can do our normal deiniting stuff
     self.ws_conn.deinit(ws.Connection.ClosePayload{ .status = .normal, .reason = &.{} });
@@ -117,9 +118,9 @@ pub fn readEvent(self: *JsonWSClient) error{ WebsocketError, JsonError }!std.jso
     return payload_json_parsed;
 }
 
-pub fn writeEvent(self: *JsonWSClient, event: gateway.SendEvent) error{ WebsocketError, JsonError }!void {
-    self.write_message_mutex.lock();
-    defer self.write_message_mutex.unlock();
+pub fn writeEvent(self: *JsonWSClient, event: gateway.SendEvent) error{ Canceled, WebsocketError, JsonError }!void {
+    try self.writer_mutex.lock(self.io);
+    defer self.writer_mutex.unlock(self.io);
 
     var payload: [4096]u8 = undefined; // discord only accepts payloads shorter than 4096 bytes
     var payload_writer = std.Io.Writer.fixed(&payload);
@@ -127,7 +128,7 @@ pub fn writeEvent(self: *JsonWSClient, event: gateway.SendEvent) error{ Websocke
     self.ws_conn.sendMessage(.text, payload_writer.buffered()) catch return error.WebsocketError;
 }
 
-pub fn authenticate(self: *JsonWSClient, token: []const u8, intents: model.Intents) error{ WebsocketError, JsonError, HeartbeatStartError }!void {
+pub fn authenticate(self: *JsonWSClient, token: []const u8, intents: model.Intents) error{ Canceled, WebsocketError, JsonError, HeartbeatStartError }!void {
     const heartbeat_interval = while (true) {
         const event = try self.readEvent();
         defer event.deinit();
@@ -144,7 +145,7 @@ pub fn authenticate(self: *JsonWSClient, token: []const u8, intents: model.Inten
     };
     zigcord.logger.debug("hello event received (heartbeat interval = {d}ms)", .{heartbeat_interval});
 
-    self.startHeartbeatThread(heartbeat_interval) catch return error.HeartbeatStartError;
+    self.startHeartbeatListener(heartbeat_interval) catch return error.HeartbeatStartError;
 
     const identify_event = gateway.SendEvent.identify(gateway.event_data.send_events.Identify{
         .token = token,
@@ -181,7 +182,7 @@ pub fn authenticate(self: *JsonWSClient, token: []const u8, intents: model.Inten
     }
 }
 
-pub fn @"resume"(self: *JsonWSClient, token: []const u8, seq: i64, ready: ReadyEvent) error{ WebsocketError, JsonError, HeartbeatStartError }!void {
+pub fn @"resume"(self: *JsonWSClient, token: []const u8, seq: i64, ready: ReadyEvent) error{ Canceled, WebsocketError, JsonError, HeartbeatStartError }!void {
     self.ready_event = ready;
 
     const heartbeat_interval = while (true) {
@@ -199,7 +200,7 @@ pub fn @"resume"(self: *JsonWSClient, token: []const u8, seq: i64, ready: ReadyE
         break;
     };
 
-    self.startHeartbeatThread(heartbeat_interval) catch return error.HeartbeatStartError;
+    self.startHeartbeatListener(heartbeat_interval) catch return error.HeartbeatStartError;
 
     const resume_event = gateway.SendEvent.@"resume"(gateway.event_data.send_events.Resume{
         .token = token,
@@ -209,27 +210,15 @@ pub fn @"resume"(self: *JsonWSClient, token: []const u8, seq: i64, ready: ReadyE
     try self.writeEvent(resume_event);
 }
 
-pub fn startHeartbeatThread(self: *JsonWSClient, heartbeat_interval: u64) !void {
-    const t = try std.Thread.spawn(.{}, defaultHeartbeatHandler, .{ self, heartbeat_interval });
-    t.detach();
+pub fn startHeartbeatListener(self: *JsonWSClient, heartbeat_interval: u64) error{ConcurrencyUnavailable}!void {
+    self.heartbeat_future = try self.io.concurrent(defaultHeartbeatHandler, .{ self, std.math.lossyCast(i64, heartbeat_interval) });
 }
 
-fn defaultHeartbeatHandler(self: *JsonWSClient, interval_ms: u64) !void {
-    const interval = interval_ms * std.time.ns_per_ms;
-    var prng = std.Random.DefaultPrng.init(@bitCast(std.time.milliTimestamp()));
-    const interval_with_jitter = prng.random().intRangeAtMostBiased(u64, 0, interval);
+fn defaultHeartbeatHandler(self: *JsonWSClient, interval_ms: i64) void {
+    var prng = std.Random.DefaultPrng.init(@bitCast(std.Io.Clock.real.now(self.io).toMilliseconds()));
+    const interval_ms_with_jitter = prng.random().intRangeAtMostBiased(i64, 0, interval_ms);
 
-    defer self.is_closed.set();
-
-    {
-        // expect a timeout
-        if (self.is_closing.timedWait(interval_with_jitter)) {
-            return;
-        } else |err| switch (err) {
-            error.Timeout => {},
-            else => return,
-        }
-    }
+    std.Io.sleep(self.io, .fromMilliseconds(interval_ms_with_jitter), .awake) catch return;
 
     var buf: [8096]u8 = undefined;
     var buf_allocator = std.heap.FixedBufferAllocator.init(&buf);
@@ -237,13 +226,15 @@ fn defaultHeartbeatHandler(self: *JsonWSClient, interval_ms: u64) !void {
         const sequence = self.sequence;
         const heartbeat = gateway.SendEvent.heartbeat(sequence);
 
-        try self.writeEvent(heartbeat);
+        self.writeEvent(heartbeat) catch |err| {
+            zigcord.logger.warn("failed to write heartbeat: {s}", .{err});
+            if (@errorReturnTrace()) |trace| {
+                zigcord.logger.warn("trace: {f}", .{trace.*});
+            }
+        };
         buf_allocator.reset();
 
-        // expect a timeout
-        self.is_closing.timedWait(interval) catch |err| switch (err) {
-            error.Timeout => continue,
-        };
-        return;
+        // the only exit point of the function - if this sleep fails
+        std.Io.sleep(self.io, .fromMilliseconds(interval_ms), .awake) catch return;
     }
 }
