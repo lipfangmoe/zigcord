@@ -6,27 +6,31 @@ pub const std_options: std.Options = .{ .log_level = switch (@import("builtin").
     .ReleaseFast, .ReleaseSmall => .err,
 } };
 
-pub fn main() !void {
-    var gpa = std.heap.GeneralPurposeAllocator(.{ .stack_trace_frames = if (std.debug.sys_can_stack_trace) 100 else 0 }){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
-
-    const token = try getEnvVarOwned(allocator, "TOKEN");
+pub fn main(init: std.process.Init) !void {
+    const io = init.io;
+    const allocator = init.gpa;
+    const token = init.minimal.environ.getAlloc(allocator, "TOKEN") catch |err| {
+        switch (err) {
+            error.EnvironmentVariableMissing => {
+                std.log.err("environment variable TOKEN is required", .{});
+                return;
+            },
+            else => return err,
+        }
+    };
     defer allocator.free(token);
 
-    const app_id_str = try getEnvVarOwned(allocator, "APP_ID");
-    defer allocator.free(app_id_str);
-    const app_id: zigcord.model.Snowflake = try .fromString(app_id_str);
-
-    var endpoint_client = zigcord.EndpointClient.init(allocator, .{ .bot = token });
+    var endpoint_client = zigcord.EndpointClient.init(io, allocator, .{ .bot = token });
     defer endpoint_client.deinit();
 
     var gateway_client = try zigcord.gateway.Client.init(
+        io,
         allocator,
         token,
         zigcord.model.Intents{ .guild_messages = true, .message_content = true },
     );
     defer gateway_client.deinit();
+    const app_id = gateway_client.getReadyEvent().application.id;
     std.log.info("authenticated as user {f}", .{gateway_client.json_ws_client.ready_event.?.event.user.id});
 
     const echo_id = try registerEchoCommand(app_id, &endpoint_client);
@@ -73,18 +77,6 @@ pub fn main() !void {
             else => continue,
         }
     }
-}
-
-fn getEnvVarOwned(allocator: std.mem.Allocator, name: []const u8) ![]const u8 {
-    return std.process.getEnvVarOwned(allocator, name) catch |err| {
-        switch (err) {
-            error.EnvironmentVariableNotFound => {
-                std.log.err("environment variable {s} is required", .{name});
-                std.process.exit(1);
-            },
-            else => return err,
-        }
-    };
 }
 
 fn registerEchoCommand(application_id: zigcord.model.Snowflake, endpoint_client: *zigcord.EndpointClient) !zigcord.model.Snowflake {

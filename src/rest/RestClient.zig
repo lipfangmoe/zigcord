@@ -7,6 +7,7 @@ const ErrorCode = @import("./JsonErrorCodes.zig").ErrorCode;
 
 const RestClient = @This();
 
+io: std.Io,
 allocator: std.mem.Allocator,
 auth: zigcord.Authorization,
 client: std.http.Client,
@@ -15,15 +16,16 @@ config: Config,
 /// Creates a discord http client with default configuration.
 ///
 /// Cannot be used in tests, instead use `initWithConfig` and provide a mock response from the server.
-pub fn init(allocator: std.mem.Allocator, auth: zigcord.Authorization) RestClient {
+pub fn init(io: std.Io, allocator: std.mem.Allocator, auth: zigcord.Authorization) RestClient {
     const config = Config{};
-    return initWithConfig(allocator, auth, config);
+    return initWithConfig(io, allocator, auth, config);
 }
 
 /// Creates a discord http client based on a configuration
-pub fn initWithConfig(allocator: std.mem.Allocator, auth: zigcord.Authorization, config: Config) RestClient {
-    const client = std.http.Client{ .allocator = allocator };
+pub fn initWithConfig(io: std.Io, allocator: std.mem.Allocator, auth: zigcord.Authorization, config: Config) RestClient {
+    const client = std.http.Client{ .io = io, .allocator = allocator };
     return .{
+        .io = io,
         .allocator = allocator,
         .auth = auth,
         .client = client,
@@ -501,18 +503,22 @@ pub fn TestServer(S: type) type {
         std.debug.assert(@hasDecl(S, "onRequest"));
     }
     return struct {
-        server_thread: std.Thread,
-        net_server: std.net.Server,
+        net_server: std.Io.net.Server,
 
-        fn start(self: *TestServer(S)) void {
+        fn init(io: std.Io) !TestServer(S) {
+            const address: std.Io.net.IpAddress = std.Io.net.IpAddress.resolve(io, "127.0.0.1", 0) catch unreachable;
+            return .{ .net_server = try address.listen(io, .{ .reuse_address = true }) };
+        }
+
+        fn accept(self: *TestServer(S), io: std.Io) void {
             var reader_buf: [2048]u8 = undefined;
             var writer_buf: [2048]u8 = undefined;
 
-            var conn = self.net_server.accept() catch |err| std.debug.panic("while initializing connection: {}", .{err});
-            var conn_reader = conn.stream.reader(&reader_buf);
-            var conn_writer = conn.stream.writer(&writer_buf);
+            var conn = self.net_server.accept(io) catch |err| std.debug.panic("while initializing connection: {}", .{err});
+            var conn_reader = conn.reader(io, &reader_buf);
+            var conn_writer = conn.writer(io, &writer_buf);
 
-            var server = std.http.Server.init(conn_reader.interface(), &conn_writer.interface);
+            var server = std.http.Server.init(&conn_reader.interface, &conn_writer.interface);
             while (true) {
                 var req = server.receiveHead() catch |err| switch (err) {
                     error.HttpConnectionClosing => break,
@@ -523,25 +529,14 @@ pub fn TestServer(S: type) type {
             }
         }
 
-        fn destroy(self: *TestServer(S)) void {
-            self.net_server.deinit();
-            self.server_thread.join();
-            std.testing.allocator.destroy(self);
+        fn destroy(self: *TestServer(S), io: std.Io) void {
+            self.net_server.deinit(io);
         }
 
         fn port(self: *const TestServer(S)) u16 {
-            return self.net_server.listen_address.in.getPort();
+            return self.net_server.socket.address.getPort();
         }
     };
-}
-fn createTestServer(S: type) !*TestServer(S) {
-    if (builtin.single_threaded) return error.SkipZigTest;
-
-    const address = try std.net.Address.resolveIp("127.0.0.1", 0);
-    var test_server = try std.testing.allocator.create(TestServer(S));
-    test_server.net_server = try address.listen(.{ .reuse_address = true });
-    test_server.server_thread = try std.Thread.spawn(.{}, TestServer(S).start, .{test_server});
-    return test_server;
 }
 
 const SomeJsonObj = struct {
@@ -551,8 +546,11 @@ const SomeJsonObj = struct {
 
 test "request parses response body" {
     const allocator = std.testing.allocator;
+    const io = std.testing.io;
+    const logfile = try std.Io.Dir.cwd().createFile(io, "./test.txt", .{});
+    defer logfile.close(io);
 
-    const test_server = try createTestServer(struct {
+    const ThisTestServer = TestServer(struct {
         pub fn onRequest(req: *std.http.Server.Request) !TestResponse {
             try std.testing.expectEqual(.GET, req.head.method);
             try std.testing.expectEqualStrings("/api/v10/lol", req.head.target);
@@ -570,15 +568,20 @@ test "request parses response body" {
             };
         }
     });
-    defer test_server.destroy();
 
-    var client = init(allocator, .{ .bot = "sometoken" });
+    var test_server: ThisTestServer = try .init(io);
+
+    var fut = try io.concurrent(ThisTestServer.accept, .{ &test_server, io });
+    defer fut.cancel(io);
+    defer test_server.destroy(io);
+
+    var client = init(io, allocator, .{ .bot = "sometoken" });
     defer client.deinit();
 
     const url = std.Uri{
+        .scheme = "http",
         .host = .{ .raw = "127.0.0.1" },
         .path = .{ .raw = "/api/v10/lol" },
-        .scheme = "http",
         .port = test_server.port(),
     };
 
@@ -592,8 +595,9 @@ test "request parses response body" {
 
 test "requestWithJsonBody stringifies struct request body" {
     const allocator = std.testing.allocator;
+    const io = std.testing.io;
 
-    const test_server = try createTestServer(struct {
+    const ThisTestServer = TestServer(struct {
         pub fn onRequest(req: *std.http.Server.Request) !TestResponse {
             try std.testing.expectEqual(.POST, req.head.method);
             try std.testing.expectEqualStrings("/api/v10/lol", req.head.target);
@@ -610,14 +614,17 @@ test "requestWithJsonBody stringifies struct request body" {
             };
         }
     });
-    defer test_server.destroy();
+    var test_server: ThisTestServer = try .init(io);
+    var fut = try io.concurrent(ThisTestServer.accept, .{ &test_server, io });
+    defer fut.cancel(io);
+    defer test_server.destroy(io);
 
     const obj = SomeJsonObj{
         .str = "lol lmao",
         .num = 42,
     };
 
-    var client = init(allocator, .{ .bot = "sometoken" });
+    var client = init(io, allocator, .{ .bot = "sometoken" });
     defer client.deinit();
 
     const url = std.Uri{
@@ -639,8 +646,9 @@ test "requestWithJsonBody stringifies struct request body" {
 
 test "requestWithJsonBody jsonError in response" {
     const allocator = std.testing.allocator;
+    const io = std.testing.io;
 
-    const test_server = try createTestServer(struct {
+    const MyTestServer = TestServer(struct {
         pub fn onRequest(req: *std.http.Server.Request) !TestResponse {
             try std.testing.expectEqual(.POST, req.head.method);
             try std.testing.expectEqualStrings("/api/v10/lol", req.head.target);
@@ -659,14 +667,17 @@ test "requestWithJsonBody jsonError in response" {
             };
         }
     });
-    defer test_server.destroy();
+    var test_server: MyTestServer = try .init(io);
+    var fut = try io.concurrent(MyTestServer.accept, .{ &test_server, io });
+    defer fut.cancel(io);
+    defer test_server.destroy(io);
 
     const obj = SomeJsonObj{
         .str = "lol lmao",
         .num = 42,
     };
 
-    var client = init(allocator, .{ .bot = "sometoken" });
+    var client = init(io, allocator, .{ .bot = "sometoken" });
     defer client.deinit();
 
     const url = std.Uri{

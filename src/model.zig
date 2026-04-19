@@ -177,3 +177,7 @@ pub const Intents = packed struct(u64) {
         return @bitCast(int);
     }
 };
+
+test {
+    std.testing.refAllDecls(@This());
+}

@@ -5,27 +5,29 @@ const std = @import("std");
 const zigcord = @import("../root.zig");
 const Client = @This();
 
+io: std.Io,
 allocator: std.mem.Allocator,
 token: []const u8,
 intents: zigcord.model.Intents,
 json_ws_client: *zigcord.gateway.JsonWSClient,
 
-oldest_reconnect: ?i64 = null,
+oldest_reconnect: ?std.Io.Timestamp = null,
 reconnects: u5 = 0,
 
 const InitError = error{AuthError} || std.mem.Allocator.Error;
 
 /// Create a Discord Websocket Client. The `token` string must live as for as long as this bot is active.
-pub fn init(allocator: std.mem.Allocator, token: []const u8, intents: zigcord.model.Intents) InitError!Client {
+pub fn init(io: std.Io, allocator: std.mem.Allocator, token: []const u8, intents: zigcord.model.Intents) InitError!Client {
     const json_ws_client = try allocator.create(zigcord.gateway.JsonWSClient);
     errdefer allocator.destroy(json_ws_client);
 
-    json_ws_client.* = zigcord.gateway.JsonWSClient.init(allocator, .{ .bot = token }) catch return error.AuthError;
+    json_ws_client.* = zigcord.gateway.JsonWSClient.init(io, allocator, .{ .bot = token }) catch return error.AuthError;
     errdefer json_ws_client.deinit();
 
     json_ws_client.authenticate(token, intents) catch return error.AuthError;
 
     return Client{
+        .io = io,
         .allocator = allocator,
         .token = token,
         .intents = intents,
@@ -48,7 +50,7 @@ pub const ReadEvent = struct {
 };
 
 /// Reads an event from the gateway. The returned object is owned by the caller, so remember to call `.deinit()` on the event.
-pub fn readEvent(self: *Client) error{ Disconnected, JsonError }!ReadEvent {
+pub fn readEvent(self: *Client) error{ Canceled, Disconnected, JsonError }!ReadEvent {
     const json_parsed_value = self.json_ws_client.readEvent() catch |err| {
         switch (err) {
             error.JsonError => return error.JsonError,
@@ -78,6 +80,7 @@ pub fn readEvent(self: *Client) error{ Disconnected, JsonError }!ReadEvent {
 
         zigcord.logger.debug("received heartbeat event. responding!", .{});
         self.writeEvent(zigcord.gateway.SendEvent.heartbeat(self.json_ws_client.sequence)) catch |err| switch (err) {
+            error.Canceled => return error.Canceled,
             error.JsonError => return error.JsonError,
             error.WebsocketError => {
                 self.reconnect() catch return error.Disconnected;
@@ -102,7 +105,7 @@ pub fn readEvent(self: *Client) error{ Disconnected, JsonError }!ReadEvent {
 }
 
 /// Sends an event over the gateway. This functionality is rarely needed, you may be looking for REST API (located under `zigcord.rest`).
-pub fn writeEvent(self: *Client, event: zigcord.gateway.SendEvent) error{ WebsocketError, JsonError }!void {
+pub fn writeEvent(self: *Client, event: zigcord.gateway.SendEvent) error{ Canceled, WebsocketError, JsonError }!void {
     try self.json_ws_client.writeEvent(event);
 }
 
@@ -128,7 +131,7 @@ pub fn reinit(self: *Client) ReinitError!void {
     const json_ws_client = try self.allocator.create(zigcord.gateway.JsonWSClient);
     errdefer self.allocator.destroy(json_ws_client);
 
-    json_ws_client.* = zigcord.gateway.JsonWSClient.initWithUri(self.allocator, .{ .bot = self.token }, ready.event.resume_gateway_url) catch return error.AuthError;
+    json_ws_client.* = zigcord.gateway.JsonWSClient.initWithUri(self.io, self.allocator, .{ .bot = self.token }, ready.event.resume_gateway_url) catch return error.AuthError;
     errdefer json_ws_client.deinit();
 
     json_ws_client.@"resume"(self.token, sequence, ready) catch return error.AuthError;
@@ -141,8 +144,8 @@ fn reconnect(self: *Client) !void {
 
     self.reconnects += 1;
     if (self.oldest_reconnect) |oldest| {
-        const now = std.time.timestamp();
-        if (oldest < now - 60) {
+        const now = std.Io.Clock.awake.now(self.io);
+        if (oldest.durationTo(now).toSeconds() < 60) {
             self.oldest_reconnect = now;
             self.reconnects = 1;
         }

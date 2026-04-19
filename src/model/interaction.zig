@@ -168,7 +168,7 @@ pub const MessageComponentData = union(enum) {
             .integer => |i| i,
             else => return error.UnexpectedToken,
         };
-        const type_enum = std.meta.intToEnum(model.MessageComponent.Type, type_int) catch return error.InvalidEnumTag;
+        const type_enum = std.enums.fromInt(model.MessageComponent.Type, type_int) orelse return error.InvalidEnumTag;
         const prong = std.meta.stringToEnum(std.meta.Tag(MessageComponentData), @tagName(type_enum)) orelse return error.InvalidEnumTag;
         switch (prong) {
             inline else => |ctime_prong| {
@@ -212,7 +212,7 @@ pub const ModalComponentInteractionResponse = union(enum) {
             .integer => |i| i,
             else => return error.UnexpectedToken,
         };
-        const type_enum = std.meta.intToEnum(model.MessageComponent.Type, type_int) catch return error.InvalidEnumTag;
+        const type_enum = std.enums.fromInt(model.MessageComponent.Type, type_int) orelse return error.InvalidEnumTag;
         const prong = std.meta.stringToEnum(std.meta.Tag(ModalComponentInteractionResponse), @tagName(type_enum)) orelse return error.InvalidEnumTag;
         switch (prong) {
             inline else => |ctime_prong| {

@@ -29,41 +29,45 @@ pub fn Partial(comptime T: type) type {
     };
 }
 
+fn is_omittable_type(comptime T: type) bool {
+    @setEvalBranchQuota(100_000);
+    return switch (@typeInfo(T)) {
+        .@"union" => {
+            const union_field_names = std.meta.fieldNames(T);
+            return union_field_names.len == 2 and std.mem.eql(u8, union_field_names[0], "some") and std.mem.eql(u8, union_field_names[1], "omit");
+        },
+        else => return false,
+    };
+}
+
 fn PartialStruct(comptime T: type) type {
     const fields: []const std.builtin.Type.StructField = std.meta.fields(T);
-    var new_fields: [fields.len]std.builtin.Type.StructField = undefined;
-    inline for (0.., fields) |idx, field| {
-        new_fields[idx] = swatch: switch (@typeInfo(field.type)) {
-            .@"union" => prong: {
-                // we should avoid making an Omittable(Omittable(T))
-                const field_names = std.meta.fieldNames(field.type);
-                if (field_names.len == 2 and std.mem.eql(u8, field_names[0], "some") and std.mem.eql(u8, field_names[1], "omit")) {
-                    break :prong field;
-                }
 
-                // all other unions should be treated normally
-                continue :swatch .@"struct";
-            },
-            else => prong: {
-                const OmittableType = jconfig.Omittable(field.type);
-                break :prong std.builtin.Type.StructField{
-                    .name = field.name,
-                    .type = OmittableType,
-                    .alignment = @alignOf(OmittableType),
-                    .is_comptime = false,
-                    .default_value_ptr = &@as(OmittableType, .omit),
-                };
-            },
-        };
+    var field_names: [fields.len][]const u8 = undefined;
+    var field_types: [fields.len]type = undefined;
+    var field_attributes: [fields.len]std.builtin.Type.StructField.Attributes = undefined;
+
+    inline for (0.., fields) |idx, field| {
+        field_names[idx] = field.name;
+        if (is_omittable_type(field.type)) {
+            field_types[idx] = field.type;
+
+            field_attributes[idx] = .{
+                .@"align" = field.alignment,
+                .@"comptime" = field.is_comptime,
+                .default_value_ptr = field.default_value_ptr,
+            };
+        } else {
+            field_types[idx] = jconfig.Omittable(field.type);
+            field_attributes[idx] = .{
+                .@"align" = field.alignment,
+                .@"comptime" = field.is_comptime,
+                .default_value_ptr = &@as(jconfig.Omittable(field.type), .omit),
+            };
+        }
     }
 
-    return @Type(.{ .@"struct" = std.builtin.Type.Struct{
-        .layout = .auto,
-        .backing_integer = null,
-        .is_tuple = @typeInfo(T).@"struct".is_tuple,
-        .fields = &new_fields,
-        .decls = &.{},
-    } });
+    return @Struct(.auto, null, &field_names, &field_types, &field_attributes);
 }
 
 test "Partial Stringify" {

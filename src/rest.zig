@@ -182,3 +182,7 @@ test QueryStringFormatMixin {
 
     try std.testing.expectEqualStrings(expected, writer.buffered());
 }
+
+test {
+    std.testing.refAllDecls(@This());
+}

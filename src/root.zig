@@ -27,5 +27,5 @@ pub const Authorization = union(enum) {
 pub const version = @import("build").version;
 
 test {
-    std.testing.refAllDeclsRecursive(@This());
+    std.testing.refAllDecls(@This());
 }

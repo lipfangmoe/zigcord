@@ -24,6 +24,7 @@ pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, opti
     return parse(str) catch |err| return switch (err) {
         error.EndOfStream => return error.LengthMismatch,
         error.InvalidFormat => return error.UnexpectedToken,
+        error.ReadFailed => return error.LengthMismatch,
         else => |other_err| return other_err,
     };
 }
@@ -43,35 +44,34 @@ pub fn format(self: IsoTime, writer: *std.Io.Writer) !void {
 }
 
 pub fn parse(str: []const u8) !IsoTime {
-    var byte_reader = std.io.fixedBufferStream(str);
-    const reader = byte_reader.reader();
+    var reader: std.Io.Reader = .fixed(str);
 
-    const year_str = try reader.readBytesNoEof(4);
+    const year_str = (try reader.takeArray(4)).*;
     const year = try std.fmt.parseInt(u64, &year_str, 10);
-    _ = try reader.readByte(); // '-'
+    _ = try reader.takeByte(); // '-'
 
-    const month_str = try reader.readBytesNoEof(2);
+    const month_str = (try reader.takeArray(2)).*;
     const month = try std.fmt.parseInt(u4, &month_str, 10);
-    _ = try reader.readByte(); // '-'
+    _ = try reader.takeByte(); // '-'
 
-    const day_str = try reader.readBytesNoEof(2);
+    const day_str = (try reader.takeArray(2)).*;
     const day = try std.fmt.parseInt(u5, &day_str, 10);
-    _ = try reader.readByte(); // 'T'
+    _ = try reader.takeByte(); // 'T'
 
-    const hour_str = try reader.readBytesNoEof(2);
+    const hour_str = (try reader.takeArray(2)).*;
     const hour = try std.fmt.parseInt(u5, &hour_str, 10);
-    _ = try reader.readByte(); // ':'
+    _ = try reader.takeByte(); // ':'
 
-    const minute_str = try reader.readBytesNoEof(2);
+    const minute_str = (try reader.takeArray(2)).*;
     const minute = try std.fmt.parseInt(u6, &minute_str, 10);
-    _ = try reader.readByte(); // ':'
+    _ = try reader.takeByte(); // ':'
 
-    const second_str = try reader.readBytesNoEof(2);
+    const second_str = (try reader.takeArray(2)).*;
     const second = try std.fmt.parseInt(u6, &second_str, 10);
 
     var fractional_second: ?f64 = null;
 
-    var divider = reader.readByte() catch |err| { // '.', '+', '-', or 'Z'
+    var divider = reader.takeByte() catch |err| { // '.', '+', '-', or 'Z'
         if (err == error.EndOfStream) {
             return IsoTime{
                 .year = year,
@@ -89,7 +89,7 @@ pub fn parse(str: []const u8) !IsoTime {
         var buf: [10]u8 = .{'.'} ++ .{undefined} ** 9;
         const fractional_second_str = blk: {
             for (1.., buf[1..]) |idx, *byte| {
-                const digit = try reader.readByte();
+                const digit = try reader.takeByte();
                 if (digit == '+' or digit == '-' or digit == 'Z') {
                     divider = digit;
                     break :blk buf[0..idx];
@@ -114,11 +114,11 @@ pub fn parse(str: []const u8) !IsoTime {
         };
     }
     if (divider == '+' or divider == '-') {
-        const zone_hrs_str = try reader.readBytesNoEof(2);
+        const zone_hrs_str = (try reader.takeArray(2)).*;
         const zone_hrs = try std.fmt.parseInt(u8, &zone_hrs_str, 10);
         const sign: Zone.Sign = if (divider == '-') .negative else .positive;
 
-        _ = reader.readByte() catch |err| { // ':'
+        _ = reader.takeByte() catch |err| { // ':'
             if (err == error.EndOfStream) {
                 return IsoTime{
                     .year = year,
@@ -135,7 +135,7 @@ pub fn parse(str: []const u8) !IsoTime {
             }
         };
 
-        const zone_mins_str = try reader.readBytesNoEof(2);
+        const zone_mins_str = (try reader.takeArray(2)).*;
         const zone_mins = try std.fmt.parseInt(u8, &zone_mins_str, 10);
         return IsoTime{
             .year = year,
