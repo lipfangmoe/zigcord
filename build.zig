@@ -66,7 +66,7 @@ pub fn build(b: *std.Build) !void {
     // zig build examples:gateway
     const example_gateway_step = b.step("examples:gateway", "Builds an example gateway bot");
     const gateway_module = b.createModule(.{ .root_source_file = b.path("./examples/gateway_bot.zig"), .optimize = optimize, .target = target, .imports = example_imports });
-    const gateway_artifact = createExample(b, "gatewa", gateway_module);
+    const gateway_artifact = createExample(b, "gateway", gateway_module);
     example_gateway_step.dependOn(&gateway_artifact.step);
     example_gateway_step.dependOn(generate_step);
 

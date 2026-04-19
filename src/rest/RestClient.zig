@@ -547,8 +547,6 @@ const SomeJsonObj = struct {
 test "request parses response body" {
     const allocator = std.testing.allocator;
     const io = std.testing.io;
-    const logfile = try std.Io.Dir.cwd().createFile(io, "./test.txt", .{});
-    defer logfile.close(io);
 
     const ThisTestServer = TestServer(struct {
         pub fn onRequest(req: *std.http.Server.Request) !TestResponse {
