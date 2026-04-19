@@ -57,7 +57,13 @@ pub fn readEvent(self: *Client) error{ Canceled, Disconnected, JsonError }!ReadE
             error.WebsocketError => {
                 zigcord.logger.err("WebsocketError encountered", .{});
                 if (@errorReturnTrace()) |trace| {
-                    zigcord.logger.err("{f}", .{trace});
+                    var err_trace: std.Io.Writer.Allocating = .init(self.allocator);
+                    defer err_trace.deinit();
+                    std.debug.writeErrorReturnTrace(trace, .{ .writer = &err_trace.writer, .mode = .no_color }) catch |err2| {
+                        zigcord.logger.err("error writing error return trace: {}", .{err2});
+                    };
+
+                    zigcord.logger.err("trace: {s}", .{err_trace.written()});
                 }
                 self.reconnect() catch return error.Disconnected;
                 zigcord.logger.info("Successfully reconnected! Re-reading event", .{});

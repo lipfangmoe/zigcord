@@ -69,7 +69,7 @@ pub fn initWithUri(io: std.Io, allocator: std.mem.Allocator, auth: zigcord.Autho
         .ready_event = null,
     };
 
-    client.ws_client.* = ws.Client.init(allocator);
+    client.ws_client.* = ws.Client.init(io, allocator);
     errdefer client.ws_client.deinit();
 
     var auth_header_buf: [512]u8 = undefined;
@@ -227,9 +227,15 @@ fn defaultHeartbeatHandler(self: *JsonWSClient, interval_ms: i64) void {
         const heartbeat = gateway.SendEvent.heartbeat(sequence);
 
         self.writeEvent(heartbeat) catch |err| {
-            zigcord.logger.warn("failed to write heartbeat: {s}", .{err});
+            zigcord.logger.warn("failed to write heartbeat: {}", .{err});
             if (@errorReturnTrace()) |trace| {
-                zigcord.logger.warn("trace: {f}", .{trace.*});
+                var err_trace: std.Io.Writer.Allocating = .init(self.allocator);
+                defer err_trace.deinit();
+                std.debug.writeErrorReturnTrace(trace, .{ .writer = &err_trace.writer, .mode = .no_color }) catch |err2| {
+                    zigcord.logger.err("error writing error return trace: {}", .{err2});
+                };
+
+                zigcord.logger.err("trace: {s}", .{err_trace.written()});
             }
         };
         buf_allocator.reset();
