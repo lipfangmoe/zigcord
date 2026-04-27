@@ -1,3 +1,14 @@
+# v0.11.0
+
+The Zig 0.16.0 update!
+
+This release contains breaking changes.
+
+ * Minimum zig version has been raised to 0.16.0
+ * As you may expect, many init methods now take a `std.Io` parameter
+ * Many methods' error unions have `error.Canceled` added to them
+ * Updated websocket library to a more stable version
+
 # v0.10.2
 
 This release contains minor breaking changes.
