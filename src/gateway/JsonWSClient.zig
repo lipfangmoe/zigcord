@@ -89,21 +89,38 @@ pub fn deinit(self: *JsonWSClient) void {
     }
 
     // now we can do our normal deiniting stuff
-    self.ws_conn.deinit(ws.Connection.ClosePayload{ .status = .normal, .reason = &.{} });
+    self.ws_conn.deinit(self.io, ws.Connection.ClosePayload{ .status = .normal, .reason = &.{} });
     self.ws_client.deinit();
     self.allocator.destroy(self.ws_client);
     self.allocator.destroy(self.ws_conn);
+    zigcord.logger.info("json_parsed", .{});
     if (self.ready_event) |ready| {
         ready.json_parsed.deinit();
     }
-    zigcord.logger.info("websocket client destroyed", .{});
 }
 
-pub fn readEvent(self: *JsonWSClient) error{ WebsocketError, JsonError }!std.json.Parsed(gateway.ReceiveEvent) {
-    var message = self.ws_conn.receiveMessage() catch return error.WebsocketError;
+pub const ReadEventError = error{ ResponseTooLong, WebsocketError, JsonError, ServerClosed } || std.Io.Cancelable;
+pub fn readEvent(self: *JsonWSClient) ReadEventError!std.json.Parsed(gateway.ReceiveEvent) {
+    var buf: [1000]u8 = undefined;
+    var message = self.ws_conn.receiveMessage(&buf);
 
     // normally i would avoid allocating here, but it's useful for error logging
-    const payload_data = message.reader().allocRemaining(self.allocator, .limited(10_000_000)) catch return error.JsonError;
+    const payload_data = message.interface.allocRemaining(self.allocator, .limited(10_000_000)) catch |err| return switch (err) {
+        error.OutOfMemory, error.StreamTooLong => error.ResponseTooLong,
+        error.ReadFailed => switch (message.state.err) {
+            error.Canceled => error.Canceled,
+            error.ReceivedCloseFrame => error.ServerClosed,
+            error.EndOfStream,
+            error.InvalidMessage,
+            error.InvalidUtf8,
+            error.UnderlyingControlFrameWriteFailed,
+            error.UnderlyingReadFailed,
+            error.UnderlyingWriteFailed,
+            error.EndOfFrame,
+            => error.WebsocketError,
+            error.PayloadTooLong => error.ResponseTooLong,
+        },
+    };
     defer self.allocator.free(payload_data);
 
     const payload_json_parsed = std.json.parseFromSlice(gateway.ReceiveEvent, self.allocator, payload_data, .{ .ignore_unknown_fields = true, .allocate = .alloc_always }) catch {
@@ -118,17 +135,18 @@ pub fn readEvent(self: *JsonWSClient) error{ WebsocketError, JsonError }!std.jso
     return payload_json_parsed;
 }
 
-pub fn writeEvent(self: *JsonWSClient, event: gateway.SendEvent) error{ Canceled, WebsocketError, JsonError }!void {
+pub fn writeEvent(self: *JsonWSClient, event: gateway.SendEvent) error{ Canceled, WebsocketError }!void {
     try self.writer_mutex.lock(self.io);
     defer self.writer_mutex.unlock(self.io);
 
     var payload: [4096]u8 = undefined; // discord only accepts payloads shorter than 4096 bytes
     var payload_writer = std.Io.Writer.fixed(&payload);
-    std.json.Stringify.value(event, .{}, &payload_writer) catch return error.JsonError;
+    std.json.Stringify.value(event, .{}, &payload_writer) catch return error.WebsocketError;
     self.ws_conn.sendMessage(.text, payload_writer.buffered()) catch return error.WebsocketError;
 }
 
-pub fn authenticate(self: *JsonWSClient, token: []const u8, intents: model.Intents) error{ Canceled, WebsocketError, JsonError, HeartbeatStartError }!void {
+pub const AuthenticateError = error{HeartbeatStartError} || ReadEventError;
+pub fn authenticate(self: *JsonWSClient, token: []const u8, intents: model.Intents) AuthenticateError!void {
     const heartbeat_interval = while (true) {
         const event = try self.readEvent();
         defer event.deinit();
@@ -145,8 +163,6 @@ pub fn authenticate(self: *JsonWSClient, token: []const u8, intents: model.Inten
     };
     zigcord.logger.debug("hello event received (heartbeat interval = {d}ms)", .{heartbeat_interval});
 
-    self.startHeartbeatListener(heartbeat_interval) catch return error.HeartbeatStartError;
-
     const identify_event = gateway.SendEvent.identify(gateway.event_data.send_events.Identify{
         .token = token,
         .properties = .{ .browser = "zigcord", .device = "zigcord", .os = @tagName(@import("builtin").os.tag) },
@@ -154,8 +170,8 @@ pub fn authenticate(self: *JsonWSClient, token: []const u8, intents: model.Inten
     });
     try self.writeEvent(identify_event);
 
-    const first_heartbeat = gateway.SendEvent.heartbeat(self.sequence);
-    try self.writeEvent(first_heartbeat);
+    try self.writeEvent(gateway.SendEvent.heartbeat(self.sequence));
+    self.startHeartbeatListener(heartbeat_interval) catch return error.HeartbeatStartError;
 
     zigcord.logger.debug("identify event sent, waiting for Ready event", .{});
     while (true) {
@@ -182,7 +198,7 @@ pub fn authenticate(self: *JsonWSClient, token: []const u8, intents: model.Inten
     }
 }
 
-pub fn @"resume"(self: *JsonWSClient, token: []const u8, seq: i64, ready: ReadyEvent) error{ Canceled, WebsocketError, JsonError, HeartbeatStartError }!void {
+pub fn @"resume"(self: *JsonWSClient, token: []const u8, seq: i64, ready: ReadyEvent) AuthenticateError!void {
     self.ready_event = ready;
 
     const heartbeat_interval = while (true) {
@@ -211,6 +227,9 @@ pub fn @"resume"(self: *JsonWSClient, token: []const u8, seq: i64, ready: ReadyE
 }
 
 pub fn startHeartbeatListener(self: *JsonWSClient, heartbeat_interval: u64) error{ConcurrencyUnavailable}!void {
+    if (self.heartbeat_future) |*fut| {
+        fut.cancel(self.io);
+    }
     self.heartbeat_future = try self.io.concurrent(defaultHeartbeatHandler, .{ self, std.math.lossyCast(i64, heartbeat_interval) });
 }
 
@@ -240,7 +259,6 @@ fn defaultHeartbeatHandler(self: *JsonWSClient, interval_ms: i64) void {
         };
         buf_allocator.reset();
 
-        // the only exit point of the function - if this sleep fails
         std.Io.sleep(self.io, .fromMilliseconds(interval_ms), .awake) catch return;
     }
 }

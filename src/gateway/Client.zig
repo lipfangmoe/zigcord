@@ -50,10 +50,12 @@ pub const ReadEvent = struct {
 };
 
 /// Reads an event from the gateway. The returned object is owned by the caller, so remember to call `.deinit()` on the event.
-pub fn readEvent(self: *Client) error{ Canceled, Disconnected, JsonError }!ReadEvent {
+pub fn readEvent(self: *Client) error{ Canceled, Disconnected, JsonError, ResponseTooLong }!ReadEvent {
     const json_parsed_value = self.json_ws_client.readEvent() catch |err| {
         switch (err) {
+            error.Canceled => return error.Canceled,
             error.JsonError => return error.JsonError,
+            error.ResponseTooLong => return error.ResponseTooLong,
             error.WebsocketError => {
                 zigcord.logger.err("WebsocketError encountered", .{});
                 if (@errorReturnTrace()) |trace| {
@@ -65,6 +67,12 @@ pub fn readEvent(self: *Client) error{ Canceled, Disconnected, JsonError }!ReadE
 
                     zigcord.logger.err("trace: {s}", .{err_trace.written()});
                 }
+                self.reconnect() catch return error.Disconnected;
+                zigcord.logger.info("Successfully reconnected! Re-reading event", .{});
+                return try self.readEvent();
+            },
+            error.ServerClosed => {
+                zigcord.logger.err("Server closed", .{});
                 self.reconnect() catch return error.Disconnected;
                 zigcord.logger.info("Successfully reconnected! Re-reading event", .{});
                 return try self.readEvent();
