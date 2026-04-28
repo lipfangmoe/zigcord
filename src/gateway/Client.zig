@@ -159,9 +159,9 @@ fn reconnect(self: *Client) !void {
     self.reconnects += 1;
     if (self.oldest_reconnect) |oldest| {
         const now = std.Io.Clock.awake.now(self.io);
-        if (oldest.durationTo(now).toSeconds() < 60) {
+        if (oldest.durationTo(now).toSeconds() > 60) {
             self.oldest_reconnect = now;
-            self.reconnects = 1;
+            self.reconnects = 0;
         }
     }
 
