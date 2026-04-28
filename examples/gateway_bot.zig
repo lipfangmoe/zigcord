@@ -9,16 +9,10 @@ pub const std_options: std.Options = .{ .log_level = switch (@import("builtin").
 pub fn main(init: std.process.Init) !void {
     const io = init.io;
     const allocator = init.gpa;
-    const token = init.minimal.environ.getAlloc(allocator, "TOKEN") catch |err| {
-        switch (err) {
-            error.EnvironmentVariableMissing => {
-                std.log.err("environment variable TOKEN is required", .{});
-                return;
-            },
-            else => return err,
-        }
+    const token = init.environ_map.get("TOKEN") orelse {
+        std.log.err("environment variable TOKEN is required", .{});
+        std.process.exit(1);
     };
-    defer allocator.free(token);
 
     var endpoint_client = zigcord.EndpointClient.init(io, allocator, .{ .bot = token });
     defer endpoint_client.deinit();
