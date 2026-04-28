@@ -1,3 +1,9 @@
+# v0.11.1
+
+This release contains no breaking changes.
+
+Fixes #12, a comparison was reversed causing `error.Disconnected` to be returned more often than it should be.
+
 # v0.11.0
 
 The Zig 0.16.0 update!
