@@ -68,13 +68,10 @@ pub fn readEvent(self: *Client) error{ Canceled, Disconnected, JsonError, Respon
                     zigcord.logger.err("trace: {s}", .{err_trace.written()});
                 }
                 self.reconnect() catch return error.Disconnected;
-                zigcord.logger.info("Successfully reconnected! Re-reading event", .{});
                 return try self.readEvent();
             },
             error.ServerClosed => {
-                zigcord.logger.err("Server closed", .{});
                 self.reconnect() catch return error.Disconnected;
-                zigcord.logger.info("Successfully reconnected! Re-reading event", .{});
                 return try self.readEvent();
             },
         }
@@ -154,8 +151,6 @@ pub fn reinit(self: *Client) ReinitError!void {
 }
 
 fn reconnect(self: *Client) !void {
-    zigcord.logger.info("Reconnecting...", .{});
-
     self.reconnects += 1;
     if (self.oldest_reconnect) |oldest| {
         const now = std.Io.Clock.awake.now(self.io);
@@ -170,6 +165,4 @@ fn reconnect(self: *Client) !void {
     }
 
     try self.reinit();
-
-    zigcord.logger.info("Reconnected!", .{});
 }
