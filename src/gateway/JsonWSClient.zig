@@ -76,7 +76,7 @@ pub fn initWithUri(io: std.Io, allocator: std.mem.Allocator, auth: zigcord.Autho
     var auth_header = std.Io.Writer.fixed(&auth_header_buf);
     try auth_header.print("{f}", .{auth});
 
-    zigcord.logger.info("attempting connection to {s}", .{uri});
+    zigcord.logger.debug("attempting connection to {s}", .{uri});
     client.ws_conn.* = try client.ws_client.handshake(try std.Uri.parse(uri), &.{.{ .name = "Authorization", .value = auth_header.buffered() }});
 
     return client;
@@ -93,7 +93,6 @@ pub fn deinit(self: *JsonWSClient) void {
     self.ws_client.deinit();
     self.allocator.destroy(self.ws_client);
     self.allocator.destroy(self.ws_conn);
-    zigcord.logger.info("json_parsed", .{});
     if (self.ready_event) |ready| {
         ready.json_parsed.deinit();
     }
@@ -184,7 +183,7 @@ pub fn authenticate(self: *JsonWSClient, token: []const u8, intents: model.Inten
                     .json_parsed = event,
                     .event = ready,
                 };
-                zigcord.logger.info("authentication complete", .{});
+                zigcord.logger.debug("authentication complete", .{});
                 return;
             },
             .heartbeat_ack => {

@@ -1,8 +1,9 @@
-# v0.11.1
+# v0.11.1 / v0.11.2
 
 This release contains no breaking changes.
 
-Fixes #12, a comparison was reversed causing `error.Disconnected` to be returned more often than it should be.
+0.11.1: Fixes #12, a comparison was reversed causing `error.Disconnected` to be returned more often than it should be.
+0.11.2: Removes all .info logging, moving it to .debug so that it doesn't appear in release modes
 
 # v0.11.0
 
