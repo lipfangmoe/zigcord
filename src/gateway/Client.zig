@@ -158,6 +158,9 @@ fn reconnect(self: *Client) !void {
             self.oldest_reconnect = now;
             self.reconnects = 0;
         }
+    } else {
+        const now = std.Io.Clock.awake.now(self.io);
+        self.oldest_reconnect = now;
     }
 
     if (self.reconnects > 5) {
