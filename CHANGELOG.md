@@ -1,9 +1,10 @@
-# v0.11.1 / v0.11.2
+# v0.11.1, v0.11.2, v0.11.3
 
 This release contains no breaking changes.
 
 0.11.1: Fixes #12, a comparison was reversed causing `error.Disconnected` to be returned more often than it should be.
 0.11.2: Removes all .info logging, moving it to .debug so that it doesn't appear in release modes
+0.11.3: Hopefully fixes reconnect logic again, as it was still faulty
 
 # v0.11.0
 
