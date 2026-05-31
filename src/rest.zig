@@ -18,21 +18,6 @@ pub fn allocDiscordUriStr(alloc: std.mem.Allocator, comptime fmt: []const u8, ar
     return try std.fmt.allocPrint(alloc, base_url ++ fmt, args);
 }
 
-pub fn discordApiCallUri(allocator: std.mem.Allocator, path: []const u8, query: ?[]const u8) !std.Uri {
-    const realPath = try std.mem.concat(allocator, u8, &.{ "/api/v10", path });
-    defer allocator.free(realPath);
-
-    var uri = std.Uri{
-        .scheme = "https",
-        .host = .{ .raw = "discord.com" },
-        .path = .{ .raw = realPath },
-    };
-    if (query) |real_query| {
-        uri.query = .{ .raw = real_query };
-    }
-    return uri;
-}
-
 pub const getTransferEncoding = multipart.getTransferEncoding;
 pub const writeMultipartFormDataBody = multipart.writeMultipartFormDataBody;
 
