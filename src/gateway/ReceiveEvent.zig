@@ -160,3 +160,10 @@ test "interaction2.test.json" {
     const parsed = try std.json.parseFromSlice(ReceiveEvent, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
     parsed.deinit();
 }
+
+test "interaction3.test.json" {
+    const input = @embedFile("./test/interaction3.test.json");
+
+    const parsed = try std.json.parseFromSlice(ReceiveEvent, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
+    parsed.deinit();
+}

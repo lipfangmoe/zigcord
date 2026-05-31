@@ -112,7 +112,7 @@ pub const ApplicationCommandInteractionData = struct {
 
 pub const ApplicationCommandInteractionDataOption = struct {
     name: []const u8,
-    type: command.ApplicationCommandType,
+    type: command_option.ApplicationCommandOptionType,
     value: jconfig.Omittable(Value) = .omit,
     options: jconfig.Omittable([]const ApplicationCommandInteractionDataOption) = .omit,
     focused: jconfig.Omittable(bool) = .omit,

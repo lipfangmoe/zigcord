@@ -1,0 +1,95 @@
+{
+  "t": "INTERACTION_CREATE",
+  "s": 3,
+  "op": 0,
+  "d": {
+    "version": 1,
+    "type": 2,
+    "token": "redacted",
+    "member": {
+      "user": {
+        "username": "redacted",
+        "public_flags": 0,
+        "primary_guild": null,
+        "id": "0",
+        "global_name": "redacted",
+        "display_name_styles": null,
+        "discriminator": "0",
+        "collectibles": null,
+        "clan": null,
+        "avatar_decoration_data": null,
+        "avatar": "avatar"
+      },
+      "unusual_dm_activity_until": null,
+      "roles": ["0", "1"],
+      "premium_since": null,
+      "pending": false,
+      "nick": "redacted",
+      "mute": false,
+      "joined_at": "2025-01-01T00:00:00.000000+00:00",
+      "flags": 0,
+      "deaf": false,
+      "communication_disabled_until": null,
+      "banner": "banner",
+      "avatar": "avatar"
+    },
+    "locale": "en-US",
+    "id": "0",
+    "guild_locale": "en-US",
+    "guild_id": "0",
+    "guild": {
+      "locale": "en-US",
+      "id": "0",
+      "features": [
+        "CHANNEL_ICON_EMOJIS_GENERATED"
+      ]
+    },
+    "entitlements": [],
+    "entitlement_sku_ids": [],
+    "data": {
+      "type": 1,
+      "options": [
+        {
+          "value": 2,
+          "type": 4,
+          "name": "foo"
+        },
+        {
+          "value": true,
+          "type": 5,
+          "name": "bar"
+        }
+      ],
+      "name": "redacted",
+      "id": "0"
+    },
+    "context": 0,
+    "channel_id": "0",
+    "channel": {
+      "type": 0,
+      "topic": null,
+      "theme_color": null,
+      "rate_limit_per_user": 0,
+      "position": 0,
+      "permissions": "0",
+      "parent_id": "0",
+      "nsfw": false,
+      "name": "redacted",
+      "last_message_id": "0",
+      "id": "0128",
+      "icon_emoji": {
+        "name": "🌐",
+        "id": null
+      },
+      "guild_id": "0",
+      "flags": 0
+    },
+    "authorizing_integration_owners": {
+      "1": "0",
+      "0": "1"
+    },
+    "attachment_size_limit": 524288000,
+    "application_id": "0",
+    "app_permissions": "0"
+  }
+}
