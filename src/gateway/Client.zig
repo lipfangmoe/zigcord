@@ -129,25 +129,22 @@ pub fn deinit(self: Client) void {
 pub const ReinitError = error{ NotResumable, AuthError, WebsocketError, JsonError } || std.mem.Allocator.Error;
 /// Reconnects the websocket connection, following the RESUME flow if able.
 pub fn reinit(self: *Client) ReinitError!void {
-    const ready = self.json_ws_client.ready_event orelse {
+    const ready_event = self.json_ws_client.ready_event orelse {
         return error.NotResumable;
     };
     const sequence = self.json_ws_client.sequence orelse {
         return error.NotResumable;
     };
 
-    self.json_ws_client.ready_event = null; // keep `ready_event` from getting deinit'd
-    self.json_ws_client.deinit();
+    {
+        var json_ws_client = zigcord.gateway.JsonWSClient.initWithUri(self.io, self.allocator, .{ .bot = self.token }, ready_event.event.resume_gateway_url) catch return error.AuthError;
+        errdefer json_ws_client.deinit();
+        json_ws_client.@"resume"(self.token, sequence, ready_event) catch return error.AuthError;
 
-    const json_ws_client = try self.allocator.create(zigcord.gateway.JsonWSClient);
-    errdefer self.allocator.destroy(json_ws_client);
-
-    json_ws_client.* = zigcord.gateway.JsonWSClient.initWithUri(self.io, self.allocator, .{ .bot = self.token }, ready.event.resume_gateway_url) catch return error.AuthError;
-    errdefer json_ws_client.deinit();
-
-    json_ws_client.@"resume"(self.token, sequence, ready) catch return error.AuthError;
-
-    self.json_ws_client = json_ws_client;
+        self.json_ws_client.ready_event = null;
+        self.json_ws_client.deinit();
+        self.json_ws_client.* = json_ws_client;
+    }
 }
 
 fn reconnect(self: *Client) !void {
@@ -168,4 +165,5 @@ fn reconnect(self: *Client) !void {
     }
 
     try self.reinit();
+    zigcord.logger.debug("reconnected!", .{});
 }
