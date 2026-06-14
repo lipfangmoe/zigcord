@@ -14,10 +14,10 @@ pub fn main(init: std.process.Init) !void {
         std.process.exit(1);
     };
 
-    var endpoint_client = zigcord.EndpointClient.init(io, allocator, .{ .bot = token });
+    var endpoint_client: zigcord.EndpointClient = .init(io, allocator, .{ .bot = token });
     defer endpoint_client.deinit();
 
-    var gateway_client = try zigcord.gateway.Client.init(
+    var gateway_client: zigcord.gateway.Client = try .init(
         io,
         allocator,
         token,

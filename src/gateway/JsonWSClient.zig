@@ -27,7 +27,7 @@ pub const ReadyEvent = struct {
 
 const InitError = error{};
 
-/// Initializes a Gateway Client
+/// Initializes a Json Websocket Client
 pub fn init(io: std.Io, allocator: std.mem.Allocator, auth: zigcord.Authorization) !JsonWSClient {
     var api_client = zigcord.EndpointClient.init(io, allocator, auth);
     defer api_client.deinit();
@@ -35,8 +35,8 @@ pub fn init(io: std.Io, allocator: std.mem.Allocator, auth: zigcord.Authorizatio
     return try initWithRestClient(io, allocator, &api_client);
 }
 
-/// Initializes a Gateway Client from an existing Rest Client. The rest client only needs to live as long as this method call, but the
-/// allocator should live as long as the returned Gateway Client.
+/// Initializes a Json Websocket Client from an existing Rest Client. The rest client only needs to live as long as this method call, but the
+/// allocator should live as long as the returned Json Websocket Client.
 pub fn initWithRestClient(io: std.Io, allocator: std.mem.Allocator, client: *zigcord.EndpointClient) !JsonWSClient {
     const gateway_resp = try client.getGateway();
     defer gateway_resp.deinit();
@@ -52,7 +52,7 @@ pub fn initWithRestClient(io: std.Io, allocator: std.mem.Allocator, client: *zig
     return try initWithUri(io, allocator, client.rest_client.auth, url);
 }
 
-/// Initializes a Gateway Client from an existing Rest Client. The provided URI is copied by the allocator.
+/// Initializes a Json Websocket Client from an existing Rest Client.
 pub fn initWithUri(io: std.Io, allocator: std.mem.Allocator, auth: zigcord.Authorization, uri: []const u8) !JsonWSClient {
     const ws_client = try allocator.create(ws.Client);
     errdefer allocator.destroy(ws_client);

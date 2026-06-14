@@ -1,13 +1,13 @@
 .{
     .name = .zigcord,
-    .version = "0.11.3",
+    .version = "0.11.4",
     .minimum_zig_version = "0.16.0",
     .fingerprint = 0xec53cf11d6acb3ae,
 
     .dependencies = .{
         .weebsocket = .{
-            .url = "git+https://codeberg.org/lipfang/weebsocket.git?ref=v0.4.1#a02821f3e312731312d3fc4ab2594c011b46895b",
-            .hash = "weebsocket-0.4.1-MTp5t6FFAQAOTBqqPi-NI1j4rtN08_qACx9yKy_DBw7u",
+            .url = "git+https://codeberg.org/lipfang/weebsocket?ref=v0.4.2#91a3c6b47ac5da2a2d9ab089d6e0b1fb32cf36d8",
+            .hash = "weebsocket-0.4.2-MTp5t-NFAQDAbSN9TCMMr8NhdFcozD0mBoiK61r6-xdu",
         },
     },
 
