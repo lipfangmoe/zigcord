@@ -78,6 +78,7 @@ pub fn myLogFn(
    - (ie `endpoint_client.editCurrentApplication()` would instead be `endpoint_client.application.editCurrentApplication()`)
    - Can be done by making `application.zig` take `@This()` instead of `EndpointClient`, then using `@fieldParentPtr` to get the EndpointClient?
  - Better error handling to allow to get a `std.json.Value` from http responses if we fail to parse into a static type, similar to gateway
+   - Would allow support for caller handling their own logging, instead of the library logging for them
  - Formal documentation site once the API is stabilized
  - Some way to test endpoints
  - Voice Support
