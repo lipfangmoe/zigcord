@@ -1,3 +1,12 @@
+# v0.12.0
+
+This release contains breaking changes.
+
+ * **breaking change**: All EndpointClient methods now may return `error.Canceled`
+ * minor breaking change: `ApplicationCommandInteractionDataOption` now correctly takes `type: ApplicationCommandOptionType`
+ * minor breaking change: removed `discordApiCallUri`; it did not function correctly anyway
+ * removed potential memory leak that could occur when reconnecting
+
 # v0.11.1, v0.11.2, v0.11.3
 
 This release contains no breaking changes.
