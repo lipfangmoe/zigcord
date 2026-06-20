@@ -33,8 +33,8 @@ pub fn initWithConfig(io: std.Io, allocator: std.mem.Allocator, auth: zigcord.Au
     };
 }
 
-pub const BeginRequestError = error{ OutOfMemory, OpenError, RequestSendBodyError };
-pub const WaitForResponseError = error{ OutOfMemory, RequestFinishError, ResponseReceiveHeadError, ResponseReadError, ResponseJsonParseError };
+pub const BeginRequestError = error{ OutOfMemory, Canceled, OpenError, RequestSendBodyError };
+pub const WaitForResponseError = error{ OutOfMemory, Canceled, RequestFinishError, ResponseReceiveHeadError, ResponseReadError, ResponseJsonParseError };
 pub const RequestError = BeginRequestError || WaitForResponseError;
 
 fn setupRequest(
@@ -60,7 +60,10 @@ fn setupRequest(
     var req = self.client.request(method, url, std.http.Client.RequestOptions{
         .headers = defaulted_headers,
         .extra_headers = extra_headers orelse &.{},
-    }) catch return error.OpenError;
+    }) catch |err| switch (err) {
+        error.Canceled => return error.Canceled,
+        else => return error.OpenError,
+    };
     errdefer req.deinit();
 
     req.transfer_encoding = transfer_encoding;
@@ -197,12 +200,19 @@ pub fn request(self: *RestClient, comptime ResponseT: type, method: std.http.Met
     defer http_request.deinit();
 
     switch (method) {
-        .GET, .DELETE => http_request.sendBodiless() catch return error.RequestSendBodyError,
-        .POST, .PUT, .PATCH => http_request.sendBodyComplete("") catch return error.RequestSendBodyError,
+        .GET, .DELETE => http_request.sendBodiless() catch |err| switch (err) {
+            error.WriteFailed => return reduceSendRequestError(&http_request),
+        },
+        .POST, .PUT, .PATCH => http_request.sendBodyComplete("") catch |err| switch (err) {
+            error.WriteFailed => return reduceSendRequestError(&http_request),
+        },
         else => return error.RequestSendBodyError, // unsupported http method
     }
 
-    var response = http_request.receiveHead(&.{}) catch return error.ResponseReceiveHeadError;
+    var response = http_request.receiveHead(&.{}) catch |err| switch (err) {
+        error.Canceled => return error.Canceled,
+        else => return reduceReceiveHeadError(&http_request),
+    };
 
     return try handleResponse(self.allocator, self.config, ResponseT, &response);
 }
@@ -218,8 +228,13 @@ pub fn requestWithAuditLogReason(self: *RestClient, comptime ResponseT: type, me
     var http_request = try self.setupRequest(&buf, method, url, .{ .none = void{} }, null, extra_headers);
     defer http_request.deinit();
 
-    http_request.sendBodiless() catch return error.RequestSendBodyError;
-    var response = http_request.receiveHead(&.{}) catch return error.ResponseReceiveHeadError;
+    http_request.sendBodiless() catch |err| switch (err) {
+        error.WriteFailed => return reduceSendRequestError(&http_request),
+    };
+    var response = http_request.receiveHead(&.{}) catch |err| switch (err) {
+        error.Canceled => return error.Canceled,
+        else => return reduceReceiveHeadError(&http_request),
+    };
 
     return try handleResponse(self.allocator, self.config, ResponseT, &response);
 }
@@ -232,8 +247,13 @@ pub fn requestWithBody(self: *RestClient, comptime ResponseT: type, method: std.
     var http_request = try self.setupRequest(&buf, method, url, transfer_encoding, .{ .content_type = .{ .override = content_type } }, null);
     defer http_request.deinit();
 
-    http_request.sendBodyComplete(body) catch return error.RequestSendBodyError;
-    var response = http_request.receiveHead(&.{}) catch return error.ResponseReceiveHeadError;
+    http_request.sendBodyComplete(body) catch |err| switch (err) {
+        error.WriteFailed => return reduceSendRequestError(&http_request),
+    };
+    var response = http_request.receiveHead(&.{}) catch |err| switch (err) {
+        error.Canceled => return error.Canceled,
+        else => return reduceReceiveHeadError(&http_request),
+    };
 
     return try handleResponse(self.allocator, self.config, ResponseT, &response);
 }
@@ -249,8 +269,13 @@ pub fn requestWithBodyAndAuditLogReason(self: *RestClient, comptime ResponseT: t
     var http_request = try self.setupRequest(&buf, method, url, transfer_encoding, .{ .content_type = .{ .override = content_type } }, extra_headers);
     defer http_request.deinit();
 
-    http_request.sendBodyComplete(body) catch return error.RequestSendBodyError;
-    var response = http_request.receiveHead(&.{}) catch return error.ResponseReceiveHeadError;
+    http_request.sendBodyComplete(body) catch |err| switch (err) {
+        error.WriteFailed => return reduceSendRequestError(&http_request),
+    };
+    var response = http_request.receiveHead(&.{}) catch |err| switch (err) {
+        error.Canceled => return error.Canceled,
+        else => return reduceReceiveHeadError(&http_request),
+    };
 
     return try handleResponse(self.allocator, self.config, ResponseT, &response);
 }
@@ -264,8 +289,13 @@ pub fn requestWithJsonBody(self: *RestClient, comptime ResponseT: type, method: 
     var http_request = try self.setupRequest(&buf, method, url, .{ .content_length = stringified_body.len }, null, null);
     defer http_request.deinit();
 
-    http_request.sendBodyComplete(stringified_body) catch return error.RequestSendBodyError;
-    var response = http_request.receiveHead(&.{}) catch return error.ResponseReceiveHeadError;
+    http_request.sendBodyComplete(stringified_body) catch |err| switch (err) {
+        error.WriteFailed => return reduceSendRequestError(&http_request),
+    };
+    var response = http_request.receiveHead(&.{}) catch |err| switch (err) {
+        error.Canceled => return error.Canceled,
+        else => return reduceReceiveHeadError(&http_request),
+    };
 
     return try handleResponse(self.allocator, self.config, ResponseT, &response);
 }
@@ -292,8 +322,13 @@ pub fn requestWithJsonBodyAndAuditLogReason(
     var http_request = try self.setupRequest(&buf, method, url, .{ .content_length = stringified_body.len }, null, extra_headers);
     defer http_request.deinit();
 
-    http_request.sendBodyComplete(stringified_body) catch return error.RequestSendBodyError;
-    var response = http_request.receiveHead(&.{}) catch return error.ResponseReceiveHeadError;
+    http_request.sendBodyComplete(stringified_body) catch |err| switch (err) {
+        error.WriteFailed => return reduceSendRequestError(&http_request),
+    };
+    var response = http_request.receiveHead(&.{}) catch |err| switch (err) {
+        error.Canceled => return error.Canceled,
+        else => return reduceReceiveHeadError(&http_request),
+    };
 
     return try handleResponse(self.allocator, self.config, ResponseT, &response);
 }
@@ -334,6 +369,34 @@ fn reduceJsonParseError(err: RawJsonParseError) WaitForResponseError {
         error.LengthMismatch,
         => return error.ResponseJsonParseError,
     }
+}
+
+fn reduceSendRequestError(req: *const std.http.Client.Request) BeginRequestError {
+    // try to forward a `error.Canceled` if possible
+    if (req.connection) |conn| {
+        if (conn.stream_writer.err) |err2| {
+            switch (err2) {
+                error.Canceled => return error.Canceled,
+                else => {},
+            }
+        }
+    }
+
+    return error.RequestSendBodyError;
+}
+
+fn reduceReceiveHeadError(req: *const std.http.Client.Request) WaitForResponseError {
+    // try to forward a `error.Canceled` if possible
+    if (req.connection) |conn| {
+        if (conn.stream_reader.err) |err2| {
+            switch (err2) {
+                error.Canceled => return error.Canceled,
+                else => {},
+            }
+        }
+    }
+
+    return error.ResponseReceiveHeadError;
 }
 
 pub fn PendingRequest(comptime T: type) type {

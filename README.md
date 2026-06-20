@@ -2,7 +2,7 @@
 
 A Discord API for the Zig programming language.
 
-Currently built off of Zig Version `0.15.2`. If you notice that it is broken
+Currently built off of Zig Version `0.16.0`. If you notice that it is broken
 on a more recent version of Zig, please create an [issue](https://codeberg.org/lipfang/zigcord/issues)!
 
 # Including in your project
@@ -31,7 +31,6 @@ Then, make sure something similar to the following is in your `build.zig`:
 # Feature Support
 
  - All Discord API features up to March 30th, 2026
- - Uses Zig 0.15.x `std.Io.Reader` and `std.Io.Writer` interfaces
  - [User-installable Apps](https://discord.com/developers/docs/tutorials/developing-a-user-installable-app#developing-a-userinstallable-app)
  - [Components V2](https://discord.com/developers/docs/components/overview)
  - WebSocket Gateway Client
@@ -40,20 +39,41 @@ Then, make sure something similar to the following is in your `build.zig`:
 
 # Basic Usage
 
-This project is still in early development, so formal documentation isn't made yet.
+This project is still in development, so formal documentation isn't made yet.
 
-The [list of curated examples](./examples/) are always kept up-to-date. These are located under the [examples](./examples/) directory.
+The [list of examples](./examples/) are always kept up-to-date. These are located under the [examples](./examples/) directory.
 These examples can be built using `zig build examples:<example-name>` (or simply `zig build examples` to build all examples),
 and then execute the example using the `zig-out/bin/<example-name>` executable. They all take `TOKEN` as an environment variable.
 
 # Changelog
 
-This project is still in early development, so breaking changes happen often. However,
+This project is still in development, so breaking changes happen often. However,
 all changes are recorded in the [CHANGELOG.md](./CHANGELOG.md) file, which should make upgrading versions easy.
+
+# Logging
+
+Because zigcord relies on Discord conforming to a strongly-typed contract, it does log errors when they occur.
+
+All logging for both zigcord and dependencies of zigcord use `std.log`, so you can disable it by defining a `std_options` in your `main.zig` file:
+
+```zig
+pub const std_options: std.Options = .{ .logFn = myLogFn };
+
+pub fn myLogFn(
+    comptime message_level: std.log.Level,
+    comptime scope: @TypeOf(.EnumLiteral),
+    comptime format: []const u8,
+    args: anytype,
+) void {
+    switch(scope) {
+        .zigcord, .websocket => return,
+        else => std.log.defaultLog(message_level, scope, format, args),
+    }
+}
+```
 
 # TODO
 
- - Add support for asynchrony via `std.Io` (once Zig 0.16 is released)
  - Proper namespacing for EndpointClient so code generation is not needed
    - (ie `endpoint_client.editCurrentApplication()` would instead be `endpoint_client.application.editCurrentApplication()`)
    - Can be done by making `application.zig` take `@This()` instead of `EndpointClient`, then using `@fieldParentPtr` to get the EndpointClient?

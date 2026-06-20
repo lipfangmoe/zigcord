@@ -91,12 +91,20 @@ pub fn build(b: *std.Build) !void {
     example_createsticker_step.dependOn(&createsticker_artifact.step);
     example_createsticker_step.dependOn(generate_step);
 
+    // zig build examples:async
+    const example_async_step = b.step("examples:async", "Builds a bot that uses asynchrony");
+    const asynchronicity_module = b.createModule(.{ .root_source_file = b.path("./examples/asynchrony.zig"), .optimize = optimize, .target = target, .imports = example_imports });
+    const asynchronicity_artifact = createExample(b, "asynchronicity", asynchronicity_module);
+    example_async_step.dependOn(&asynchronicity_artifact.step);
+    example_async_step.dependOn(generate_step);
+
     // zig build examples
     const examples_step = b.step("examples", "Builds all examples");
     examples_step.dependOn(example_gateway_logger_step);
     examples_step.dependOn(example_interaction_step);
     examples_step.dependOn(example_gateway_step);
     examples_step.dependOn(example_thumbsup_step);
+    examples_step.dependOn(example_async_step);
 
     // zig build check
     const check_step = b.step("check", "Run the compiler without building");
@@ -109,6 +117,7 @@ pub fn build(b: *std.Build) !void {
         gateway_logger_module,
         thumbsup_module,
         createsticker_module,
+        asynchronicity_module,
     });
 }
 
