@@ -3,7 +3,6 @@ const std = @import("std");
 const model = zigcord.model;
 const rest = zigcord.rest;
 const jconfig = zigcord.jconfig;
-const PartialAttachment = rest.EndpointClient.PartialAttachment;
 
 pub fn createWebhook(
     client: *rest.EndpointClient,
@@ -328,7 +327,7 @@ pub const ExecuteWebhookJsonBody = struct {
     embeds: jconfig.Omittable(?[]const model.Message.Embed) = .omit,
     allowed_mentions: jconfig.Omittable(?model.Message.AllowedMentions) = .omit,
     components: jconfig.Omittable(?[]const model.MessageComponent) = .omit,
-    attachments: jconfig.Omittable(?[]const PartialAttachment) = .omit,
+    attachments: jconfig.Omittable(?[]const rest.EndpointClient.PartialAttachmentRequest) = .omit,
     flags: jconfig.Omittable(?model.Message.Flags) = .omit,
     thread_name: jconfig.Omittable(?[]const u8) = .omit,
     applied_tags: jconfig.Omittable(?[]const model.Snowflake) = .omit,
@@ -346,7 +345,7 @@ pub const ExecuteWebhookFormBody = struct {
     allowed_mentions: ?model.Message.AllowedMentions = null,
     components: ?[]const model.MessageComponent = null,
     files: ?[]const ?rest.Upload = null,
-    attachments: ?[]const PartialAttachment = null,
+    attachments: ?[]const rest.EndpointClient.PartialAttachmentRequest = null,
     flags: ?model.Message.Flags = null,
     thread_name: ?[]const u8 = null,
     applied_tags: ?[]const model.Snowflake = null,
@@ -365,7 +364,7 @@ pub const EditWebhookMessageJsonBody = struct {
     flags: jconfig.Omittable(?model.Message.Flags) = .omit,
     allowed_mentions: jconfig.Omittable(?model.Message.AllowedMentions) = .omit,
     components: jconfig.Omittable(?[]const model.MessageComponent) = .omit,
-    attachments: jconfig.Omittable(?[]const PartialAttachment) = .omit,
+    attachments: jconfig.Omittable(?[]const rest.EndpointClient.AttachmentRequest) = .omit,
     poll: jconfig.Omittable(?model.Poll) = .omit, // Polls can only be added when editing a deferred interaction response.
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
@@ -378,6 +377,6 @@ pub const EditWebhookMessageFormBody = struct {
     allowed_mentions: ?model.Message.AllowedMentions = null,
     components: ?[]const model.MessageComponent = null,
     files: ?[]const ?rest.Upload = null,
-    attachments: ?[]const PartialAttachment = null,
+    attachments: ?[]const rest.EndpointClient.AttachmentRequest = null,
     poll: ?model.Poll = null, // Polls can only be added when editing a deferred interaction response.
 };

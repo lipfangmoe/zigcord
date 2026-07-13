@@ -54,86 +54,79 @@ pub fn build(b: *std.Build) !void {
     test_step.dependOn(&test_run_artifact.step);
     test_step.dependOn(generate_step);
 
-    const example_imports: []const std.Build.Module.Import = &.{.{ .name = "zigcord", .module = zigcord_module }};
-
-    // zig build examples:interaction
-    const example_interaction_step = b.step("examples:interaction", "Builds an example interaction bot");
-    const interaction_module = b.createModule(.{ .root_source_file = b.path("./examples/interaction_bot.zig"), .optimize = optimize, .target = target, .imports = example_imports });
-    const interaction_artifact = createExample(b, "interaction", interaction_module);
-    example_interaction_step.dependOn(&interaction_artifact.step);
-    example_interaction_step.dependOn(generate_step);
-
-    // zig build examples:gateway
-    const example_gateway_step = b.step("examples:gateway", "Builds an example gateway bot");
-    const gateway_module = b.createModule(.{ .root_source_file = b.path("./examples/gateway_bot.zig"), .optimize = optimize, .target = target, .imports = example_imports });
-    const gateway_artifact = createExample(b, "gateway", gateway_module);
-    example_gateway_step.dependOn(&gateway_artifact.step);
-    example_gateway_step.dependOn(generate_step);
-
-    // zig build examples:gateway_logger
-    const example_gateway_logger_step = b.step("examples:gateway_logger", "Builds an example gateway bot");
-    const gateway_logger_module = b.createModule(.{ .root_source_file = b.path("./examples/gateway_logger_bot.zig"), .optimize = optimize, .target = target, .imports = example_imports });
-    const gateway_logger_artifact = createExample(b, "gateway-logger", gateway_logger_module);
-    example_gateway_logger_step.dependOn(&gateway_logger_artifact.step);
-    example_gateway_logger_step.dependOn(generate_step);
-
-    // zig build examples:thumbsup
-    const example_thumbsup_step = b.step("examples:thumbsup", "Builds an example thumbs-up reaction bot");
-    const thumbsup_module = b.createModule(.{ .root_source_file = b.path("./examples/thumbsup_bot.zig"), .optimize = optimize, .target = target, .imports = example_imports });
-    const thumbsup_artifact = createExample(b, "thumbsup", thumbsup_module);
-    example_thumbsup_step.dependOn(&thumbsup_artifact.step);
-    example_thumbsup_step.dependOn(generate_step);
-
-    // zig build examples:createsticker
-    const example_createsticker_step = b.step("examples:createsticker", "Builds an example createsticker reaction bot");
-    const createsticker_module = b.createModule(.{ .root_source_file = b.path("./examples/createsticker_bot.zig"), .optimize = optimize, .target = target, .imports = example_imports });
-    const createsticker_artifact = createExample(b, "createsticker", createsticker_module);
-    example_createsticker_step.dependOn(&createsticker_artifact.step);
-    example_createsticker_step.dependOn(generate_step);
-
-    // zig build examples:async
-    const example_async_step = b.step("examples:async", "Builds a bot that uses asynchrony");
-    const asynchronicity_module = b.createModule(.{ .root_source_file = b.path("./examples/asynchrony.zig"), .optimize = optimize, .target = target, .imports = example_imports });
-    const asynchronicity_artifact = createExample(b, "asynchronicity", asynchronicity_module);
-    example_async_step.dependOn(&asynchronicity_artifact.step);
-    example_async_step.dependOn(generate_step);
-
     // zig build examples
     const examples_step = b.step("examples", "Builds all examples");
-    examples_step.dependOn(example_gateway_logger_step);
-    examples_step.dependOn(example_interaction_step);
-    examples_step.dependOn(example_gateway_step);
-    examples_step.dependOn(example_thumbsup_step);
-    examples_step.dependOn(example_async_step);
+    // note: createExample makes `examples_step` depend on the created example
 
     // zig build check
     const check_step = b.step("check", "Run the compiler without building");
     const check_tests_compile = b.addTest(.{ .name = "zigcord-check-tests", .root_module = zigcord_module, .use_llvm = use_llvm });
     check_tests_compile.root_module.addOptions("build", options);
     check_step.dependOn(&check_tests_compile.step);
-    dependOnBuildingModules(b, check_step, &.{
-        interaction_module,
-        gateway_module,
-        gateway_logger_module,
-        thumbsup_module,
-        createsticker_module,
-        asynchronicity_module,
+    // note: createExample makes `check_step` depend on the created example
+
+    const common: CreateExample.Common = .{
+        .optimize = optimize,
+        .target = target,
+        .zigcord_module = zigcord_module,
+        .generate_step = generate_step,
+        .examples_step = examples_step,
+        .check_step = check_step,
+    };
+
+    // zig build examples:interaction
+    createExample(b, "interaction", .{ .description = "Builds an example interaction bot", .root_source_file = b.path("./examples/interaction_bot.zig"), .common = common });
+
+    // zig build examples:gateway
+    createExample(b, "gateway", .{ .description = "Builds an example gateway bot", .root_source_file = b.path("./examples/gateway_bot.zig"), .common = common });
+
+    // zig build examples:gateway_logger
+    createExample(b, "gateway_logger", .{ .description = "Builds an example gateway bot", .root_source_file = b.path("./examples/gateway_logger_bot.zig"), .common = common });
+
+    // zig build examples:thumbsup
+    createExample(b, "thumbsup", .{ .description = "Builds an example thumbs-up reaction bot", .root_source_file = b.path("./examples/thumbsup_bot.zig"), .common = common });
+
+    // zig build examples:createsticker
+    createExample(b, "createsticker", .{ .description = "Builds an example createsticker reaction bot", .root_source_file = b.path("./examples/createsticker_bot.zig"), .common = common });
+
+    // zig build examples:async
+    createExample(b, "async", .{ .description = "Builds an bot that uses asynchrony", .root_source_file = b.path("./examples/asynchrony.zig"), .common = common });
+
+    // zig build examples:postattachment
+    createExample(b, "postattachment", .{ .description = "Builds a bot that posts an attachment", .root_source_file = b.path("./examples/post_attachment.zig"), .common = common });
+}
+
+fn createExample(b: *std.Build, comptime name: []const u8, params: CreateExample) void {
+    const example_step = b.step(std.fmt.comptimePrint("examples:{s}", .{name}), params.description);
+    const example_module = b.createModule(.{
+        .root_source_file = params.root_source_file,
+        .optimize = params.common.optimize,
+        .target = params.common.target,
+        .imports = &.{.{ .name = "zigcord", .module = params.common.zigcord_module }},
     });
+
+    const example_executable = b.addExecutable(.{ .name = std.fmt.comptimePrint("{s}-example", .{name}), .root_module = example_module, .use_llvm = use_llvm });
+    const example_artifact = b.addInstallArtifact(example_executable, .{});
+    example_step.dependOn(&example_artifact.step);
+    example_step.dependOn(params.common.generate_step);
+
+    params.common.examples_step.dependOn(example_step);
+
+    const example_executable_check = b.addExecutable(.{ .name = std.fmt.comptimePrint("{s}-example-check", .{name}), .root_module = example_module, .use_llvm = use_llvm });
+    params.common.check_step.dependOn(&example_executable_check.step);
 }
 
-fn createExample(
-    b: *std.Build,
-    comptime name: []const u8,
-    module: *std.Build.Module,
-) *std.Build.Step.InstallArtifact {
-    const example_executable = b.addExecutable(.{ .name = std.fmt.comptimePrint("{s}-example", .{name}), .root_module = module, .use_llvm = use_llvm });
-    return b.addInstallArtifact(example_executable, .{});
-}
+const CreateExample = struct {
+    description: []const u8,
+    root_source_file: std.Build.LazyPath,
+    common: Common,
 
-fn dependOnBuildingModules(b: *std.Build, step: *std.Build.Step, modules: []const *std.Build.Module) void {
-    for (modules, 0..) |mod, idx| {
-        var buf: [100]u8 = undefined;
-        const exe = b.addExecutable(.{ .name = std.fmt.bufPrint(&buf, "check-example-{d}", .{idx}) catch unreachable, .root_module = mod, .use_llvm = use_llvm });
-        step.dependOn(&exe.step);
-    }
-}
+    const Common = struct {
+        optimize: std.builtin.OptimizeMode,
+        target: std.Build.ResolvedTarget,
+        zigcord_module: *std.Build.Module,
+        generate_step: *std.Build.Step,
+        examples_step: *std.Build.Step,
+        check_step: *std.Build.Step,
+    };
+};

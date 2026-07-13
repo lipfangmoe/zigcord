@@ -429,7 +429,7 @@ pub const InteractionCallbackMessage = struct {
     allowed_mentions: jconfig.Omittable(model.Message.AllowedMentions) = .omit,
     flags: jconfig.Omittable(model.Message.Flags) = .omit,
     components: jconfig.Omittable([]const model.MessageComponent) = .omit,
-    attachments: jconfig.Omittable([]const jconfig.Partial(model.Message.Attachment)) = .omit,
+    attachments: jconfig.Omittable([]const rest.EndpointClient.AttachmentRequest) = .omit,
     poll: jconfig.Omittable(model.Poll) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
