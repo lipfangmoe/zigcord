@@ -17,8 +17,8 @@ pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
 
 pub const Status = enum(u8) {
     active = 0,
-    ending = 1,
-    inactive = 2,
+    inactive = 1,
+    ending = 2,
 
     pub const jsonStringify = jconfig.stringifyEnumAsInt;
 };

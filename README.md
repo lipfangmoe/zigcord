@@ -72,7 +72,7 @@ pub fn myLogFn(
 }
 ```
 
-# TODO
+# TODO (things i'd like to do before tagging 1.0.0)
 
  - Proper namespacing for EndpointClient so code generation is not needed
    - (ie `endpoint_client.editCurrentApplication()` would instead be `endpoint_client.application.editCurrentApplication()`)

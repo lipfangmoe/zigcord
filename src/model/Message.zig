@@ -120,9 +120,25 @@ pub const Attachment = struct {
     ephemeral: jconfig.Omittable(bool) = .omit,
     duration_secs: jconfig.Omittable(f64) = .omit,
     waveform: jconfig.Omittable([]const u8) = .omit,
-    flags: jconfig.Omittable(Flags) = .omit,
+    flags: jconfig.Omittable(AttachmentFlags) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
+};
+
+pub const AttachmentFlags = packed struct(u64) {
+    is_clip: bool = false,
+    is_thumbnail: bool = false,
+    is_remix: bool = false,
+    is_spoiler: bool = false,
+    _unknown: u1 = 0,
+    is_animated: bool = false,
+    _padding: u58 = 0,
+
+    const Mixin = model.PackedFlagsMixin(@This());
+    pub const format = Mixin.format;
+    pub const jsonStringify = Mixin.jsonStringify;
+    pub const jsonParse = Mixin.jsonParse;
+    pub const jsonParseFromValue = Mixin.jsonParseFromValue;
 };
 
 pub const ChannelMention = struct {

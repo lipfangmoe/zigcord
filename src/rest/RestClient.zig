@@ -426,6 +426,10 @@ pub fn Result(T: type) type {
             status: std.http.Status,
             value: DiscordError,
             parsed: ?std.json.Parsed(DiscordError),
+
+            pub fn format(self: @This(), writer: *std.Io.Writer) !void {
+                try writer.print("{f}", .{self.value});
+            }
         },
 
         pub const Value = union(enum) {

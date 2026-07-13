@@ -1,12 +1,18 @@
-# v0.12.2
+# v0.13.0
 
-This release contains minor breaking changes.
+This release contains breaking changes.
 
- * **breaking change**: JsonErrorCodes has been regenerated, and one error has changed names.
-   * I really shouldn't be doing errors this way, huh?
- * Added [Voice Channel Status and Start Time Documentation](https://docs.discord.com/developers/change-log#voice-channel-status-and-start-time-documentation) APIs
-   * New endpoint: `channel.setVoiceChannelStatus`
-   * New permission: `set_voice_channel_status`
+ * **minor breaking change**: JsonErrorCodes has been regenerated, and one error has changed names.
+   * i really shouldn't be doing errors this way, huh?
+ * added [Voice Channel Status and Start Time Documentation](https://docs.discord.com/developers/change-log#voice-channel-status-and-start-time-documentation) APIs
+   * new endpoint: `channel.setVoiceChannelStatus`
+   * new permission: `set_voice_channel_status`
+ * added [New `flags_new` Field on Application Object](https://docs.discord.com/developers/change-log#new-flags_new-field-on-application-object)
+   * as the Discord changelog linked above states, the REST API is not impacted. since zigcord uses custom structs for bitfields, it is not impacted.
+ * fixed [subscription status values](https://docs.discord.com/developers/change-log#documentation-fix-subscription-status-values) in accordance with the documentation update
+ * added [Attachment Editing and is_spoiler Param](https://docs.discord.com/developers/change-log#attachment-editing-and-is_spoiler-param)
+   * **minor breaking change**: `model.Message.Attachment.flags` was incorrectly typed as Message Flags, they are now correctly typed as Attachment Flags.
+   * **major breaking change**: Attachment-related request structures have been reworked to now use the `AttachmentRequest` or `PartialAttachmentRequest` as documented above.
 
 # v0.12.1
 
