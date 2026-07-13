@@ -3,7 +3,7 @@ const zigcord = @import("../../root.zig");
 const model = zigcord.model;
 const rest = zigcord.rest;
 const Snowflake = model.Snowflake;
-const AuditLog = model;
+const AuditLog = model.AuditLog;
 
 pub fn getGuildAuditLog(client: *rest.EndpointClient, guild_id: Snowflake) !rest.RestClient.Result(AuditLog) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/audit-logs", .{guild_id});
