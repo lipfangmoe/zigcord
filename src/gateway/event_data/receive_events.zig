@@ -439,7 +439,7 @@ pub const PresenceUpdate = struct {
     guild_id: model.Snowflake,
     status: Status,
     activities: []const model.Activity,
-    client_status: []const ClientStatus,
+    client_status: ClientStatus,
 
     pub const Status = enum {
         idle,
