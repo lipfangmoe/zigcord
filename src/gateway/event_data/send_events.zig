@@ -44,6 +44,16 @@ pub const RequestSoundboardSounds = struct {
     guild_ids: []const model.Snowflake,
 };
 
+pub const RequestChannelInfo = struct {
+    guild_id: model.Snowflake,
+    fields: []const Field,
+
+    pub const Field = enum {
+        status,
+        voice_start_time,
+    };
+};
+
 pub const UpdateVoiceState = struct {
     guild_id: model.Snowflake,
     channel_id: ?model.Snowflake,

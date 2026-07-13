@@ -27,6 +27,19 @@ pub fn modifyChannel(
     return client.rest_client.requestWithJsonBodyAndAuditLogReason(Channel, .PATCH, uri, body, .{}, audit_log_reason);
 }
 
+pub fn setVoiceChannelStatus(
+    client: *rest.EndpointClient,
+    channel_id: Snowflake,
+    body: SetVoiceChannelStatusBody,
+    audit_log_reason: ?[]const u8,
+) !rest.RestClient.Result(void) {
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}", .{channel_id});
+    defer client.rest_client.allocator.free(uri_str);
+    const uri = try std.Uri.parse(uri_str);
+
+    return client.rest_client.requestWithJsonBodyAndAuditLogReason(void, .PUT, uri, body, .{}, audit_log_reason);
+}
+
 pub fn deleteChannel(
     client: *rest.EndpointClient,
     channel_id: Snowflake,
@@ -679,6 +692,12 @@ pub const ModifyChannelBody = union(enum) {
     pub const jsonStringify = Mixin.jsonStringify;
     pub const jsonParse = Mixin.jsonParse;
     pub const jsonParseFromValue = Mixin.jsonParseFromValue;
+};
+
+pub const SetVoiceChannelStatusBody = struct {
+    status: jconfig.Omittable([]const u8) = .omit,
+
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const GetChannelMessagesQuery = struct {
