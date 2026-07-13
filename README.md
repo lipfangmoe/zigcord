@@ -10,7 +10,7 @@ on a more recent version of Zig, please create an [issue](https://codeberg.org/l
 To include this in your zig project, use the Zig Package Manager:
 
 ```sh
-# you can get a lock a specific version by replacing "#main" with the version number, ie "#v0.12.1"
+# you can get a lock a specific version by replacing "#main" with the version number, ie "#v0.13.0"
 zig fetch --save 'git+https://codeberg.org/lipfang/zigcord#main'
 ```
 
