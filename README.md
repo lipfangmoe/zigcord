@@ -85,3 +85,4 @@ pub fn myLogFn(
  - HTTP Interaction Server:
    - Standalone HTTPS support (for now, you will need a reverse-proxy to provide HTTPS support)
    - Cloud function support (i.e. Cloudflare Workers)
+ - [Lobby Resource](https://docs.discord.com/developers/resources/lobby)
