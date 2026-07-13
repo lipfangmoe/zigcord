@@ -1,3 +1,11 @@
+# v0.12.1
+
+This release contains a minor breaking change.
+(A type contract has changed, but if you used the old contract, you would encounter an error)
+
+ * solves #17 - for Presence Update events, `client_status` was incorrectly
+   typed as `[]const ClientStatus`, when it should be `ClientStatus`.
+
 # v0.12.0
 
 This release contains breaking changes.
