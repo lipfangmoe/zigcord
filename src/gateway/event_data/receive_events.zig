@@ -70,7 +70,28 @@ pub const ChannelPinsUpdate = struct {
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
-pub const ChannelInfo = struct { guild_id: model.Snowflake };
+pub const ChannelInfo = struct {
+    guild_id: model.Snowflake,
+    channels: []const Channel,
+
+    pub const Channel = struct {
+        id: model.Snowflake,
+        status: jconfig.Omittable(?[]const u8) = .omit,
+        voice_start_time: jconfig.Omittable(?u64) = .omit,
+    };
+};
+
+pub const VoiceChannelStatusUpdate = struct {
+    id: model.Snowflake,
+    guild_id: model.Snowflake,
+    status: ?[]const u8,
+};
+
+pub const VoiceChannelStartTimeUpdate = struct {
+    id: model.Snowflake,
+    guild_id: model.Snowflake,
+    voice_start_time: jconfig.Omittable(?u64) = .omit,
+};
 
 pub const ThreadCreate = model.Channel;
 

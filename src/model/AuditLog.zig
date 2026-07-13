@@ -36,6 +36,7 @@ pub const Entry = struct {
         role_name: jconfig.Omittable([]const u8) = .omit,
         type: jconfig.Omittable([]const u8) = .omit,
         integration_type: jconfig.Omittable([]const u8) = .omit,
+        status: jconfig.Omittable([]const u8) = .omit,
 
         pub const jsonStringify = jconfig.stringifyWithOmit;
     };
@@ -105,6 +106,8 @@ pub const Event = enum(u64) {
     onboarding_update = 167,
     home_settings_create = 190,
     home_settings_update = 191,
+    voice_channel_status_update = 192,
+    voice_channel_status_delete = 193,
 
     _,
 
