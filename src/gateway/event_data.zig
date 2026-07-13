@@ -92,6 +92,7 @@ pub const SendEventData = union(enum) {
     heartbeat: send_events.Heartbeat,
     request_guild_members: send_events.RequestGuildMembers,
     request_soundboard_sounds: send_events.RequestSoundboardSounds,
+    request_channel_info: send_events.RequestChannelInfo,
     update_voice_state: send_events.UpdateVoiceState,
     update_presence: send_events.UpdatePresence,
 };
@@ -108,6 +109,8 @@ pub const Opcode = enum(u64) {
     invalid_session = 9,
     hello = 10,
     heartbeat_ack = 11,
+    request_soundbard_sounds = 31,
+    request_channel_info = 43,
     _,
 
     pub const jsonStringify = jconfig.stringifyEnumAsInt;

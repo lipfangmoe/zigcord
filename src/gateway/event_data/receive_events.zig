@@ -70,6 +70,8 @@ pub const ChannelPinsUpdate = struct {
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
+pub const ChannelInfo = struct { guild_id: model.Snowflake };
+
 pub const ThreadCreate = model.Channel;
 
 pub const ThreadUpdate = model.Channel;

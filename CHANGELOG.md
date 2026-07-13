@@ -1,3 +1,13 @@
+# v0.12.2
+
+This release contains minor breaking changes.
+
+ * **breaking change**: JsonErrorCodes has been regenerated, and one error has changed names.
+   * I really shouldn't be doing errors this way, huh?
+ * Added [Voice Channel Status and Start Time Documentation](https://docs.discord.com/developers/change-log#voice-channel-status-and-start-time-documentation) APIs
+   * New endpoint: `channel.setVoiceChannelStatus`
+   * New permission: `set_voice_channel_status`
+
 # v0.12.1
 
 This release contains a minor breaking change.
