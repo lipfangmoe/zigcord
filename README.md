@@ -86,3 +86,4 @@ pub fn myLogFn(
    - Standalone HTTPS support (for now, you will need a reverse-proxy to provide HTTPS support)
    - Cloud function support (i.e. Cloudflare Workers)
  - [Lobby Resource](https://docs.discord.com/developers/resources/lobby)
+ - Redo the MessageComponent API. Just let all MessageComponents have a `type` and `id` field, not sure why I decided to have this weird almost-polymorphic design.

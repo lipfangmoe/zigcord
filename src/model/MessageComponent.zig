@@ -363,18 +363,10 @@ pub const TextInput = struct {
 
 /// Message.Flag.is_components_v2 must be set to use this
 pub const Section = struct {
-    components: TextDisplay,
-    accessory: Accessory,
-
-    pub const Accessory = union(enum) {
-        thumbnail: Thumbnail,
-        button: []const Button,
-
-        const Mixin = jconfig.InlineUnionMixin(@This());
-        pub const jsonStringify = Mixin.jsonStringify;
-        pub const jsonParse = Mixin.jsonParse;
-        pub const jsonParseFromValue = Mixin.jsonParseFromValue;
-    };
+    /// May only be TextDisplay
+    components: []const MessageComponent,
+    /// May only be Button or Thumbmnail
+    accessory: MessageComponent,
 };
 
 /// Message.Flag.is_components_v2 must be set to use this
