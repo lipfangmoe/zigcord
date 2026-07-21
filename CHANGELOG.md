@@ -1,3 +1,9 @@
+# v0.13.1
+
+This release contains minor breaking changes.
+
+* **minor breaking change**: the type of `model.MessageComponent.Section` has been corrected to be more accurate.
+
 # v0.13.0
 
 This release contains breaking changes.
