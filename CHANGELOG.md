@@ -1,8 +1,9 @@
-# v0.13.1
+# main (pending, untagged changes)
 
-This release contains minor breaking changes.
+There are minor breaking changes.
 
 * **minor breaking change**: the type of `model.MessageComponent.Section` has been corrected to be more accurate.
+* **minor breaking change**: the type of `model.guild.Member` has been changed to `Omittable(model.Permission)` instead of `Omittable([]const u8)`.
 
 # v0.13.0
 
