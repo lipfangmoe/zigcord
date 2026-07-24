@@ -314,7 +314,7 @@ pub const Member = struct {
     /// whether the user has not yet passed the guild's Membership Screening requirements
     pending: jconfig.Omittable(bool) = .omit,
     /// total permissions of the member in the channel, including overwrites, returned when in the interaction object
-    permissions: jconfig.Omittable([]const u8) = .omit,
+    permissions: jconfig.Omittable(model.Permissions) = .omit,
     /// when the user's timeout will expire and the user will be able to communicate in the guild again, null or a time in the past if the user is not timed out
     communication_disabled_until: jconfig.Omittable(?model.IsoTime) = .omit,
     /// data for the member's guild avatar decoration
