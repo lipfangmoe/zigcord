@@ -1,0 +1,36 @@
+{
+    "t": "GUILD_MEMBER_UPDATE",
+    "s": 2,
+    "op": 0,
+    "d": {
+        "user": {
+            "username": "redacted",
+            "public_flags": 0,
+            "primary_guild": null,
+            "id": "0",
+            "global_name": null,
+            "display_name_styles": null,
+            "display_name": null,
+            "discriminator": "0",
+            "collectibles": null,
+            "bot": true,
+            "avatar_decoration_data": null,
+            "avatar": "redacted"
+        },
+        "roles": [
+            "0",
+            "1"
+        ],
+        "premium_since": null,
+        "pending": false,
+        "nick": null,
+        "mute": false,
+        "joined_at": "2024-01-01T00:00:00.000000+00:00",
+        "guild_id": "0",
+        "flags": 0,
+        "deaf": false,
+        "communication_disabled_until": null,
+        "banner": null,
+        "avatar": null
+    }
+}

@@ -39,6 +39,7 @@ premium_type: Omittable(NitroType) = .omit,
 public_flags: Omittable(Flags) = .omit,
 /// The user's avatar decoration data.
 avatar_decoration_data: Omittable(?AvatarDecorationData) = .omit,
+collectibles: Omittable(?Collectibles) = .omit,
 /// The user's primary guild (guild tag)
 primary_guild: Omittable(?PrimaryGuild) = .omit,
 
@@ -137,6 +138,33 @@ pub const ApplicationRoleConnection = struct {
     metadata: std.json.ArrayHashMap([]const u8),
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
+};
+
+pub const Collectibles = struct {
+    nameplate: Omittable(std.json.ArrayHashMap(Nameplate)) = .omit,
+
+    pub const jsonStringify = jconfig.stringifyWithOmit;
+};
+
+pub const Nameplate = struct {
+    sku_id: model.Snowflake,
+    asset: []const u8,
+    label: []const u8,
+    palette: Palette,
+
+    pub const Palette = enum {
+        crimson,
+        berry,
+        sky,
+        teal,
+        forest,
+        bubble_gum,
+        violet,
+        cobalt,
+        clover,
+        lemon,
+        white,
+    };
 };
 
 pub const PrimaryGuild = struct {

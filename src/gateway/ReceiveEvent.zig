@@ -133,37 +133,38 @@ test "undocumented event" {
     parsed.deinit();
 }
 
+test "guildmemberupdate.test.json" {
+    const input = @embedFile("./test/guildmemberupdate.test.json");
+
+    try jconfig.testing.expectParsedSuccessfully(ReceiveEvent, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
+}
+
 test "message1.test.json" {
     const input = @embedFile("./test/message1.test.json");
 
-    const parsed = try std.json.parseFromSlice(ReceiveEvent, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
-    parsed.deinit();
+    try jconfig.testing.expectParsedSuccessfully(ReceiveEvent, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
 }
 
 test "message2.test.json" {
     const input = @embedFile("./test/message2.test.json");
 
-    const parsed = try std.json.parseFromSlice(ReceiveEvent, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
-    parsed.deinit();
+    try jconfig.testing.expectParsedSuccessfully(ReceiveEvent, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
 }
 
 test "interaction1.test.json" {
     const input = @embedFile("./test/interaction1.test.json");
 
-    const parsed = try std.json.parseFromSlice(ReceiveEvent, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
-    parsed.deinit();
+    try jconfig.testing.expectParsedSuccessfully(ReceiveEvent, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
 }
 
 test "interaction2.test.json" {
     const input = @embedFile("./test/interaction2.test.json");
 
-    const parsed = try std.json.parseFromSlice(ReceiveEvent, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
-    parsed.deinit();
+    try jconfig.testing.expectParsedSuccessfully(ReceiveEvent, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
 }
 
 test "interaction3.test.json" {
     const input = @embedFile("./test/interaction3.test.json");
 
-    const parsed = try std.json.parseFromSlice(ReceiveEvent, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
-    parsed.deinit();
+    try jconfig.testing.expectParsedSuccessfully(ReceiveEvent, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
 }

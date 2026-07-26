@@ -229,7 +229,8 @@ pub const GuildMemberUpdate = struct {
     pending: jconfig.Omittable(bool) = .omit,
     communications_disabled_until: jconfig.Omittable(?model.IsoTime) = .omit,
     flags: model.guild.Member.Flags,
-    avatar_decoration_data: model.User.AvatarDecorationData,
+    avatar_decoration_data: jconfig.Omittable(?model.User.AvatarDecorationData) = .omit,
+    collectibles: jconfig.Omittable(?model.User.Collectibles) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };

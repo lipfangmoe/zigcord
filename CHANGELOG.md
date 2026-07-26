@@ -18,6 +18,8 @@ There are incoming major breaking changes.
 * **minor breaking change**: the type of `model.interaction.ResolvedData.channels` has been changed to `ArrayHashMap(model.Channel)` instead of `ArrayHashMap(Partial(model.Channel))`.
 * for action rows and section accessories, additional `.init` functions (ie `.initPrimaryButton()`) have been created to make creating buttons easier.
 * for modal components, new functions `initPlainLabel()` and `initLabelWithDescription` have been added as a simpler contract for creating a labeled input
+* fixed guild_member_update events where avatar_decoration_data is not provided
+* added collectibles to both user objects and guild_member_update events
 
 
 # v0.13.0
