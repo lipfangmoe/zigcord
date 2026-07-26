@@ -175,10 +175,22 @@ pub const InteractionCallback = union(Type) {
     modal: ModalInteractionCallback,
     launch_activity: void,
 
-    const Mixin = jconfig.DiscriminatedUnionMixin(InteractionCallback, "type");
-    pub const jsonStringify = Mixin.jsonStringify;
-    pub const jsonParse = Mixin.jsonParse;
-    pub const jsonParseFromValue = Mixin.jsonParseFromValue;
+    pub fn jsonStringify(self: InteractionCallback, jw: *std.json.Stringify) std.json.Stringify.Error!void {
+        try jw.beginObject();
+
+        try jw.objectField("type");
+        try jw.write(@intFromEnum(std.meta.activeTag(self)));
+
+        switch (self) {
+            inline else => |prong| {
+                if (@TypeOf(prong) != void) {
+                    try jw.objectField("data");
+                    try jw.write(prong);
+                }
+            },
+        }
+        try jw.endObject();
+    }
 
     pub fn initPong() InteractionCallback {
         return .{ .pong = .{} };
