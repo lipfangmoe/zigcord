@@ -45,6 +45,9 @@ pub const TopLevelMessageComponent = union(Type) {
         return .{ .section = section };
     }
 
+    pub fn initText(text: []const u8) TopLevelMessageComponent {
+        return .initTextDisplay(.{ .content = text });
+    }
     pub fn initTextDisplay(text_display: TextDisplay) TopLevelMessageComponent {
         return .{ .text_display = text_display };
     }
@@ -315,6 +318,7 @@ pub const ContainerChildComponent = union(Type) {
     pub const jsonParseFromValue = Mixin.jsonParseFromValue;
     pub const jsonStringify = Mixin.jsonStringify;
 };
+
 pub const LabelChildComponent = union(Type) {
     text_input: TextInput,
     string_select: StringSelect,
@@ -517,6 +521,8 @@ pub const ChannelSelect = struct {
     max_values: jconfig.Omittable(i64) = .omit,
     disabled: jconfig.Omittable(bool) = .omit,
 
+    pub const jsonStringify = jconfig.stringifyWithOmit;
+
     pub const DefaultValue = struct {
         id: model.Snowflake,
         type: enum { user, role, channel },
@@ -538,8 +544,6 @@ pub const ChannelSelect = struct {
 
         pub const jsonStringify = jconfig.stringifyWithOmit;
     };
-
-    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const StringSelect = struct {
@@ -551,6 +555,8 @@ pub const StringSelect = struct {
     min_values: jconfig.Omittable(i64) = .omit,
     max_values: jconfig.Omittable(i64) = .omit,
     disabled: jconfig.Omittable(bool) = .omit,
+
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 
     pub const Option = struct {
         label: []const u8,
@@ -575,8 +581,6 @@ pub const StringSelect = struct {
         custom_id: []const u8,
         values: []const []const u8,
     };
-
-    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const TextInput = struct {
@@ -589,6 +593,8 @@ pub const TextInput = struct {
     required: jconfig.Omittable(bool) = .omit,
     value: jconfig.Omittable([]const u8) = .omit,
     placeholder: jconfig.Omittable([]const u8) = .omit,
+
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 
     pub const Style = enum(u2) {
         short = 1,
@@ -603,8 +609,6 @@ pub const TextInput = struct {
         custom_id: []const u8,
         value: []const u8,
     };
-
-    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const UserSelect = struct {
@@ -617,6 +621,8 @@ pub const UserSelect = struct {
     max_values: jconfig.Omittable(i64) = .omit,
     disabled: jconfig.Omittable(bool) = .omit,
 
+    pub const jsonStringify = jconfig.stringifyWithOmit;
+
     pub const DefaultValue = struct {
         id: model.Snowflake,
         type: enum { user, role, channel },
@@ -638,8 +644,6 @@ pub const UserSelect = struct {
 
         pub const jsonStringify = jconfig.stringifyWithOmit;
     };
-
-    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const RoleSelect = struct {
@@ -652,6 +656,8 @@ pub const RoleSelect = struct {
     max_values: jconfig.Omittable(i64) = .omit,
     disabled: jconfig.Omittable(bool) = .omit,
 
+    pub const jsonStringify = jconfig.stringifyWithOmit;
+
     pub const DefaultValue = struct {
         id: model.Snowflake,
         type: enum { user, role, channel },
@@ -673,8 +679,6 @@ pub const RoleSelect = struct {
 
         pub const jsonStringify = jconfig.stringifyWithOmit;
     };
-
-    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const MentionableSelect = struct {
@@ -687,6 +691,8 @@ pub const MentionableSelect = struct {
     max_values: jconfig.Omittable(i64) = .omit,
     disabled: jconfig.Omittable(bool) = .omit,
 
+    pub const jsonStringify = jconfig.stringifyWithOmit;
+
     pub const DefaultValue = struct {
         id: model.Snowflake,
         type: enum { user, role, channel },
@@ -708,8 +714,6 @@ pub const MentionableSelect = struct {
 
         pub const jsonStringify = jconfig.stringifyWithOmit;
     };
-
-    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 /// Message.Flag.is_components_v2 must be set to use this
@@ -718,6 +722,8 @@ pub const Section = struct {
     type: AnyComponentType = .section,
     components: []const SectionChildComponent,
     accessory: SectionAccessoryComponent,
+
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 
     pub fn initTextSectionWithPrimaryButton(text: []const u8, custom_id: []const u8, button_opts: Button.InitButtonOptions) Section {
         return .{ .components = &.{.initText(text)}, .accessory = .initPrimaryButton(custom_id, button_opts) };
@@ -752,6 +758,8 @@ pub const TextDisplay = struct {
     type: AnyComponentType = .text_display,
     content: []const u8,
 
+    pub const jsonStringify = jconfig.stringifyWithOmit;
+
     pub const ModalInteractionData = struct {
         type: AnyComponentType,
         id: u64,
@@ -766,11 +774,11 @@ pub const Thumbnail = struct {
     description: jconfig.Omittable(?[]const u8) = .omit,
     spoiler: jconfig.Omittable(bool) = .omit,
 
+    pub const jsonStringify = jconfig.stringifyWithOmit;
+
     pub fn initWithUrl(url: []const u8) Thumbnail {
         return .{ .media = .{ .url = url } };
     }
-
-    pub const jsonStringify = jconfig.OmittableFieldsMixin(Thumbnail).jsonStringify;
 };
 
 /// Message.Flag.is_components_v2 must be set to use this
@@ -779,12 +787,14 @@ pub const MediaGallery = struct {
     type: AnyComponentType = .media_gallery,
     items: []const Item,
 
+    pub const jsonStringify = jconfig.stringifyWithOmit;
+
     pub const Item = struct {
         media: UnfurledMediaItem,
         description: jconfig.Omittable(?[]const u8) = .omit,
         spoiler: jconfig.Omittable(bool) = .omit,
 
-        pub const jsonStringify = jconfig.OmittableFieldsMixin(Item).jsonStringify;
+        pub const jsonStringify = jconfig.stringifyWithOmit;
     };
 };
 
@@ -795,7 +805,7 @@ pub const File = struct {
     file: UnfurledMediaItem,
     spoiler: jconfig.Omittable(bool) = .omit,
 
-    pub const jsonStringify = jconfig.OmittableFieldsMixin(File).jsonStringify;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 /// Message.Flag.is_components_v2 must be set to use this
@@ -805,14 +815,14 @@ pub const Separator = struct {
     divider: jconfig.Omittable(bool) = .omit,
     spacing: jconfig.Omittable(Spacing) = .omit,
 
+    pub const jsonStringify = jconfig.stringifyWithOmit;
+
     pub const Spacing = enum(u8) {
         small = 1,
         large = 2,
 
         pub const jsonStringify = jconfig.stringifyEnumAsInt;
     };
-
-    pub const jsonStringify = jconfig.OmittableFieldsMixin(Separator).jsonStringify;
 };
 
 /// Message.Flag.is_components_v2 must be set to use this
@@ -823,7 +833,7 @@ pub const Container = struct {
     accent_color: jconfig.Omittable(?i64) = .omit,
     spoiler: jconfig.Omittable(bool) = .omit,
 
-    pub const jsonStringify = jconfig.OmittableFieldsMixin(Container).jsonStringify;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const Label = struct {
@@ -833,6 +843,8 @@ pub const Label = struct {
     description: jconfig.Omittable([]const u8) = .omit,
     /// must be one of text_input, string_select, user_select, role_select, mentionable_select, channel_select, file_upload.
     component: LabelChildComponent,
+
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 
     pub fn initPlain(label: []const u8, child: LabelChildComponent) Label {
         return .{ .label = label, .component = child };
@@ -846,8 +858,6 @@ pub const Label = struct {
         id: u64,
         component: LabelChildComponent.ModalInteractionData,
     };
-
-    pub const jsonStringify = jconfig.OmittableFieldsMixin(Label).jsonStringify;
 };
 
 pub const FileUpload = struct {
@@ -857,6 +867,8 @@ pub const FileUpload = struct {
     min_values: jconfig.Omittable(i64) = .omit,
     max_values: jconfig.Omittable(i64) = .omit,
     required: jconfig.Omittable(bool) = .omit,
+
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 
     pub const ModalInteractionData = struct {
         type: AnyComponentType,
@@ -873,13 +885,15 @@ pub const RadioGroup = struct {
     options: []const Option,
     required: jconfig.Omittable(bool) = .omit,
 
+    pub const jsonStringify = jconfig.stringifyWithOmit;
+
     pub const Option = struct {
         value: []const u8,
         label: []const u8,
         description: jconfig.Omittable([]const u8) = .omit,
         default: jconfig.Omittable(bool) = .omit,
 
-        pub const jsonStringify = jconfig.OmittableFieldsMixin(Option).jsonStringify;
+        pub const jsonStringify = jconfig.stringifyWithOmit;
     };
 
     pub const ModalInteractionData = struct {
@@ -888,8 +902,6 @@ pub const RadioGroup = struct {
         custom_id: []const u8,
         value: []const u8,
     };
-
-    pub const jsonStringify = jconfig.OmittableFieldsMixin(RadioGroup).jsonStringify;
 };
 
 pub const CheckboxGroup = struct {
@@ -901,13 +913,15 @@ pub const CheckboxGroup = struct {
     max_values: jconfig.Omittable(i64) = .omit,
     required: jconfig.Omittable(bool) = .omit,
 
+    pub const jsonStringify = jconfig.stringifyWithOmit;
+
     pub const Option = struct {
         value: []const u8,
         label: []const u8,
         description: jconfig.Omittable([]const u8) = .omit,
         default: jconfig.Omittable(bool) = .omit,
 
-        pub const jsonStringify = jconfig.OmittableFieldsMixin(Option).jsonStringify;
+        pub const jsonStringify = jconfig.stringifyWithOmit;
     };
 
     pub const ModalInteractionData = struct {
@@ -916,8 +930,6 @@ pub const CheckboxGroup = struct {
         custom_id: []const u8,
         values: []const []const u8,
     };
-
-    pub const jsonStringify = jconfig.OmittableFieldsMixin(CheckboxGroup).jsonStringify;
 };
 
 pub const Checkbox = struct {
@@ -926,14 +938,14 @@ pub const Checkbox = struct {
     custom_id: []const u8,
     default: jconfig.Omittable(bool) = .omit,
 
+    pub const jsonStringify = jconfig.stringifyWithOmit;
+
     pub const ModalInteractionData = struct {
         type: AnyComponentType,
         id: u64,
         custom_id: []const u8,
         value: bool,
     };
-
-    pub const jsonStringify = jconfig.OmittableFieldsMixin(Checkbox).jsonStringify;
 };
 
 pub const UnfurledMediaItem = struct {
@@ -944,7 +956,7 @@ pub const UnfurledMediaItem = struct {
     content_type: jconfig.Omittable([]const u8) = .omit,
     attachment_id: jconfig.Omittable(model.Snowflake) = .omit,
 
-    pub const jsonStringify = jconfig.OmittableFieldsMixin(UnfurledMediaItem).jsonStringify;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 test "discord example" {

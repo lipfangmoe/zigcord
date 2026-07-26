@@ -141,7 +141,7 @@ pub const ApplicationRoleConnection = struct {
 };
 
 pub const Collectibles = struct {
-    nameplate: Omittable(std.json.ArrayHashMap(Nameplate)) = .omit,
+    nameplate: Omittable(Nameplate) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
@@ -183,9 +183,7 @@ test "idk some websocket response" {
 }
 
 test "api docs" {
-    const input =
-        \\{"id": "80351110224678912","username": "Nelly","global_name": null,"discriminator": "1337","avatar": "8342729096ea3675442027381ff50dfe","verified": true,"email": "nelly@discord.com","flags": 64,"banner": "06c16474723fe537c283b8efa61a30c8","accent_color": 16711680,"premium_type": 1,"public_flags": 64,"avatar_decoration_data": {"sku_id": "1144058844004233369","asset": "a_fed43ab12698df65902ba06727e20c0e"},"collectibles": {"nameplate": {"sku_id": "2247558840304243311","asset": "nameplates/nameplates/twilight/","label": "","palette": "cobalt"}},"primary_guild": {"identity_guild_id": "1234647491267808778","identity_enabled": true,"tag": "DISC","badge": "7d1734ae5a615e82bc7a4033b98fade8"}}
-    ;
+    const input = @embedFile("./test/userapi.test.json");
 
     const value = try std.json.parseFromSlice(User, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
     defer value.deinit();
