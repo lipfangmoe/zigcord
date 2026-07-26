@@ -87,8 +87,7 @@ pub fn myLogFn(
    - Standalone HTTPS support (for now, you will need a reverse-proxy to provide HTTPS support)
    - Cloud function support (i.e. Cloudflare Workers)
  - [Lobby Resource](https://docs.discord.com/developers/resources/lobby)
- - Redo the MessageComponent API. Just let all MessageComponents have a `type` and `id` field, not sure why I decided to have this weird almost-polymorphic design.
- - Utilities for managing interactions
+ - Utilities for managing interactions (i.e. built-in command maps)
  - Add a "bot" module for a more declarative API
    - Allocates everything by default
    - No need to manage multiple clients (ie, it has both a EndpointClient and GatewayClient built in to it)
