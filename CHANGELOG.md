@@ -20,7 +20,7 @@ There are incoming major breaking changes.
 * for modal components, new functions `initPlainLabel()` and `initLabelWithDescription` have been added as a simpler contract for creating a labeled input
 * fixed guild_member_update events where avatar_decoration_data is not provided
 * added collectibles to both user objects and guild_member_update events
-
+* fixed up the interaction server and added an example (it didn't even compile before, so not considering this a breaking change)
 
 # v0.13.0
 

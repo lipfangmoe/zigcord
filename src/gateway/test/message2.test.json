@@ -32,7 +32,7 @@
                 "collectibles": {
                     "nameplate": {
                         "sku_id": "0",
-                        "palette": "redacted",
+                        "palette": "crimson",
                         "label": "redacted",
                         "expires_at": null,
                         "asset": "redacted"
@@ -90,7 +90,7 @@
                 "collectibles": {
                     "nameplate": {
                         "sku_id": "0",
-                        "palette": "redacted",
+                        "palette": "crimson",
                         "label": "redacted",
                         "expires_at": null,
                         "asset": "redacted"
@@ -274,7 +274,7 @@
                 "collectibles": {
                     "nameplate": {
                         "sku_id": "0",
-                        "palette": "redacted",
+                        "palette": "crimson",
                         "label": "redacted",
                         "expires_at": null,
                         "asset": "redacted"
@@ -305,7 +305,7 @@
                 "collectibles": {
                     "nameplate": {
                         "sku_id": "0",
-                        "palette": "redacted",
+                        "palette": "crimson",
                         "label": "redacted",
                         "expires_at": null,
                         "asset": "redacted"
@@ -367,7 +367,7 @@
                 "collectibles": {
                     "nameplate": {
                         "sku_id": "0",
-                        "palette": "redacted",
+                        "palette": "crimson",
                         "label": "redacted",
                         "expires_at": null,
                         "asset": "redacted"
@@ -406,7 +406,7 @@
                 "collectibles": {
                     "nameplate": {
                         "sku_id": "0",
-                        "palette": "redacted",
+                        "palette": "crimson",
                         "label": "redacted",
                         "expires_at": null,
                         "asset": "redacted"

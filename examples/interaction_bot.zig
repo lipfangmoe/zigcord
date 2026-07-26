@@ -183,11 +183,26 @@ fn executeEchoV2Command(
         else => return error.InvalidTextOption,
     };
 
+    std.log.info("{f}", .{std.json.fmt(zigcord.model.interaction.InteractionCallback.initChannelMessageWithSource(.{
+        .flags = .initSome(.{ .is_components_v2 = true }),
+        .components = .initSome(
+            &.{
+                .initText(text),
+                .initActionRow(.{ .components = &.{
+                    .initPrimaryButton("modal", .{ .label = "open modal" }),
+                    .initSecondaryButton("ghost", .{ .label = "ghost message!", .emoji = .{ .partial = .{ .name = .initSome("👻") } } }),
+                    .initLinkButton("https://example.com", .{ .label = "example link" }),
+                    .initDangerButton("quit", .{ .label = "quit" }),
+                } }),
+            },
+        ),
+    }), .{})});
+
     const result = try endpoint_client.createInteractionResponse(interaction.id, interaction.token, .initChannelMessageWithSource(.{
         .flags = .initSome(.{ .is_components_v2 = true }),
         .components = .initSome(
             &.{
-                .initTextDisplay(.{ .content = text }),
+                .initText(text),
                 .initActionRow(.{ .components = &.{
                     .initPrimaryButton("modal", .{ .label = "open modal" }),
                     .initSecondaryButton("ghost", .{ .label = "ghost message!", .emoji = .{ .partial = .{ .name = .initSome("👻") } } }),
