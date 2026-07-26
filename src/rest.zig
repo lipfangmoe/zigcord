@@ -6,7 +6,6 @@ pub const base_url = if (@import("builtin").is_test) "http://127.0.0.1/api/v10" 
 
 pub const RestClient = @import("./rest/RestClient.zig");
 pub const EndpointClient = @import("./rest/EndpointClient.zig");
-pub const HttpInteractionServer = @import("./interaction_server/HttpServer.zig");
 pub const upload = @import("./rest/upload.zig");
 pub const Upload = upload.Upload;
 

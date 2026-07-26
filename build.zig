@@ -94,6 +94,9 @@ pub fn build(b: *std.Build) !void {
 
     // zig build examples:postattachment
     createExample(b, "postattachment", .{ .description = "Builds a bot that posts an attachment", .root_source_file = b.path("./examples/post_attachment.zig"), .common = common });
+
+    // zig build examples:interaction_server
+    createExample(b, "interaction_server", .{ .description = "Builds a bot that operates via an interaction server", .root_source_file = b.path("./examples/interaction_server.zig"), .common = common });
 }
 
 fn createExample(b: *std.Build, comptime name: []const u8, params: CreateExample) void {
@@ -105,14 +108,14 @@ fn createExample(b: *std.Build, comptime name: []const u8, params: CreateExample
         .imports = &.{.{ .name = "zigcord", .module = params.common.zigcord_module }},
     });
 
-    const example_executable = b.addExecutable(.{ .name = std.fmt.comptimePrint("{s}-example", .{name}), .root_module = example_module, .use_llvm = use_llvm });
+    const example_executable = b.addExecutable(.{ .name = std.fmt.comptimePrint("{s}_example", .{name}), .root_module = example_module, .use_llvm = use_llvm });
     const example_artifact = b.addInstallArtifact(example_executable, .{});
     example_step.dependOn(&example_artifact.step);
     example_step.dependOn(params.common.generate_step);
 
     params.common.examples_step.dependOn(example_step);
 
-    const example_executable_check = b.addExecutable(.{ .name = std.fmt.comptimePrint("{s}-example-check", .{name}), .root_module = example_module, .use_llvm = use_llvm });
+    const example_executable_check = b.addExecutable(.{ .name = std.fmt.comptimePrint("{s}_example_check", .{name}), .root_module = example_module, .use_llvm = use_llvm });
     params.common.check_step.dependOn(&example_executable_check.step);
 }
 
