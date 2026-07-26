@@ -576,7 +576,7 @@ pub const StringSelect = struct {
     };
 
     pub const MessageInteractionData = struct {
-        type: AnyComponentType,
+        component_type: AnyComponentType,
         id: i32,
         custom_id: []const u8,
         values: []const []const u8,
@@ -960,25 +960,7 @@ pub const UnfurledMediaItem = struct {
 };
 
 test "discord example" {
-    const input =
-        \\[
-        \\    {
-        \\      "type": 10,
-        \\      "content": "This is a message with components."
-        \\    },
-        \\    {
-        \\        "type": 1,
-        \\        "components": [
-        \\            {
-        \\                "type": 2,
-        \\                "label": "Click me!",
-        \\                "style": 1,
-        \\                "custom_id": "click_one"
-        \\            }
-        \\        ]
-        \\    }
-        \\]
-    ;
+    const input = @embedFile("./test/discordapiinteraction.test.json");
 
     const expected: []const TopLevelMessageComponent = &.{
         .initTextDisplay(.{ .content = "This is a message with components." }),
@@ -992,7 +974,12 @@ test "discord example" {
     try std.testing.expectEqualDeep(expected, actual.value);
 }
 
-test "actual example" {
+test "media gallery example" {
     const input = @embedFile("./test/components.test.json");
     try jconfig.testing.expectParsedSuccessfully(TopLevelMessageComponent, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
+}
+
+test "string select interaction data example" {
+    const input = @embedFile("./test/stringselectinteractiondata.test.json");
+    try jconfig.testing.expectParsedSuccessfully(StringSelect.MessageInteractionData, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
 }

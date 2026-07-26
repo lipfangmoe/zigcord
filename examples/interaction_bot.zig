@@ -53,9 +53,10 @@ pub fn main(init: std.process.Init) !void {
                     .message_component => |component_data| {
                         switch (component_data) {
                             .button => |btn| {
-                                if (std.meta.stringToEnum(Button, btn.custom_id) != null) {
-                                    try handleExampleV2ButtonClick(&endpoint_client, interaction, btn);
-                                }
+                                try handleExampleV2ButtonClick(&endpoint_client, interaction, btn);
+                            },
+                            .string_select => |string_select| {
+                                try handleExampleV2StringSelect(&endpoint_client, interaction, string_select);
                             },
                             else => std.log.warn("hmmm we shouldn't have any components of type {t}", .{component_data}),
                         }
@@ -134,6 +135,10 @@ fn executeEchoCommand(
 
     const result = try endpoint_client.createInteractionResponse(interaction.id, interaction.token, .initChannelMessageWithSource(.{ .content = .initSome(text) }));
     defer result.deinit();
+    switch (result) {
+        .ok => {},
+        .err => |err| std.log.err("{f}", .{err}),
+    }
 
     std.log.debug("echoed {s}", .{text});
 }
@@ -183,26 +188,20 @@ fn executeEchoV2Command(
         else => return error.InvalidTextOption,
     };
 
-    std.log.info("{f}", .{std.json.fmt(zigcord.model.interaction.InteractionCallback.initChannelMessageWithSource(.{
-        .flags = .initSome(.{ .is_components_v2 = true }),
-        .components = .initSome(
-            &.{
-                .initText(text),
-                .initActionRow(.{ .components = &.{
-                    .initPrimaryButton("modal", .{ .label = "open modal" }),
-                    .initSecondaryButton("ghost", .{ .label = "ghost message!", .emoji = .{ .partial = .{ .name = .initSome("👻") } } }),
-                    .initLinkButton("https://example.com", .{ .label = "example link" }),
-                    .initDangerButton("quit", .{ .label = "quit" }),
-                } }),
-            },
-        ),
-    }), .{})});
-
     const result = try endpoint_client.createInteractionResponse(interaction.id, interaction.token, .initChannelMessageWithSource(.{
         .flags = .initSome(.{ .is_components_v2 = true }),
         .components = .initSome(
             &.{
                 .initText(text),
+                .initActionRow(.{ .components = &.{
+                    .initStringSelect(.{
+                        .custom_id = "string_select",
+                        .options = &.{
+                            .{ .label = "Very Cool!", .value = "cool" },
+                            .{ .label = "Not cool.", .value = "not-cool" },
+                        },
+                    }),
+                } }),
                 .initActionRow(.{ .components = &.{
                     .initPrimaryButton("modal", .{ .label = "open modal" }),
                     .initSecondaryButton("ghost", .{ .label = "ghost message!", .emoji = .{ .partial = .{ .name = .initSome("👻") } } }),
@@ -217,6 +216,29 @@ fn executeEchoV2Command(
     switch (result.value()) {
         .ok => std.log.debug("echoed {s} with cool buttons", .{text}),
         .err => |err| std.log.err("error! {f}", .{err}),
+    }
+}
+
+fn handleExampleV2StringSelect(
+    endpoint_client: *zigcord.EndpointClient,
+    interaction: zigcord.model.interaction.Interaction,
+    select_data: zigcord.model.components.StringSelect.MessageInteractionData,
+) !void {
+    if (!std.mem.eql(u8, select_data.custom_id, "string_select")) {
+        return error.InvalidSelect;
+    }
+    const selection = switch (select_data.values.len) {
+        1 => select_data.values[0],
+        else => return error.InvalidSelection,
+    };
+    if (std.mem.eql(u8, selection, "cool")) {
+        const result = try endpoint_client.createInteractionResponse(interaction.id, interaction.token, .initChannelMessageWithSource(.{ .content = .initSome("ur so cool ...") }));
+        defer result.deinit();
+    } else if (std.mem.eql(u8, selection, "not-cool")) {
+        const result = try endpoint_client.createInteractionResponse(interaction.id, interaction.token, .initChannelMessageWithSource(.{ .content = .initSome("cringe!") }));
+        defer result.deinit();
+    } else {
+        return error.InvalidSelection;
     }
 }
 
