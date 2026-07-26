@@ -9,13 +9,13 @@ const InteractionRequest = @import("./InteractionRequest.zig");
 const verify = @import("./verify.zig");
 
 application_public_key: std.crypto.sign.Ed25519.PublicKey,
-net_server: std.net.Server,
+net_server: std.Io.net.Server,
 
 const application_public_key_bytes_len = std.crypto.sign.Ed25519.PublicKey.encoded_length;
 const application_public_key_hex_len = application_public_key_bytes_len * 2; // requires 2 hex digits to represent 1 byte
 
-pub fn init(address: std.net.Address, application_public_key_hex: [application_public_key_hex_len]u8) !Server {
-    const net_server = try address.listen(.{});
+pub fn init(io: std.Io, address: std.Io.net.IpAddress, application_public_key_hex: [application_public_key_hex_len]u8) !Server {
+    const net_server = try address.listen(io, .{});
     var application_public_key_bytes: [application_public_key_bytes_len]u8 = undefined;
     const slice = std.fmt.hexToBytes(&application_public_key_bytes, &application_public_key_hex) catch return error.InvalidApplicationKey;
     if (slice.len != application_public_key_bytes_len) {
@@ -28,23 +28,23 @@ pub fn init(address: std.net.Address, application_public_key_hex: [application_p
 }
 
 /// Only need to call `deinit()` if created via `init(Address)`
-pub fn deinit(self: *Server) void {
-    self.net_server.deinit();
+pub fn deinit(self: *Server, io: std.Io) void {
+    self.net_server.deinit(io);
 }
 
-pub fn receiveInteraction(self: *Server, alloc: std.mem.Allocator) !InteractionRequest {
+pub fn receiveInteraction(self: *Server, gpa: std.mem.Allocator, io: std.Io) !InteractionRequest {
     while (true) {
-        const conn = self.net_server.accept() catch |err| {
+        var conn = self.net_server.accept(io) catch |err| {
             zigcord.logger.warn("error occurred while accepting request: {}", .{err});
             continue;
         };
         var stream_writer_buf: [1000]u8 = undefined;
-        var stream_writer = conn.stream.writer(&stream_writer_buf);
+        var stream_writer = conn.writer(io, &stream_writer_buf);
 
         var stream_reader_buf: [10000]u8 = undefined;
-        var stream_reader = self.net_server.stream.reader(&stream_reader_buf);
+        var stream_reader = conn.reader(io, &stream_reader_buf);
 
-        var http_server = std.http.Server.init(stream_reader.interface(), &stream_writer.interface);
+        var http_server = std.http.Server.init(&stream_reader.interface, &stream_writer.interface);
         var http_req = http_server.receiveHead() catch |err| {
             zigcord.logger.warn("error occurred while receiving headers: {}", .{err});
             continue;
@@ -66,7 +66,7 @@ pub fn receiveInteraction(self: *Server, alloc: std.mem.Allocator) !InteractionR
             };
             return error.HttpError;
         };
-        const body = body_reader.allocRemaining(alloc, .limited(1024 * 1024)) catch |err| {
+        const body = body_reader.allocRemaining(gpa, .limited(1024 * 1024)) catch |err| {
             zigcord.logger.err("error occurred while reading request body: {}", .{err});
             http_req.respond("", .{ .status = .internal_server_error }) catch |respond_err| {
                 zigcord.logger.warn("IO error occurred while writing error response: {}", .{respond_err});
@@ -93,7 +93,7 @@ pub fn receiveInteraction(self: *Server, alloc: std.mem.Allocator) !InteractionR
             }
         };
 
-        var req = InteractionRequest.init(alloc, body, http_req) catch |err| {
+        var req = InteractionRequest.init(gpa, body, http_req) catch |err| {
             zigcord.logger.err("error while parsing interaction: {}", .{err});
             return error.InteractionParseError;
         };
