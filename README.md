@@ -30,9 +30,10 @@ Then, make sure something similar to the following is in your `build.zig`:
 
 # Feature Support
 
- - All Discord API features up to March 30th, 2026
- - [User-installable Apps](https://discord.com/developers/docs/tutorials/developing-a-user-installable-app#developing-a-userinstallable-app)
- - [Components V2](https://discord.com/developers/docs/components/overview)
+ - Static typing for the Discord API
+ - All Discord API features up to July 25th, 2026
+   - [User-installable Apps](https://discord.com/developers/docs/tutorials/developing-a-user-installable-app#developing-a-userinstallable-app)
+   - [Components V2](https://discord.com/developers/docs/components/overview)
  - WebSocket Gateway Client
  - Interaction Server
  - Rest Client
@@ -87,3 +88,7 @@ pub fn myLogFn(
    - Cloud function support (i.e. Cloudflare Workers)
  - [Lobby Resource](https://docs.discord.com/developers/resources/lobby)
  - Redo the MessageComponent API. Just let all MessageComponents have a `type` and `id` field, not sure why I decided to have this weird almost-polymorphic design.
+ - Utilities for managing interactions
+ - Add a "bot" module for a more declarative API
+   - Allocates everything by default
+   - No need to manage multiple clients (ie, it has both a EndpointClient and GatewayClient built in to it)

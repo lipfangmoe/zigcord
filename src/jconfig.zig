@@ -39,6 +39,7 @@ const std = @import("std");
 
 pub const stringifyUnionInline = @import("./jconfig/inline_union.zig").stringifyUnionInline;
 pub const InlineUnionMixin = @import("./jconfig/inline_union.zig").InlineUnionJsonMixin;
+pub const DiscriminatedUnionMixin = @import("./jconfig/discriminated_union.zig").DiscriminatedUnionMixin;
 pub const Omittable = @import("./jconfig/omit.zig").Omittable;
 pub const stringifyWithOmit = @import("./jconfig/omit.zig").stringifyWithOmit;
 pub const OmittableFieldsMixin = @import("./jconfig/omit.zig").OmittableFieldsMixin;

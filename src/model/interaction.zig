@@ -89,7 +89,7 @@ pub const InteractionType = enum(u8) {
 pub const InteractionData = union(InteractionType) {
     ping: void,
     application_command: ApplicationCommandInteractionData,
-    message_component: MessageComponentData,
+    message_component: model.components.TopLevelMessageComponent.InteractionData,
     application_command_autocomplete: ApplicationCommandInteractionData,
     modal_submit: ModalSubmitData,
 
@@ -134,182 +134,17 @@ pub const ApplicationCommandInteractionDataOption = struct {
 
 pub const ModalSubmitData = struct {
     custom_id: []const u8,
-    components: []const ModalComponentInteractionResponse,
+    components: []const model.components.TopLevelModalComponent.InteractionData,
     resolved: jconfig.Omittable(ResolvedData) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
-};
-
-pub const MessageComponentData = union(enum) {
-    button: ButtonInteractionResponse,
-    string_select: StringSelectMessageInteractionResponse,
-    text_input: TextInputInteractionResponse,
-    user_select: GenericSelectMessageInteractionResponse,
-    role_select: GenericSelectMessageInteractionResponse,
-    mentionable_select: GenericSelectMessageInteractionResponse,
-    channel_select: GenericSelectMessageInteractionResponse,
-
-    pub const jsonStringify = jconfig.stringifyUnionInline;
-
-    pub fn jsonParse(allocator: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) std.json.ParseError(@TypeOf(source.*))!MessageComponentData {
-        const value = try std.json.innerParse(std.json.Value, allocator, source, options);
-        return try std.json.innerParseFromValue(MessageComponentData, allocator, value, options);
-    }
-
-    // i should make a generic version of this
-    pub fn jsonParseFromValue(allocator: std.mem.Allocator, source: std.json.Value, options: std.json.ParseOptions) std.json.ParseFromValueError!MessageComponentData {
-        const obj = switch (source) {
-            .object => |obj| obj,
-            else => return error.UnexpectedToken,
-        };
-
-        const type_value = obj.get("component_type") orelse return error.MissingField;
-        const type_int = switch (type_value) {
-            .integer => |i| i,
-            else => return error.UnexpectedToken,
-        };
-        const type_enum = std.enums.fromInt(model.MessageComponent.Type, type_int) orelse return error.InvalidEnumTag;
-        const prong = std.meta.stringToEnum(std.meta.Tag(MessageComponentData), @tagName(type_enum)) orelse return error.InvalidEnumTag;
-        switch (prong) {
-            inline else => |ctime_prong| {
-                const ProngT = @FieldType(MessageComponentData, @tagName(ctime_prong));
-                const value = try std.json.innerParseFromValue(ProngT, allocator, source, options);
-                return @unionInit(MessageComponentData, @tagName(ctime_prong), value);
-            },
-        }
-    }
-};
-
-pub const ModalComponentInteractionResponse = union(enum) {
-    string_select: StringSelectModalInteractionResponse,
-    text_input: TextInputInteractionResponse,
-    user_select: GenericSelectModalInteractionResponse,
-    role_select: GenericSelectModalInteractionResponse,
-    mentionable_select: GenericSelectModalInteractionResponse,
-    channel_select: GenericSelectModalInteractionResponse,
-    text_display: TextDisplayInteractionResponse,
-    label: LabelInteractionResponse,
-    file_upload: FileUploadInteractionResponse,
-    radio_group: RadioGroupInteractionResponse,
-    checkbox_group: CheckboxGroupInteractionResponse,
-    checkbox: CheckboxInteractionResponse,
-
-    pub const jsonStringify = jconfig.stringifyUnionInline;
-
-    pub fn jsonParse(allocator: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) std.json.ParseError(source.*)!ModalComponentInteractionResponse {
-        const value = try std.json.innerParse(std.json.Value, allocator, source, options);
-        return try std.json.innerParseFromValue(ModalComponentInteractionResponse, allocator, value, options);
-    }
-
-    pub fn jsonParseFromValue(allocator: std.mem.Allocator, source: std.json.Value, options: std.json.ParseOptions) std.json.ParseFromValueError!ModalComponentInteractionResponse {
-        const obj = switch (source) {
-            .object => |obj| obj,
-            else => return error.UnexpectedToken,
-        };
-
-        const type_value = obj.get("type") orelse return error.MissingField;
-        const type_int = switch (type_value) {
-            .integer => |i| i,
-            else => return error.UnexpectedToken,
-        };
-        const type_enum = std.enums.fromInt(model.MessageComponent.Type, type_int) orelse return error.InvalidEnumTag;
-        const prong = std.meta.stringToEnum(std.meta.Tag(ModalComponentInteractionResponse), @tagName(type_enum)) orelse return error.InvalidEnumTag;
-        switch (prong) {
-            inline else => |ctime_prong| {
-                const ProngT = @FieldType(ModalComponentInteractionResponse, @tagName(ctime_prong));
-                const value = try std.json.innerParseFromValue(ProngT, allocator, source, options);
-                return @unionInit(ModalComponentInteractionResponse, @tagName(ctime_prong), value);
-            },
-        }
-    }
-};
-
-pub const ButtonInteractionResponse = struct {
-    component_type: model.MessageComponent.Type,
-    id: u64,
-    custom_id: []const u8,
-};
-
-pub const GenericSelectModalInteractionResponse = struct {
-    type: model.MessageComponent.Type,
-    id: u64,
-    custom_id: []const u8,
-    values: []const model.Snowflake,
-};
-
-pub const GenericSelectMessageInteractionResponse = struct {
-    component_type: model.MessageComponent.Type,
-    id: u64,
-    custom_id: []const u8,
-    resolved: model.interaction.ResolvedData,
-    values: []const model.Snowflake,
-};
-
-pub const StringSelectModalInteractionResponse = struct {
-    type: model.MessageComponent.Type,
-    id: i32,
-    custom_id: []const u8,
-    values: []const []const u8,
-};
-
-pub const StringSelectMessageInteractionResponse = struct {
-    component_type: model.MessageComponent.Type,
-    id: i32,
-    custom_id: []const u8,
-    values: []const []const u8,
-};
-
-pub const TextInputInteractionResponse = struct {
-    type: model.MessageComponent.Type,
-    id: i32,
-    custom_id: []const u8,
-    value: []const u8,
-};
-
-pub const TextDisplayInteractionResponse = struct {
-    type: model.MessageComponent.Type,
-    id: u64,
-};
-
-pub const LabelInteractionResponse = struct {
-    type: model.MessageComponent.Type,
-    id: u64,
-    component: *model.interaction.ModalComponentInteractionResponse,
-};
-
-pub const FileUploadInteractionResponse = struct {
-    type: model.MessageComponent.Type,
-    id: u64,
-    custom_id: []const u8,
-    values: []const model.Snowflake,
-};
-
-pub const RadioGroupInteractionResponse = struct {
-    type: model.MessageComponent.Type,
-    id: u64,
-    custom_id: []const u8,
-    value: []const u8,
-};
-
-pub const CheckboxGroupInteractionResponse = struct {
-    type: model.MessageComponent.Type,
-    id: u64,
-    custom_id: []const u8,
-    values: []const []const u8,
-};
-
-pub const CheckboxInteractionResponse = struct {
-    type: model.MessageComponent.Type,
-    id: u64,
-    custom_id: []const u8,
-    value: bool,
 };
 
 pub const ResolvedData = struct {
     users: jconfig.Omittable(std.json.ArrayHashMap(model.User)) = .omit,
     members: jconfig.Omittable(std.json.ArrayHashMap(InteractionMember)) = .omit,
     roles: jconfig.Omittable(std.json.ArrayHashMap(model.Role)) = .omit,
-    channels: jconfig.Omittable(std.json.ArrayHashMap(jconfig.Partial(model.Channel))) = .omit,
+    channels: jconfig.Omittable(std.json.ArrayHashMap(model.Channel)) = .omit,
     messages: jconfig.Omittable(std.json.ArrayHashMap(model.Message)) = .omit,
     attachments: jconfig.Omittable(std.json.ArrayHashMap(model.Message.Attachment)) = .omit,
 
@@ -330,70 +165,58 @@ pub const InteractionMember = struct {
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
-pub const InteractionResponse = union(Type) {
-    pong: void,
-    channel_message_with_source: InteractionCallbackMessage,
-    deferred_channel_message_with_source: InteractionCallbackMessage,
-    deferred_update_message: InteractionCallbackMessage,
-    update_message: InteractionCallbackMessage,
-    application_command_autocomplete_result: InteractionCallbackAutocompleteAny,
-    modal: InteractionCallbackModal,
+pub const InteractionCallback = union(Type) {
+    pong: InteractionCallbackPong,
+    channel_message_with_source: ChannelMessageWithSource,
+    deferred_channel_message_with_source: DeferredChannelMessageWithSource,
+    deferred_update_message: DeferredUpdateMessage,
+    update_message: UpdateMessage,
+    application_command_autocomplete_result: AnyInteractionCallbackAutocomplete,
+    modal: ModalInteractionCallback,
     launch_activity: void,
 
-    pub fn jsonStringify(self: InteractionResponse, jw: *std.json.Stringify) std.json.Stringify.Error!void {
-        try jw.beginObject();
+    const Mixin = jconfig.DiscriminatedUnionMixin(InteractionCallback, "type");
+    pub const jsonStringify = Mixin.jsonStringify;
+    pub const jsonParse = Mixin.jsonParse;
+    pub const jsonParseFromValue = Mixin.jsonParseFromValue;
 
-        try jw.objectField("type");
-        try jw.write(@intFromEnum(std.meta.activeTag(self)));
-
-        switch (self) {
-            inline else => |prong| {
-                if (@TypeOf(prong) != void) {
-                    try jw.objectField("data");
-                    try jw.write(prong);
-                }
-            },
-        }
-        try jw.endObject();
+    pub fn initPong() InteractionCallback {
+        return .{ .pong = .{} };
     }
 
-    pub fn initPong() InteractionResponse {
-        return .pong;
-    }
-
-    pub fn initChannelMessageWithSource(data: InteractionCallbackMessage) InteractionResponse {
+    pub fn initChannelMessageWithSource(data: ChannelMessageWithSource) InteractionCallback {
         return .{ .channel_message_with_source = data };
     }
 
-    pub fn initDeferredChannelMessageWithSource(data: InteractionCallbackMessage) InteractionResponse {
+    pub fn initDeferredChannelMessageWithSource(data: DeferredChannelMessageWithSource) InteractionCallback {
         return .{ .deferred_channel_message_with_source = data };
     }
 
-    pub fn initDeferredUpdateMessage(data: InteractionCallbackMessage) InteractionResponse {
+    pub fn initDeferredUpdateMessage(data: DeferredUpdateMessage) InteractionCallback {
         return .{ .deferred_update_message = data };
     }
 
-    pub fn initUpdateMessage(data: InteractionCallbackMessage) InteractionResponse {
+    pub fn initUpdateMessage(data: UpdateMessage) InteractionCallback {
         return .{ .update_message = data };
     }
 
-    pub fn initApplicationCommandAutocompleteResultString(data: InteractionCallbackAutocompleteString) InteractionResponse {
+    pub fn initApplicationCommandAutocompleteResultString(data: InteractionCallbackAutocompleteString) InteractionCallback {
         return .{ .application_command_autocomplete_result = .{ .string = data } };
     }
 
-    pub fn initApplicationCommandAutocompleteResultInteger(data: InteractionCallbackAutocompleteInteger) InteractionResponse {
+    pub fn initApplicationCommandAutocompleteResultInteger(data: InteractionCallbackAutocompleteInteger) InteractionCallback {
         return .{ .application_command_autocomplete_result = .{ .integer = data } };
     }
 
-    pub fn initApplicationCommandAutocompleteResultDouble(data: InteractionCallbackAutocompleteDouble) InteractionResponse {
+    pub fn initApplicationCommandAutocompleteResultDouble(data: InteractionCallbackAutocompleteDouble) InteractionCallback {
         return .{ .application_command_autocomplete_result = .{ .double = data } };
     }
 
-    pub fn initModal(data: InteractionCallbackModal) InteractionResponse {
+    pub fn initModal(data: ModalInteractionCallback) InteractionCallback {
         return .{ .modal = data };
     }
 
-    pub fn initLaunchActivity() InteractionResponse {
+    pub fn initLaunchActivity() InteractionCallback {
         return .launch_activity;
     }
 
@@ -411,56 +234,95 @@ pub const InteractionResponse = union(Type) {
     };
 };
 
-pub const InteractionCallbackAny = union(enum) {
-    message: InteractionCallbackMessage,
-    modal: InteractionCallbackModal,
-    autocomplete: InteractionCallbackAutocompleteAny,
-
-    const Mixin = jconfig.InlineUnionMixin(InteractionCallbackAny);
-    pub const jsonStringify = Mixin.jsonStringify;
-    pub const jsonParse = Mixin.jsonParse;
-    pub const jsonParseFromValue = Mixin.jsonParseFromValue;
+pub const InteractionCallbackPong = struct {
+    type: InteractionCallback.Type = .pong,
 };
 
-pub const InteractionCallbackMessage = struct {
+pub const ChannelMessageWithSource = struct {
+    type: InteractionCallback.Type = .channel_message_with_source,
     tts: jconfig.Omittable(bool) = .omit,
     content: jconfig.Omittable([]const u8) = .omit,
     embeds: jconfig.Omittable([]const model.Message.Embed) = .omit,
     allowed_mentions: jconfig.Omittable(model.Message.AllowedMentions) = .omit,
     flags: jconfig.Omittable(model.Message.Flags) = .omit,
-    components: jconfig.Omittable([]const model.MessageComponent) = .omit,
+    components: jconfig.Omittable([]const model.components.TopLevelMessageComponent) = .omit,
     attachments: jconfig.Omittable([]const rest.EndpointClient.AttachmentRequest) = .omit,
     poll: jconfig.Omittable(model.Poll) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
-pub const InteractionCallbackModal = struct {
-    custom_id: []const u8,
-    title: []const u8,
-    components: []const model.MessageComponent,
+pub const DeferredChannelMessageWithSource = struct {
+    type: InteractionCallback.Type = .deferred_channel_message_with_source,
+    tts: jconfig.Omittable(bool) = .omit,
+    content: jconfig.Omittable([]const u8) = .omit,
+    embeds: jconfig.Omittable([]const model.Message.Embed) = .omit,
+    allowed_mentions: jconfig.Omittable(model.Message.AllowedMentions) = .omit,
+    flags: jconfig.Omittable(model.Message.Flags) = .omit,
+    components: jconfig.Omittable([]const model.components.TopLevelMessageComponent) = .omit,
+    attachments: jconfig.Omittable([]const rest.EndpointClient.AttachmentRequest) = .omit,
+    poll: jconfig.Omittable(model.Poll) = .omit,
+
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
-pub const InteractionCallbackAutocompleteAny = union(enum) {
+pub const DeferredUpdateMessage = struct {
+    type: InteractionCallback.Type = .deferred_update_message,
+    tts: jconfig.Omittable(bool) = .omit,
+    content: jconfig.Omittable([]const u8) = .omit,
+    embeds: jconfig.Omittable([]const model.Message.Embed) = .omit,
+    allowed_mentions: jconfig.Omittable(model.Message.AllowedMentions) = .omit,
+    flags: jconfig.Omittable(model.Message.Flags) = .omit,
+    components: jconfig.Omittable([]const model.components.TopLevelMessageComponent) = .omit,
+    attachments: jconfig.Omittable([]const rest.EndpointClient.AttachmentRequest) = .omit,
+    poll: jconfig.Omittable(model.Poll) = .omit,
+
+    pub const jsonStringify = jconfig.stringifyWithOmit;
+};
+
+pub const UpdateMessage = struct {
+    type: InteractionCallback.Type = .update_message,
+    tts: jconfig.Omittable(bool) = .omit,
+    content: jconfig.Omittable([]const u8) = .omit,
+    embeds: jconfig.Omittable([]const model.Message.Embed) = .omit,
+    allowed_mentions: jconfig.Omittable(model.Message.AllowedMentions) = .omit,
+    flags: jconfig.Omittable(model.Message.Flags) = .omit,
+    components: jconfig.Omittable([]const model.components.TopLevelMessageComponent) = .omit,
+    attachments: jconfig.Omittable([]const rest.EndpointClient.AttachmentRequest) = .omit,
+    poll: jconfig.Omittable(model.Poll) = .omit,
+
+    pub const jsonStringify = jconfig.stringifyWithOmit;
+};
+
+pub const ModalInteractionCallback = struct {
+    custom_id: []const u8,
+    title: []const u8,
+    components: []const model.components.TopLevelModalComponent,
+};
+
+pub const AnyInteractionCallbackAutocomplete = union(enum) {
     string: InteractionCallbackAutocompleteString,
     integer: InteractionCallbackAutocompleteInteger,
     double: InteractionCallbackAutocompleteDouble,
 
-    const Mixin = jconfig.InlineUnionMixin(InteractionCallbackAutocompleteAny);
+    const Mixin = jconfig.InlineUnionMixin(AnyInteractionCallbackAutocomplete);
     pub const jsonStringify = Mixin.jsonStringify;
     pub const jsonParse = Mixin.jsonParse;
     pub const jsonParseFromValue = Mixin.jsonParseFromValue;
 };
 
 pub const InteractionCallbackAutocompleteString = struct {
+    type: InteractionCallback.Type = .application_command_autocomplete_result,
     choices: []const command_option.StringChoice,
 };
 
 pub const InteractionCallbackAutocompleteInteger = struct {
+    type: InteractionCallback.Type = .application_command_autocomplete_result,
     choices: []const command_option.IntegerChoice,
 };
 
 pub const InteractionCallbackAutocompleteDouble = struct {
+    type: InteractionCallback.Type = .application_command_autocomplete_result,
     choices: []const command_option.DoubleChoice,
 };
 

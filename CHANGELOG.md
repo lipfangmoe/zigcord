@@ -1,9 +1,24 @@
 # main (pending, untagged changes)
 
-There are minor breaking changes.
+There are incoming major breaking changes.
 
+* **major breaking change**: interactions and components have been significantly refactored.
+  * if you were mostly using the `.init` methods for components, and using unnamed structs, you will be minimally impacted.
+  * components have moved from `model.MessageComponent` to `model.components`
+  * there is no more equivalent to `model.MessageComponent` which, was a union containing all message components
+  * instead, you are now given unions only containing the possible components that can be returned (or used) for individual types.
+  * for instance, `model.Message.components` is now a `[]const model.component.TopLevelMessageComponent`, and container components now contain a `[]const ContainerChildComponent`
+  * additionally, many renames and relocations have been done for interactions.
+    * any component-specific interaction data is now located in `model.components`
+    * in general "Interaction Response" structures are now called "Interaction Data" structures.
+    * for instance, `model.interaction.StringSelectModalInteractionResponse` is now moved to `model.components.StringSelect.ModalInteractionResponse`
+  * the `.init` functions for creating components no longer take the `id: ?u64` argument.
 * **minor breaking change**: the type of `model.MessageComponent.Section` has been corrected to be more accurate.
-* **minor breaking change**: the type of `model.guild.Member` has been changed to `Omittable(model.Permission)` instead of `Omittable([]const u8)`.
+* **minor breaking change**: the type of `model.guild.Member.permissions` has been changed to `Omittable(model.Permission)` instead of `Omittable([]const u8)`.
+* **minor breaking change**: the type of `model.interaction.ResolvedData.channels` has been changed to `ArrayHashMap(model.Channel)` instead of `ArrayHashMap(Partial(model.Channel))`.
+* for action rows and section accessories, additional `.init` functions (ie `.initPrimaryButton()`) have been created to make creating buttons easier.
+* for modal components, new functions `initPlainLabel()` and `initLabelWithDescription` have been added as a simpler contract for creating a labeled input
+
 
 # v0.13.0
 
