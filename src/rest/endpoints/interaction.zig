@@ -2,12 +2,13 @@ const std = @import("std");
 const zigcord = @import("../../root.zig");
 const model = zigcord.model;
 const rest = zigcord.rest;
+const jconfig = zigcord.jconfig;
 
 pub fn createInteractionResponse(
     client: *rest.EndpointClient,
     interaction_id: model.Snowflake,
     interaction_token: []const u8,
-    body: model.interaction.InteractionResponse,
+    body: model.interaction.InteractionCallback,
 ) !rest.RestClient.Result(void) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/interactions/{f}/{s}/callback", .{ interaction_id, interaction_token });
     defer client.rest_client.allocator.free(uri_str);
@@ -174,7 +175,7 @@ pub fn deleteFollowupMessage(
 }
 
 pub const CreateInteractionResponseFormBody = struct {
-    type: model.interaction.InteractionResponse.Type,
-    data: ?model.interaction.InteractionCallbackAny = null,
+    type: model.interaction.InteractionCallback.Type,
+    data: ?model.interaction.InteractionCallback = null,
     files: ?[]const rest.Upload = null,
 };

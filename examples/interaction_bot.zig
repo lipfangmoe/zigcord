@@ -187,12 +187,12 @@ fn executeEchoV2Command(
         .flags = .initSome(.{ .is_components_v2 = true }),
         .components = .initSome(
             &.{
-                .initTextDisplay(null, .{ .content = text }),
-                .initActionRow(null, .{ .components = &.{
-                    .initButton(null, .initPrimaryButton("modal", .{ .label = "open modal" })),
-                    .initButton(null, .initSecondaryButton("ghost", .{ .label = "ghost message!", .emoji = .{ .partial = .{ .name = .initSome("👻") } } })),
-                    .initButton(null, .initLinkButton("https://example.com", .{ .label = "example link" })),
-                    .initButton(null, .initDangerButton("quit", .{ .label = "quit" })),
+                .initTextDisplay(.{ .content = text }),
+                .initActionRow(.{ .components = &.{
+                    .initPrimaryButton("modal", .{ .label = "open modal" }),
+                    .initSecondaryButton("ghost", .{ .label = "ghost message!", .emoji = .{ .partial = .{ .name = .initSome("👻") } } }),
+                    .initLinkButton("https://example.com", .{ .label = "example link" }),
+                    .initDangerButton("quit", .{ .label = "quit" }),
                 } }),
             },
         ),
@@ -210,7 +210,7 @@ const Button = enum { modal, ghost, link, quit };
 fn handleExampleV2ButtonClick(
     endpoint_client: *zigcord.EndpointClient,
     interaction: zigcord.model.interaction.Interaction,
-    button_data: zigcord.model.interaction.ButtonInteractionResponse,
+    button_data: zigcord.model.components.Button.MessageInteractionData,
 ) !void {
     const button = std.meta.stringToEnum(Button, button_data.custom_id) orelse return error.InvalidButton;
     switch (button) {
@@ -223,9 +223,9 @@ fn handleExampleV2ButtonClick(
                     .custom_id = "button-modal",
                     .title = "Button Modal",
                     .components = &.{
-                        .initLabel(null, .{
+                        .initLabel(.{
                             .label = "Select Message",
-                            .component = &.initStringSelect(null, .{
+                            .component = .initStringSelect(.{
                                 .custom_id = "select-message",
                                 .options = &.{
                                     .{ .label = "Foo", .value = "foo" },
@@ -234,9 +234,9 @@ fn handleExampleV2ButtonClick(
                                 },
                             }),
                         }),
-                        .initLabel(null, .{
+                        .initLabel(.{
                             .label = "Extra Message",
-                            .component = &.initTextInput(null, .{
+                            .component = .initTextInput(.{
                                 .custom_id = "extra-message",
                                 .style = .short,
                             }),
@@ -326,12 +326,12 @@ fn getOption(option_name: []const u8, options: []const zigcord.model.interaction
     return null;
 }
 
-fn getComponentValue(custom_id: []const u8, components: []const zigcord.model.interaction.ModalComponentInteractionResponse) ![]const u8 {
+fn getComponentValue(custom_id: []const u8, components: []const zigcord.model.components.TopLevelModalComponent.InteractionData) ![]const u8 {
     for (components) |component| {
-        s: switch (component) {
-            .label => |label| {
-                continue :s label.component.*;
-            },
+        const label = switch (component) {
+            .label => |label| label,
+        };
+        switch (label.component) {
             .string_select => |select| {
                 std.log.debug("{}", .{select});
                 if (std.mem.eql(u8, select.custom_id, custom_id)) {

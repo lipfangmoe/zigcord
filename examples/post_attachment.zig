@@ -91,7 +91,7 @@ fn executeEchoCommand(
     const result = try endpoint_client.createInteractionResponseMultipart(interaction.id, interaction.token, .{
         .type = .channel_message_with_source,
         .files = &.{.fromBytes("klee.png", "image/png", file)},
-        .data = .{ .message = .{
+        .data = .{ .channel_message_with_source = .{
             .content = .initSome(text),
             .attachments = .initSome(&.{.{ .id = .fromU64(0), .filename = .initSome("attachments://klee.png"), .is_spoiler = .initSome(true) }}),
         } },

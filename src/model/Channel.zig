@@ -42,6 +42,7 @@ default_thread_rate_limit_per_user: Omittable(i64) = .omit,
 default_sort_order: Omittable(?SortOrder) = .omit,
 default_forum_layout: Omittable(ForumLayout) = .omit,
 newly_created: Omittable(bool) = .omit,
+app_permissions: Omittable(model.Permissions) = .omit,
 
 pub const jsonStringify = jconfig.stringifyWithOmit;
 
