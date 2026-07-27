@@ -80,7 +80,7 @@ fn handleResponse(
     const status = response.head.status;
     const status_class = status.class();
     if (ResponseT == void and status_class == .success) {
-        return Result(ResponseT){ .ok = .{ .status = status, .value = void{}, .parsed = null } };
+        return Result(ResponseT){ .ok = .{ .status = status, .value = {}, .parsed = null } };
     }
     if (ResponseT != void and status == .no_content) {
         return error.ResponseJsonParseError;
@@ -196,7 +196,7 @@ pub fn beginMultipartRequestWithAuditLogReason(
 /// Sends a request to the Discord REST API with the credentials stored in this context
 pub fn request(self: *RestClient, comptime ResponseT: type, method: std.http.Method, url: std.Uri) RequestError!Result(ResponseT) {
     var buf: [200]u8 = undefined;
-    var http_request = try self.setupRequest(&buf, method, url, .{ .none = void{} }, null, null);
+    var http_request = try self.setupRequest(&buf, method, url, .none, null, null);
     defer http_request.deinit();
 
     switch (method) {
@@ -225,7 +225,7 @@ pub fn requestWithAuditLogReason(self: *RestClient, comptime ResponseT: type, me
         &.{};
 
     var buf: [200]u8 = undefined;
-    var http_request = try self.setupRequest(&buf, method, url, .{ .none = void{} }, null, extra_headers);
+    var http_request = try self.setupRequest(&buf, method, url, .none, null, extra_headers);
     defer http_request.deinit();
 
     http_request.sendBodiless() catch |err| switch (err) {
@@ -474,7 +474,7 @@ pub fn Result(T: type) type {
 pub const DiscordError = struct {
     code: Code = .general_error,
     message: []const u8 = "unknown message",
-    errors: std.json.Value = std.json.Value{ .null = void{} },
+    errors: std.json.Value = .null,
     other_fields: std.json.ArrayHashMap(std.json.Value) = .{},
 
     pub const Code = ErrorCode;

@@ -48,12 +48,13 @@ pub fn InlineUnionJsonMixin(comptime T: type) type {
         }
 
         pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, options: std.json.ParseOptions) std.json.ParseFromValueError!T {
-            inline for (std.meta.fields(T)) |union_field| {
-                if (union_field.type == void) {
-                    return @unionInit(T, union_field.name, void{});
+            const type_info = @typeInfo(T).@"union";
+            inline for (type_info.field_names, type_info.field_types) |field_name, FieldType| {
+                if (FieldType == void) {
+                    return @unionInit(T, field_name, void{});
                 }
-                if (std.json.innerParseFromValue(union_field.type, alloc, source, options)) |value| {
-                    return @unionInit(T, union_field.name, value);
+                if (std.json.innerParseFromValue(FieldType, alloc, source, options)) |value| {
+                    return @unionInit(T, field_name, value);
                 } else |_| {}
             } else {
                 return error.InvalidEnumTag;

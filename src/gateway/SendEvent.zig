@@ -65,13 +65,13 @@ pub fn updatePresence(data: event_data.send_events.UpdatePresence) SendEvent {
 pub fn jsonStringify(self: SendEvent, jw: *std.json.Stringify) !void {
     try jw.beginObject();
 
-    inline for (std.meta.fields(SendEvent)) |field| {
-        const field_value = @field(self, field.name);
-        if (comptime std.mem.eql(u8, field.name, "d")) {
-            try jw.objectField(field.name);
+    inline for (comptime std.meta.fieldNames(SendEvent)) |field_name| {
+        const field_value = @field(self, field_name);
+        if (comptime std.mem.eql(u8, field_name, "d")) {
+            try jw.objectField(field_name);
             try jconfig.stringifyUnionInline(field_value, jw);
         } else {
-            try jw.objectField(field.name);
+            try jw.objectField(field_name);
             try jw.write(field_value);
         }
     }

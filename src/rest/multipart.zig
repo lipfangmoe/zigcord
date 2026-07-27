@@ -134,20 +134,20 @@ fn printPayloadJson(value: anytype, comptime upload_field_name: []const u8, writ
 
     var stringifier = std.json.Stringify{ .writer = writer };
     try stringifier.beginObject();
-    inline for (std.meta.fields(@TypeOf(value))) |field| {
-        if (comptime std.mem.eql(u8, field.name, upload_field_name)) {
+    inline for (comptime std.meta.fieldNames(@TypeOf(value))) |field_name| {
+        if (comptime std.mem.eql(u8, field_name, upload_field_name)) {
             continue;
         }
-        const field_value = @field(value, field.name);
-        switch (@typeInfo(field.type)) {
+        const field_value = @field(value, field_name);
+        switch (@typeInfo(@TypeOf(field_value))) {
             .optional => {
                 if (field_value) |nn_value| {
-                    try stringifier.objectField(field.name);
+                    try stringifier.objectField(field_name);
                     try stringifier.write(nn_value);
                 }
             },
             else => {
-                try stringifier.objectField(field.name);
+                try stringifier.objectField(field_name);
                 try stringifier.write(field_value);
             },
         }
@@ -163,20 +163,20 @@ fn countPayloadJson(value: anytype, comptime upload_field_name: []const u8) !usi
     var stringifier: std.json.Stringify = .{ .writer = &discarding_writer.writer };
 
     try stringifier.beginObject();
-    inline for (std.meta.fields(@TypeOf(value))) |field| {
-        if (comptime std.mem.eql(u8, field.name, upload_field_name)) {
+    inline for (comptime std.meta.fieldNames(@TypeOf(value))) |field_name| {
+        if (comptime std.mem.eql(u8, field_name, upload_field_name)) {
             continue;
         }
-        const field_value = @field(value, field.name);
-        switch (@typeInfo(field.type)) {
+        const field_value = @field(value, field_name);
+        switch (@typeInfo(@TypeOf(field_value))) {
             .optional => {
                 if (field_value) |nn_value| {
-                    try stringifier.objectField(field.name);
+                    try stringifier.objectField(field_name);
                     try stringifier.write(nn_value);
                 }
             },
             else => {
-                try stringifier.objectField(field.name);
+                try stringifier.objectField(field_name);
                 try stringifier.write(field_value);
             },
         }

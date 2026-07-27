@@ -68,21 +68,22 @@ pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, opti
     };
 
     var message: Message = undefined;
-    inline for (std.meta.fields(Message)) |field| {
-        if (comptime std.mem.eql(u8, field.name, "author")) {
+    const type_info = @typeInfo(Message).@"struct";
+    inline for (type_info.field_names, type_info.field_types, type_info.field_attrs) |field_name, FieldType, field_attrs| {
+        if (comptime std.mem.eql(u8, field_name, "author")) {
             @field(message, "author") = author;
         } else {
-            if (object.get(field.name)) |field_value| {
-                @field(message, field.name) = std.json.innerParseFromValue(field.type, alloc, field_value, options) catch |err| {
-                    zigcord.logger.err("json parsing error while parsing Message field \"{s}\": {}", .{ field.name, err });
+            if (object.get(field_name)) |field_value| {
+                @field(message, field_name) = std.json.innerParseFromValue(FieldType, alloc, field_value, options) catch |err| {
+                    zigcord.logger.err("json parsing error while parsing Message field \"{s}\": {}", .{ field_name, err });
                     return err;
                 };
             } else {
-                const default_opt: ?*const field.type = @ptrCast(@alignCast(field.default_value_ptr));
+                const default_opt: ?*const FieldType = @ptrCast(@alignCast(field_attrs.default_value_ptr));
                 if (default_opt) |default| {
-                    @field(message, field.name) = default.*;
+                    @field(message, field_name) = default.*;
                 } else {
-                    zigcord.logger.err("Missing field: {s}", .{field.name});
+                    zigcord.logger.err("Missing field: {s}", .{field_name});
                     return error.MissingField;
                 }
             }

@@ -81,35 +81,39 @@ pub fn stringifyWithOmit(self: anytype, json_writer: *std.json.Stringify) @typeI
 
     try json_writer.beginObject();
 
-    inline for (struct_info.fields) |field| {
-        const value = @field(self, field.name);
-        try writePossiblyOmittableFieldToStream(field, value, json_writer);
+    inline for (struct_info.field_names) |field_name| {
+        const value = @field(self, field_name);
+        try writePossiblyOmittableFieldToStream(field_name, value, json_writer);
     }
 
     try json_writer.endObject();
 }
 
-pub fn writePossiblyOmittableFieldToStream(field: std.builtin.Type.StructField, value: anytype, json_writer: *std.json.Stringify) !void {
-    const is_omittable = comptime blk: {
-        if (@typeInfo(field.type) != .@"union") {
-            break :blk false;
-        }
-        const field_names = std.meta.fieldNames(field.type);
-        break :blk field_names.len == 2 and std.mem.eql(u8, field_names[0], "some") and std.mem.eql(u8, field_names[1], "omit");
-    };
-
-    if (is_omittable) {
+pub fn writePossiblyOmittableFieldToStream(comptime field_name: []const u8, value: anytype, json_writer: *std.json.Stringify) !void {
+    const FieldType = @TypeOf(value);
+    if (comptime isOmittable(FieldType)) {
         switch (value) {
             .some => |some| {
-                try json_writer.objectField(field.name);
+                try json_writer.objectField(field_name);
                 try json_writer.write(some);
             },
             .omit => {},
         }
     } else {
-        try json_writer.objectField(field.name);
+        try json_writer.objectField(field_name);
         try json_writer.write(value);
     }
+}
+
+pub fn isOmittable(comptime T: type) bool {
+    @setEvalBranchQuota(100_000);
+    return switch (@typeInfo(T)) {
+        .@"union" => {
+            const union_field_names = std.meta.fieldNames(T);
+            return union_field_names.len == 2 and std.mem.eql(u8, union_field_names[0], "some") and std.mem.eql(u8, union_field_names[1], "omit");
+        },
+        else => return false,
+    };
 }
 
 test "stringify with omit" {

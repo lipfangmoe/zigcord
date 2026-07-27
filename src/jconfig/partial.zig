@@ -29,45 +29,30 @@ pub fn Partial(comptime T: type) type {
     };
 }
 
-fn is_omittable_type(comptime T: type) bool {
-    @setEvalBranchQuota(100_000);
-    return switch (@typeInfo(T)) {
-        .@"union" => {
-            const union_field_names = std.meta.fieldNames(T);
-            return union_field_names.len == 2 and std.mem.eql(u8, union_field_names[0], "some") and std.mem.eql(u8, union_field_names[1], "omit");
-        },
-        else => return false,
-    };
-}
-
 fn PartialStruct(comptime T: type) type {
-    const fields: []const std.builtin.Type.StructField = std.meta.fields(T);
+    const field_names: []const []const u8 = @typeInfo(T).@"struct".field_names;
+    const old_field_types: []const type = @typeInfo(T).@"struct".field_types;
+    const old_field_attributes = @typeInfo(T).@"struct".field_attrs;
 
-    var field_names: [fields.len][]const u8 = undefined;
-    var field_types: [fields.len]type = undefined;
-    var field_attributes: [fields.len]std.builtin.Type.StructField.Attributes = undefined;
+    var new_field_types: [old_field_types.len]type = undefined;
+    var new_field_attributes: [old_field_attributes.len]std.builtin.Type.Struct.FieldAttributes = undefined;
 
-    inline for (0.., fields) |idx, field| {
-        field_names[idx] = field.name;
-        if (is_omittable_type(field.type)) {
-            field_types[idx] = field.type;
-
-            field_attributes[idx] = .{
-                .@"align" = field.alignment,
-                .@"comptime" = field.is_comptime,
-                .default_value_ptr = field.default_value_ptr,
-            };
+    inline for (old_field_types, old_field_attributes, &new_field_types, &new_field_attributes) |OldType, old_attrs, *new_type_ptr, *new_attrs| {
+        if (comptime jconfig.omit.isOmittable(OldType)) {
+            new_type_ptr.* = OldType;
+            new_attrs.* = old_attrs;
         } else {
-            field_types[idx] = jconfig.Omittable(field.type);
-            field_attributes[idx] = .{
-                .@"align" = field.alignment,
-                .@"comptime" = field.is_comptime,
-                .default_value_ptr = &@as(jconfig.Omittable(field.type), .omit),
+            const NewType = jconfig.Omittable(OldType);
+            new_type_ptr.* = NewType;
+            new_attrs.* = .{
+                .@"align" = old_attrs.@"align",
+                .@"comptime" = old_attrs.@"comptime",
+                .default_value_ptr = &@as(NewType, .omit),
             };
         }
     }
 
-    return @Struct(.auto, null, &field_names, &field_types, &field_attributes);
+    return @Struct(.auto, null, field_names, &new_field_types, &new_field_attributes);
 }
 
 test "Partial Stringify" {
@@ -115,7 +100,7 @@ test "Partial Parse" {
     try std.testing.expectEqual(5, my_partial.partial.five.some);
     try std.testing.expectEqualStrings("lol", my_partial.partial.something.some);
     try std.testing.expectEqual(5, my_partial.partial.nested_type.some.foo);
-    try std.testing.expectEqual(void{}, my_partial.partial.omitted.omit);
+    try std.testing.expectEqual(my_partial.partial.omitted, .omit);
     try std.testing.expectEqual(255, my_partial.partial.already_omittable.some);
-    try std.testing.expectEqual(void{}, my_partial.partial.already_omittable_omitted.omit);
+    try std.testing.expectEqual(my_partial.partial.already_omittable_omitted, .omit);
 }

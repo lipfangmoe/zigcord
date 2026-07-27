@@ -7,7 +7,7 @@ pub fn stringifyEnumAsInt(self: anytype, json_writer: *std.json.Stringify) !void
         if (self_typeinfo != .pointer) {
             @compileError("stringifyEnumAsInt may only be called on *const <enumT>, found \"" ++ @typeName(@TypeOf(self)) ++ "\"");
         }
-        if (!self_typeinfo.pointer.is_const) {
+        if (!self_typeinfo.pointer.attrs.@"const") {
             @compileError("stringifyEnumAsInt may only be called on *const <enumT>, found \"" ++ @typeName(@TypeOf(self)) ++ "\"");
         }
         if (@typeInfo(self_typeinfo.pointer.child) != .@"enum") {

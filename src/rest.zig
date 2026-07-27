@@ -23,17 +23,16 @@ pub const writeMultipartFormDataBody = multipart.writeMultipartFormDataBody;
 pub fn QueryStringFormatMixin(comptime T: type) type {
     return struct {
         pub fn format(self: T, writer: *std.Io.Writer) std.Io.Writer.Error!void {
-            const fields = std.meta.fields(T);
             var is_first_print = true;
-            inline for (fields) |field| {
-                const value = @field(self, field.name);
+            inline for (comptime std.meta.fieldNames(T)) |field_name| {
+                const value = @field(self, field_name);
                 if (willPrint(value)) {
                     if (!is_first_print) {
                         try writer.writeByte('&');
                     }
                     is_first_print = false;
                 }
-                try formatField(field.name, writer, value);
+                try formatField(field_name, writer, value);
             }
         }
     };
