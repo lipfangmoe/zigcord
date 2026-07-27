@@ -27,7 +27,7 @@ pub fn main(init: std.process.Init) !void {
     const app_id = gateway_client.getReadyEvent().application.id;
     std.log.info("authenticated as user {f}", .{gateway_client.json_ws_client.ready_event.?.event.user.id});
 
-    const echo_id = try registerEchoCommand(app_id, &endpoint_client);
+    const postattachment_id = try registerPostAttachmentCommand(app_id, &endpoint_client);
 
     while (true) {
         const event = try gateway_client.readEvent();
@@ -37,8 +37,8 @@ pub fn main(init: std.process.Init) !void {
             .interaction_create => |interaction| {
                 switch (interaction.data.asSome() orelse continue) {
                     .application_command => |cmd| {
-                        if (cmd.id == echo_id) {
-                            try executeEchoCommand(&endpoint_client, interaction, cmd);
+                        if (cmd.id == postattachment_id) {
+                            try executePostAttachmentCommand(&endpoint_client, interaction);
                         }
                     },
                     else => continue,
@@ -49,16 +49,10 @@ pub fn main(init: std.process.Init) !void {
     }
 }
 
-fn registerEchoCommand(application_id: zigcord.model.Snowflake, endpoint_client: *zigcord.EndpointClient) !zigcord.model.Snowflake {
+fn registerPostAttachmentCommand(application_id: zigcord.model.Snowflake, endpoint_client: *zigcord.EndpointClient) !zigcord.model.Snowflake {
     const command_result = try endpoint_client.createGlobalApplicationCommand(application_id, .{
-        .name = "echo",
-        .description = "echoes your message back to you",
-        .options = .initSome(&.{.initStringOption(.{
-            .name = "text",
-            .description = "text to echo",
-            .required = .initSome(true),
-            .autocomplete = .initSome(true),
-        })}),
+        .name = "post-attachment",
+        .description = "posts an attachment",
     });
     defer command_result.deinit();
 
@@ -72,34 +66,23 @@ fn registerEchoCommand(application_id: zigcord.model.Snowflake, endpoint_client:
     return command.id;
 }
 
-fn executeEchoCommand(
+fn executePostAttachmentCommand(
     endpoint_client: *zigcord.EndpointClient,
     interaction: zigcord.model.interaction.Interaction,
-    command_data: zigcord.model.interaction.ApplicationCommandInteractionData,
 ) !void {
-    std.log.debug("received echo command", .{});
-
-    const text_option = getOption("text", command_data.options.asSome() orelse return error.NoOptions) orelse return error.NoTextOption;
-    const text_value = text_option.value.asSome() orelse return error.NoTextOption;
-    const text = switch (text_value) {
-        .string => |str| str,
-        else => return error.InvalidTextOption,
-    };
-
     const file = @embedFile("./klee_small.png");
 
     const result = try endpoint_client.createInteractionResponseMultipart(interaction.id, interaction.token, .{
         .type = .channel_message_with_source,
         .files = &.{.fromBytes("klee.png", "image/png", file)},
         .data = .{ .channel_message_with_source = .{
-            .content = .initSome(text),
             .attachments = .initSome(&.{.{ .id = .fromU64(0), .filename = .initSome("attachments://klee.png"), .is_spoiler = .initSome(true) }}),
         } },
     });
     defer result.deinit();
 
     switch (result) {
-        .ok => std.log.debug("echoed {s}", .{text}),
+        .ok => {},
         .err => |err| std.log.err("error sending request: {f}", .{err}),
     }
 }
