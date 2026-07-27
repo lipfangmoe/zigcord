@@ -1,7 +1,6 @@
-# main (pending, untagged changes)
+# v0.14.0
 
 There are incoming major breaking changes.
-
 * **major breaking change**: interactions and components have been significantly refactored.
   * if you were mostly using the `.init` methods for components, and using unnamed structs, you will be minimally impacted.
   * components have moved from `model.MessageComponent` to `model.components`
@@ -13,6 +12,12 @@ There are incoming major breaking changes.
     * in general "Interaction Response" structures are now called "Interaction Data" structures.
     * for instance, `model.interaction.StringSelectModalInteractionResponse` is now moved to `model.components.StringSelect.ModalInteractionResponse`
   * the `.init` functions for creating components no longer take the `id: ?u64` argument.
+* **big fix, non-breaking**: zig's self-hosted compiler backend (debug compile) no longer crashes when compiling zigcord!
+  * weebsocket (the websocket library used by zigcord) had a strange compiler crash when using the self-hosted compiler backend
+  * i identified which part of the library was causing the compiler to crash
+  * i refactored that part of the code to be much simpler, no longer causing a crash
+  * i additionally sent an MRE to the zig team: https://codeberg.org/ziglang/zig/issues/36321 for anyone who is curious
+  * anyway, zigcord (and therefore zigcord bots!) should compile a lot faster now!
 * **minor breaking change**: the type of `model.component.Section` has been corrected to be more accurate.
 * **minor breaking change**: the type of `model.guild.Member.permissions` has been changed to `Omittable(model.Permission)` instead of `Omittable([]const u8)`.
 * **minor breaking change**: the type of `model.interaction.ResolvedData.channels` has been changed to `ArrayHashMap(model.Channel)` instead of `ArrayHashMap(Partial(model.Channel))`.
