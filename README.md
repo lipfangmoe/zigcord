@@ -25,7 +25,7 @@ Then, make sure something similar to the following is in your `build.zig`:
         .imports = &.{.{ .name = "zigcord", .module = zigcord_module }},
     });
     const my_bot_exe = b.addExecutable(.{ .name = "myBot", .root_module = mybot_module });
-	b.installArtifact(gateway_bot);
+    b.installArtifact(gateway_bot);
 ```
 
 # Feature Support
