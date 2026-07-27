@@ -1,6 +1,7 @@
 # v0.14.0
 
-There are incoming major breaking changes.
+There are major breaking changes.
+
 * **major breaking change**: interactions and components have been significantly refactored.
   * if you were mostly using the `.init` methods for components, and using unnamed structs, you will be minimally impacted.
   * components have moved from `model.MessageComponent` to `model.components`
