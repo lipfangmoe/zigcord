@@ -31,6 +31,7 @@ pub const IsoTime = @import("./model/IsoTime.zig");
 pub const Sku = @import("./model/Sku.zig");
 pub const Subscription = @import("./model/Subscription.zig");
 pub const SoundboardSound = @import("./model/SoundboardSound.zig");
+pub const Lobby = @import("./model/Lobby.zig");
 
 pub const Permissions = packed struct(u64) {
     create_instant_invite: bool = false, // 1 << 0
