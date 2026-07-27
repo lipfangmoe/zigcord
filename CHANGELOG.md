@@ -13,7 +13,7 @@ There are incoming major breaking changes.
     * in general "Interaction Response" structures are now called "Interaction Data" structures.
     * for instance, `model.interaction.StringSelectModalInteractionResponse` is now moved to `model.components.StringSelect.ModalInteractionResponse`
   * the `.init` functions for creating components no longer take the `id: ?u64` argument.
-* **minor breaking change**: the type of `model.MessageComponent.Section` has been corrected to be more accurate.
+* **minor breaking change**: the type of `model.component.Section` has been corrected to be more accurate.
 * **minor breaking change**: the type of `model.guild.Member.permissions` has been changed to `Omittable(model.Permission)` instead of `Omittable([]const u8)`.
 * **minor breaking change**: the type of `model.interaction.ResolvedData.channels` has been changed to `ArrayHashMap(model.Channel)` instead of `ArrayHashMap(Partial(model.Channel))`.
 * for action rows and section accessories, additional `.init` functions (ie `.initPrimaryButton()`) have been created to make creating buttons easier.
@@ -21,6 +21,8 @@ There are incoming major breaking changes.
 * fixed guild_member_update events where avatar_decoration_data is not provided
 * added collectibles to both user objects and guild_member_update events
 * fixed up the interaction server and added an example (it didn't even compile before, so not considering this a breaking change)
+* added `Lobby` resource
+* bitflag types (ie `model.Message.Flags`) can now be printed with number specifiers (ie `{d}`)
 
 # v0.13.0
 

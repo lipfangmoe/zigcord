@@ -62,6 +62,11 @@ pub const Flags = packed struct(u64) {
     _padding: u63 = 0,
 
     const Mixin = model.PackedFlagsMixin(@This());
+    pub const format = Mixin.format;
+    pub const formatNumber = Mixin.formatNumber;
+    pub const jsonStringify = Mixin.jsonStringify;
+    pub const jsonParse = Mixin.jsonParse;
+    pub const jsonParseFromValue = Mixin.jsonParseFromValue;
 };
 
 pub const PartialRole = struct {

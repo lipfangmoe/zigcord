@@ -14,6 +14,15 @@ pub fn PackedFlagsMixin(comptime FlagStruct: type) type {
             const int: u64 = @bitCast(self);
             try writer.print("{d}", .{int});
         }
+        pub fn formatNumber(self: FlagStruct, writer: *std.Io.Writer, options: std.fmt.Number) !void {
+            const int: u64 = @bitCast(self);
+            try writer.printInt(
+                int,
+                options.mode.base() orelse 10,
+                options.case,
+                .{ .alignment = options.alignment, .fill = options.fill, .precision = options.precision, .width = options.width },
+            );
+        }
         pub fn jsonStringify(self: FlagStruct, json_writer: *std.json.Stringify) !void {
             const int: u64 = @bitCast(self);
             try json_writer.write(int);
