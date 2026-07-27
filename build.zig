@@ -1,7 +1,6 @@
 const std = @import("std");
 
 const version = std.SemanticVersion.parse("0.13.1") catch unreachable; // TODO: get from build.zig.zon
-const use_llvm = true;
 
 // Although this function looks imperative, note that its job is to
 // declaratively construct a build graph that will be executed by an external
@@ -48,7 +47,7 @@ pub fn build(b: *std.Build) !void {
     zigcord_module.addOptions("build", options);
 
     // zig build test
-    const test_runner = b.addTest(.{ .root_module = zigcord_module, .filters = test_filters, .use_llvm = use_llvm });
+    const test_runner = b.addTest(.{ .root_module = zigcord_module, .filters = test_filters });
     const test_run_artifact = b.addRunArtifact(test_runner);
     const test_step = b.step("test", "Run unit tests");
     test_step.dependOn(&test_run_artifact.step);
@@ -60,7 +59,7 @@ pub fn build(b: *std.Build) !void {
 
     // zig build check
     const check_step = b.step("check", "Run the compiler without building");
-    const check_tests_compile = b.addTest(.{ .name = "zigcord-check-tests", .root_module = zigcord_module, .use_llvm = use_llvm });
+    const check_tests_compile = b.addTest(.{ .name = "zigcord-check-tests", .root_module = zigcord_module });
     check_tests_compile.root_module.addOptions("build", options);
     check_step.dependOn(&check_tests_compile.step);
     // note: createExample makes `check_step` depend on the created example
@@ -108,14 +107,14 @@ fn createExample(b: *std.Build, comptime name: []const u8, params: CreateExample
         .imports = &.{.{ .name = "zigcord", .module = params.common.zigcord_module }},
     });
 
-    const example_executable = b.addExecutable(.{ .name = std.fmt.comptimePrint("{s}_example", .{name}), .root_module = example_module, .use_llvm = use_llvm });
+    const example_executable = b.addExecutable(.{ .name = std.fmt.comptimePrint("{s}_example", .{name}), .root_module = example_module });
     const example_artifact = b.addInstallArtifact(example_executable, .{});
     example_step.dependOn(&example_artifact.step);
     example_step.dependOn(params.common.generate_step);
 
     params.common.examples_step.dependOn(example_step);
 
-    const example_executable_check = b.addExecutable(.{ .name = std.fmt.comptimePrint("{s}_example_check", .{name}), .root_module = example_module, .use_llvm = use_llvm });
+    const example_executable_check = b.addExecutable(.{ .name = std.fmt.comptimePrint("{s}_example_check", .{name}), .root_module = example_module });
     params.common.check_step.dependOn(&example_executable_check.step);
 }
 
