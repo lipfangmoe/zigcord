@@ -34,16 +34,10 @@ pub fn main(init: std.process.Init) !void {
             .message_create => |msg_event| {
                 if (std.mem.eql(u8, msg_event.message.content, "race")) {
                     const SelectT = union(enum) {
-                        a: void,
-                        b: void,
-                        c: void,
-                        d: void,
-                        e: void,
-                        f: void,
-                        g: void,
-                        h: void,
-                        i: void,
-                        j: void,
+                        a: bool,
+                        b: bool,
+                        c: bool,
+                        d: bool,
                     };
                     var buf: [1]SelectT = undefined;
                     var select: std.Io.Select(SelectT) = .init(io, &buf);
@@ -55,15 +49,18 @@ pub fn main(init: std.process.Init) !void {
                     try select.concurrent(.b, sendMessage, .{ &endpoint_client, channel_id, "b wins" });
                     try select.concurrent(.c, sendMessage, .{ &endpoint_client, channel_id, "c wins" });
                     try select.concurrent(.d, sendMessage, .{ &endpoint_client, channel_id, "d wins" });
-                    try select.concurrent(.e, sendMessage, .{ &endpoint_client, channel_id, "e wins" });
-                    try select.concurrent(.f, sendMessage, .{ &endpoint_client, channel_id, "f wins" });
-                    try select.concurrent(.g, sendMessage, .{ &endpoint_client, channel_id, "g wins" });
-                    try select.concurrent(.h, sendMessage, .{ &endpoint_client, channel_id, "h wins" });
-                    try select.concurrent(.i, sendMessage, .{ &endpoint_client, channel_id, "i wins" });
-                    try select.concurrent(.j, sendMessage, .{ &endpoint_client, channel_id, "j wins" });
 
-                    _ = try select.await();
-                    select.cancelDiscard();
+                    while (true) {
+                        const winner = try select.await();
+                        const success = switch (winner) {
+                            inline else => |b| b,
+                        };
+                        if (success) {
+                            std.log.info("winner: {t}", .{winner});
+                            select.cancelDiscard();
+                            break;
+                        }
+                    }
                 }
                 if (std.mem.eql(u8, msg_event.message.content, "done")) {
                     return;
@@ -74,10 +71,17 @@ pub fn main(init: std.process.Init) !void {
     }
 }
 
-fn sendMessage(endpoint_client: *zigcord.EndpointClient, channel_id: zigcord.model.Snowflake, content: []const u8) void {
+fn sendMessage(endpoint_client: *zigcord.EndpointClient, channel_id: zigcord.model.Snowflake, content: []const u8) bool {
     const lmao = endpoint_client.createMessage(channel_id, .{ .content = .initSome(content) }) catch |err| {
         std.log.err("error {} while printing [{s}]", .{ err, content });
-        return;
+        return false;
     };
-    lmao.deinit();
+    defer lmao.deinit();
+    switch (lmao) {
+        .ok => return true,
+        .err => |err| {
+            std.log.err("error sending '{s}': {f}", .{ content, err });
+            return false;
+        },
+    }
 }

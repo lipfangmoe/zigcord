@@ -90,3 +90,5 @@ pub fn myLogFn(
  - Add a "bot" module for a more declarative API
    - Allocates everything by default
    - No need to manage multiple clients (ie, it has both a EndpointClient and GatewayClient built in to it)
+ - Refactor GatewayClient. Not quite sure why (well I *am* doing some kinda crazy comptime stuff), but I'm crashing the non-LLVM Zig Compiler. Will need to file a bug with Zig
+ 
