@@ -21,14 +21,14 @@ pub const SignatureHeaders = struct {
 
         var headers = http_request.iterateHeaders();
         while (headers.next()) |header| {
-            if (std.mem.eql(u8, header.name, "X-Signature-Ed25519")) {
+            if (std.ascii.eqlIgnoreCase(header.name, "X-Signature-Ed25519")) {
                 const slice = std.fmt.hexToBytes(&signature_buf, header.value) catch return error.InvalidHeader;
                 if (slice.len != signature_len) {
                     return error.InvalidHeader;
                 }
                 signature_set = true;
             }
-            if (std.mem.eql(u8, header.name, "X-Signature-Timestamp")) {
+            if (std.ascii.eqlIgnoreCase(header.name, "X-Signature-Timestamp")) {
                 timestamp.appendSliceBounded(header.value) catch return error.InvalidHeader;
             }
         }
