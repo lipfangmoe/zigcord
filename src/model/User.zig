@@ -151,21 +151,7 @@ pub const Nameplate = struct {
     sku_id: model.Snowflake,
     asset: []const u8,
     label: []const u8,
-    palette: Palette,
-
-    pub const Palette = enum {
-        crimson,
-        berry,
-        sky,
-        teal,
-        forest,
-        bubble_gum,
-        violet,
-        cobalt,
-        clover,
-        lemon,
-        white,
-    };
+    palette: []const u8,
 };
 
 pub const PrimaryGuild = struct {
