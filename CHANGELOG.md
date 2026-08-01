@@ -1,3 +1,10 @@
+# v0.14.1
+
+There is a minor breaking change.
+
+* When nameplate support was added in 0.14.0 (forgot to document this), it was typed as an enum
+  * It is now typed as a string
+
 # v0.14.0
 
 There are major breaking changes.
