@@ -314,7 +314,7 @@ pub const Activity = struct {
     type: ActivityType,
     party_id: jconfig.Omittable([]const u8) = .omit,
 
-    pub const ActivityType = enum(u3) {
+    pub const ActivityType = enum(u8) {
         join = 1,
         spectate = 2,
         listen = 3,
