@@ -25,7 +25,7 @@ pub fn deinit(self: InteractionRequest) void {
 /// then use one of the .followup* methods when you're ready to respond.
 pub fn respond(self: *InteractionRequest, response_body: model.interaction.InteractionCallback) !void {
     const response_body_json = try std.json.Stringify.valueAlloc(self.arena.allocator(), response_body, .{});
-    try self.http_request.respond(response_body_json, .{});
+    try self.http_request.respond(response_body_json, .{.extra_headers = &.{.{.name = "content-type", .value = "application/json"}}});
 }
 
 /// send a followup request which edits the original message
