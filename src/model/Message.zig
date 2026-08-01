@@ -319,6 +319,7 @@ pub const Activity = struct {
         spectate = 2,
         listen = 3,
         join_request = 5,
+        stream_request = 6,
 
         pub const jsonStringify = jconfig.stringifyEnumAsInt;
     };
