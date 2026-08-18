@@ -54,6 +54,7 @@ pub const ApplicationCommandOption = struct {
     min_length: Omittable(i64) = .omit,
     max_length: Omittable(i64) = .omit,
     autocomplete: Omittable(bool) = .omit,
+    file_types: Omittable([]const []const u8) = .omit,
 
     pub const Choices = union(enum) {
         string: []const StringChoice,
@@ -108,7 +109,7 @@ pub const ApplicationCommandOption = struct {
         return builder.build();
     }
 
-    pub fn initAttachmentOption(builder: GenericOptionBuilder(.attachment)) ApplicationCommandOption {
+    pub fn initAttachmentOption(builder: AttachmentOptionBuilder) ApplicationCommandOption {
         return builder.build();
     }
 };
@@ -263,6 +264,36 @@ pub const NumberOptionBuilder = struct {
             .min_length = .omit,
             .max_length = .omit,
             .autocomplete = self.autocomplete,
+        };
+    }
+};
+
+pub const AttachmentOptionBuilder = struct {
+    name: []const u8,
+    name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
+    description: []const u8,
+    description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
+    required: Omittable(bool) = .omit,
+    channel_types: Omittable([]const Channel.Type) = .omit,
+    file_types: Omittable([]const []const u8) = .omit,
+
+    fn build(self: @This()) ApplicationCommandOption {
+        return ApplicationCommandOption{
+            .type = .attachment,
+            .name = self.name,
+            .name_localizations = self.name_localizations,
+            .description = self.description,
+            .description_localizations = self.description_localizations,
+            .required = self.required,
+            .choices = if (self.choices == .some) .initSome(.{ .double = self.choices.some }) else .omit,
+            .options = .omit,
+            .channel_types = self.channel_types,
+            .min_value = .omit,
+            .max_value = .omit,
+            .min_length = .omit,
+            .max_length = .omit,
+            .autocomplete = self.autocomplete,
+            .file_types = self.file_types,
         };
     }
 };

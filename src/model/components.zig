@@ -867,6 +867,7 @@ pub const FileUpload = struct {
     min_values: jconfig.Omittable(i64) = .omit,
     max_values: jconfig.Omittable(i64) = .omit,
     required: jconfig.Omittable(bool) = .omit,
+    file_types: jconfig.Omittable([]const []const u8) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 
