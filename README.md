@@ -31,7 +31,7 @@ Then, make sure something similar to the following is in your `build.zig`:
 # Feature Support
 
  - Static typing for the Discord API
- - All Discord API features up to July 25th, 2026
+ - All Discord API features up to August 17th, 2026
    - [User-installable Apps](https://discord.com/developers/docs/tutorials/developing-a-user-installable-app#developing-a-userinstallable-app)
    - [Components V2](https://discord.com/developers/docs/components/overview)
  - WebSocket Gateway Client

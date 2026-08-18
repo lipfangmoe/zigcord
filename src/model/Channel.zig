@@ -21,7 +21,7 @@ rate_limit_per_user: Omittable(i64) = .omit,
 recipients: Omittable([]User) = .omit,
 icon: Omittable(?[]const u8) = .omit,
 owner_id: Omittable(Snowflake) = .omit,
-application_id: Omittable(Snowflake) = .omit,
+application_id: Omittable(?Snowflake) = .omit,
 managed: Omittable(bool) = .omit,
 parent_id: Omittable(?Snowflake) = .omit,
 last_pin_timestamp: Omittable(?model.IsoTime) = .omit,
@@ -98,7 +98,15 @@ pub const Flags = packed struct(u64) {
     // 1 << 15
     hide_media_download_options: bool = false,
 
-    _overflow: u48 = 0,
+    _unused4: u1 = 0,
+
+    channel_obfuscated: bool = false,
+
+    _unused5: u3 = 0,
+
+    is_spoiler_channel: bool = false,
+
+    _overflow: u42 = 0,
 
     const Mixin = model.PackedFlagsMixin(@This());
     pub const format = Mixin.format;

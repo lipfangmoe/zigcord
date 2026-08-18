@@ -1,3 +1,13 @@
+# v0.14.2
+
+There are minor breaking changes and new features.
+
+* **minor breaking change**: `Channel.application_id` is now nullable ([discord changelog](https://docs.discord.com/developers/change-log#channel-application_id-is-now-nullable))
+* support for `file_types` was added ([discord changelog](https://docs.discord.com/developers/change-log#filter-file-types-in-file-uploads-and-attachment-options))
+* **minor breaking change**: Attachment Command Options now have their own dedicated builder instead of using the GenericOptionBuilder in order to support `file_types`
+* FileUpload structs now have an omittable `file_types` field.
+* interaction server: header name checking is now case-insensitive (thank you @jaycoobs!)
+
 # v0.14.1
 
 There is a minor breaking change.
