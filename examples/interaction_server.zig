@@ -50,10 +50,11 @@ pub fn main(init: std.process.Init) !void {
 
         switch (interaction.data.asSome() orelse continue) {
             .application_command => |cmd| {
-                if (interaction.id == echo_cmd_id) {
+                if (cmd.id == echo_cmd_id) {
                     try executeEchoCommand(&interaction_request, cmd);
                 } else {
-                    std.log.warn("unexpected interaction", .{});
+                    std.log.warn("unexpected command: got command id {}, expected: {}",
+                        .{cmd.id.asU64(), echo_cmd_id.asU64()});
                     continue;
                 }
             },
