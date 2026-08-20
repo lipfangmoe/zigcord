@@ -252,13 +252,14 @@ pub fn createGuildBan(
     client: *rest.EndpointClient,
     guild_id: model.Snowflake,
     user_id: model.Snowflake,
+    body: CreateGuildBanBody,
     audit_log_reason: ?[]const u8,
 ) !rest.RestClient.Result(void) {
     const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/bans/{f}", .{ guild_id, user_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.requestWithAuditLogReason(void, .PUT, uri, audit_log_reason);
+    return client.rest_client.requestWithJsonBodyAndAuditLogReason(void, .PUT, uri, body, .{}, audit_log_reason);
 }
 
 pub fn removeGuildBan(
@@ -951,4 +952,10 @@ pub const SearchGuildMessagesQueryParams = struct {
             try writer.writeAll(@tagName(self));
         }
     };
+};
+
+pub const CreateGuildBanBody = struct {
+    delete_message_seconds: jconfig.Omittable(u64) = .omit,
+
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };

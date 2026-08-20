@@ -1,3 +1,9 @@
+# v0.14.3
+
+There is a minor breaking change.
+
+* **minor breaking change**: `createGuildBan` now takes an additional `body` argument, allowing the caller to set `delete_message_seconds`.
+
 # v0.14.2
 
 There are minor breaking changes and new features.
