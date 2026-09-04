@@ -57,7 +57,7 @@ pub fn getChannelMessages(
     channel_id: Snowflake,
     query: GetChannelMessagesQuery,
 ) !rest.RestClient.Result([]const model.Message) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}?{f}", .{ channel_id, query });
+    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages?{f}", .{ channel_id, query });
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
