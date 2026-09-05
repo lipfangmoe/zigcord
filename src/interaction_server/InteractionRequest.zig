@@ -11,7 +11,7 @@ const InteractionRequest = @This();
 
 pub fn init(alloc: std.mem.Allocator, body: []const u8, http_request: std.http.Server.Request) !InteractionRequest {
     var arena = std.heap.ArenaAllocator.init(alloc);
-    const interaction = try std.json.parseFromSliceLeaky(model.interaction.Interaction, arena.allocator(), body, .{ .allocate = .alloc_always });
+    const interaction = try std.json.parseFromSliceLeaky(model.interaction.Interaction, arena.allocator(), body, .{ .allocate = .alloc_always, .ignore_unknown_fields = true });
 
     return InteractionRequest{ .arena = arena, .interaction = interaction, .http_request = http_request };
 }
@@ -25,7 +25,7 @@ pub fn deinit(self: InteractionRequest) void {
 /// then use one of the .followup* methods when you're ready to respond.
 pub fn respond(self: *InteractionRequest, response_body: model.interaction.InteractionCallback) !void {
     const response_body_json = try std.json.Stringify.valueAlloc(self.arena.allocator(), response_body, .{});
-    try self.http_request.respond(response_body_json, .{});
+    try self.http_request.respond(response_body_json, .{.extra_headers = &.{.{.name = "content-type", .value = "application/json"}}});
 }
 
 /// send a followup request which edits the original message

@@ -5,7 +5,18 @@ pub fn main(init: std.process.Init) !void {
     const gpa = init.gpa;
     const io = init.io;
 
-    var server: zigcord.HttpInteractionServer = try .init(io, .{ .ip4 = .loopback(8080) }, "0b5b7f244766de039bea16accfa59079e00e6869b3f25a151466b9cf1404c18b".*);
+    const public_key_slice = init.environ_map.get("PUBLIC_KEY") orelse {
+        std.log.err("PUBLIC_KEY environment variable is required", .{});
+        std.process.exit(1);
+    };
+    if (public_key_slice.len != 64) {
+        std.log.err("PUBLIC_KEY must be exactly 64 bytes", .{});
+        std.process.exit(1);
+    }
+    var public_key: [64]u8 = undefined;
+    std.mem.copyForwards(u8, &public_key, public_key_slice);
+
+    var server: zigcord.HttpInteractionServer = try .init(io, .{ .ip4 = .loopback(8080) }, public_key);
     defer server.deinit(init.io);
 
     const token = init.environ_map.get("TOKEN") orelse {
@@ -39,10 +50,11 @@ pub fn main(init: std.process.Init) !void {
 
         switch (interaction.data.asSome() orelse continue) {
             .application_command => |cmd| {
-                if (interaction.id == echo_cmd_id) {
+                if (cmd.id == echo_cmd_id) {
                     try executeEchoCommand(&interaction_request, cmd);
                 } else {
-                    std.log.warn("unexpected interaction", .{});
+                    std.log.warn("unexpected command: got command id {}, expected: {}",
+                        .{cmd.id.asU64(), echo_cmd_id.asU64()});
                     continue;
                 }
             },
