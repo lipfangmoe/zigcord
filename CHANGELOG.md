@@ -1,3 +1,14 @@
+# v0.14.4
+
+There are no breaking changes.
+
+* `/examples` fixes:
+  * interaction server example now gets the bots public key from an environment variable (#19)
+  * interaction server example now verifies based on the command id rather than the interaction id (#19)
+* interaction server parser no longer fails when extra JSON properties exist (#19)
+* interaction server now adds `Content-Type: application/json` on server responses (#19)
+* fixed the `getChannelMessages` endpoint to go to the correct URL
+
 # v0.14.3
 
 There is a minor breaking change.
