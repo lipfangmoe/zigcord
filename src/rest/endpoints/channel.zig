@@ -750,11 +750,11 @@ pub const CreateMessageJsonBody = struct {
         return CreateMessageJsonBody{ .content = .initNullable(message), .sticker_ids = .initSome(sticker_ids) };
     }
 
-    pub fn initMessageWithComponents(message: ?[]const u8, components: []const model.MessageComponent) CreateMessageJsonBody {
+    pub fn initMessageWithComponents(message: ?[]const u8, components: []const model.components.TopLevelMessageComponent) CreateMessageJsonBody {
         return CreateMessageJsonBody{ .content = .initNullable(message), .components = .initSome(components) };
     }
 
-    pub fn initMessageWithComponentsV2(components: []const model.MessageComponent) CreateMessageJsonBody {
+    pub fn initMessageWithComponentsV2(components: []const model.components.TopLevelMessageComponent) CreateMessageJsonBody {
         return CreateMessageJsonBody{ .components = .initSome(components), .flags = .initSome(model.Message.Flags{ .is_components_v2 = true }) };
     }
 
@@ -803,11 +803,11 @@ pub const CreateMessageFormBody = struct {
         return CreateMessageFormBody{ .content = message, .sticker_ids = sticker_ids };
     }
 
-    pub fn initMessageWithComponents(message: ?[]const u8, components: []const model.MessageComponent) CreateMessageFormBody {
+    pub fn initMessageWithComponents(message: ?[]const u8, components: []const model.components.TopLevelMessageComponent) CreateMessageFormBody {
         return CreateMessageFormBody{ .content = message, .components = components };
     }
 
-    pub fn initMessageWithComponentsV2(components: []const model.MessageComponent) CreateMessageFormBody {
+    pub fn initMessageWithComponentsV2(components: []const model.components.TopLevelMessageComponent) CreateMessageFormBody {
         return CreateMessageFormBody{ .components = components, .flags = model.Message.Flags{ .is_components_v2 = true } };
     }
 
