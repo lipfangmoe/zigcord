@@ -1,3 +1,9 @@
+# v0.14.5
+
+There are no breaking changes.
+
+* initMessageWithComponents and initMessageWithComponentsV2 have been fixed to use the updated TopLevelMessageComponent struct.
+
 # v0.14.4
 
 There are no breaking changes.
