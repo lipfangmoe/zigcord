@@ -96,6 +96,9 @@ pub fn build(b: *std.Build) !void {
 
     // zig build examples:interaction_server
     createExample(b, "interaction_server", .{ .description = "Builds a bot that operates via an interaction server", .root_source_file = b.path("./examples/interaction_server.zig"), .common = common });
+
+    // zig build examples:interaction_server
+    createExample(b, "lmao", .{ .description = "Builds a bot that operates via an interaction server", .root_source_file = b.path("./examples/lmao.zig"), .common = common });
 }
 
 fn createExample(b: *std.Build, comptime name: []const u8, params: CreateExample) void {
