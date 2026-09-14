@@ -2,6 +2,7 @@ const std = @import("std");
 const testing = std.testing;
 
 pub const Application = @import("./model/Application.zig");
+pub const ApplicationIdentity = @import("./model/ApplicationIdentity.zig");
 pub const ApplicationRoleConnectionMetadata = @import("./model/ApplicationRoleConnectionMetadata.zig");
 pub const interaction = @import("./model/interaction.zig");
 pub const User = @import("./model/User.zig");

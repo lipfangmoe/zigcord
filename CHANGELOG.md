@@ -3,6 +3,7 @@
 There are no breaking changes.
 
 * Added a workaround for https://codeberg.org/ziglang/zig/issues/36830, ensuring that 204 responses (ie many DELETE requests) do not hang.
+* Added support for [Game Stats Widgets](https://docs.discord.com/developers/change-log#game-stats-widgets) and resource [Application Identities](https://docs.discord.com/developers/resources/application-identity-profile)
 
 # v0.14.5
 
