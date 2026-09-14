@@ -77,6 +77,11 @@ fn handleResponse(
     comptime ResponseT: type,
     response: *std.http.Client.Response,
 ) WaitForResponseError!Result(ResponseT) {
+    // workaround for https://codeberg.org/ziglang/zig/issues/36830
+    if (response.head.status == .no_content and response.request.response_content_length == null) {
+        response.request.response_content_length = 0;
+    }
+
     const status = response.head.status;
     const status_class = status.class();
     if (ResponseT == void and status_class == .success) {

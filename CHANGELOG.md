@@ -1,3 +1,9 @@
+# v0.14.6
+
+There are no breaking changes.
+
+* Added a workaround for https://codeberg.org/ziglang/zig/issues/36830, ensuring that 204 responses (ie many DELETE requests) do not hang.
+
 # v0.14.5
 
 There are no breaking changes.
