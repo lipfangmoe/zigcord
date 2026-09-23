@@ -1,6 +1,6 @@
-# v0.15.0
+# pending (untagged) changes
 
-There is a major breaking changes.
+There are breaking changes.
 
 * **breaking change:** the contract for multipart endpoints have been changed so that the files/payload_json are two fields on one struct, rather than trying to put all fields into a single struct.
   * see [post_attachment](./examples/post_attachment.zig) and [createsticker](./examples/createsticker_bot.zig) to see an example of the new usage.
