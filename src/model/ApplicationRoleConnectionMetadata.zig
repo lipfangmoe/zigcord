@@ -1,5 +1,5 @@
 const std = @import("std");
-const jconfig = @import("../root.zig").jconfig;
+const jconfig = @import("jconfig");
 
 type: Type,
 key: []const u8,

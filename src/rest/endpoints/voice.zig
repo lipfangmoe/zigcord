@@ -1,27 +1,31 @@
-const zigcord = @import("../../root.zig");
 const std = @import("std");
-const model = zigcord.model;
-const rest = zigcord.rest;
-const jconfig = zigcord.jconfig;
+const model = @import("model");
+const jconfig = @import("jconfig");
+const EndpointClient = @import("../EndpointClient.zig");
+const RestClient = @import("../RestClient.zig");
+const Result = RestClient.Result;
+const discord_uri = @import("../discord_uri.zig");
+const base_url = discord_uri.base_url;
+const allocDiscordUriStr = discord_uri.allocDiscordUriStr;
 
 pub fn listVoiceRegions(
-    client: *rest.EndpointClient,
-) !rest.RestClient.Result([]const model.voice.Region) {
-    const url = try std.Uri.parse(rest.base_url ++ "/voice/regions");
+    client: *EndpointClient,
+) !Result([]const model.voice.Region) {
+    const url = try std.Uri.parse(base_url ++ "/voice/regions");
 
     return client.rest_client.request([]const model.voice.Region, .GET, url);
 }
 
-pub fn getCurrentUserVoiceState(client: *rest.EndpointClient, guild_id: model.Snowflake) !rest.RestClient.Result(model.voice.VoiceState) {
-    const url_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/voice-states/@me", .{guild_id});
+pub fn getCurrentUserVoiceState(client: *EndpointClient, guild_id: model.Snowflake) !Result(model.voice.VoiceState) {
+    const url_str = try allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/voice-states/@me", .{guild_id});
     defer client.rest_client.allocator.free(url_str);
     const url = try std.Uri.parse(url_str);
 
     return client.rest_client.request(model.voice.VoiceState, .GET, url);
 }
 
-pub fn getUserVoiceState(client: *rest.EndpointClient, guild_id: model.Snowflake, user_id: model.Snowflake) !rest.RestClient.Result(model.voice.VoiceState) {
-    const url_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/voice-states/{f}", .{ guild_id, user_id });
+pub fn getUserVoiceState(client: *EndpointClient, guild_id: model.Snowflake, user_id: model.Snowflake) !Result(model.voice.VoiceState) {
+    const url_str = try allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/voice-states/{f}", .{ guild_id, user_id });
     defer client.rest_client.allocator.free(url_str);
     const url = try std.Uri.parse(url_str);
 
@@ -29,11 +33,11 @@ pub fn getUserVoiceState(client: *rest.EndpointClient, guild_id: model.Snowflake
 }
 
 pub fn modifyCurrentUserVoiceState(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     guild_id: model.Snowflake,
     body: ModifyCurrentUserVoiceStateBody,
-) !rest.RestClient.Result(void) {
-    const url_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/voice-states/@me", .{guild_id});
+) !Result(void) {
+    const url_str = try allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/voice-states/@me", .{guild_id});
     defer client.rest_client.allocator.free(url_str);
     const url = try std.Uri.parse(url_str);
 
@@ -41,12 +45,12 @@ pub fn modifyCurrentUserVoiceState(
 }
 
 pub fn modifyUserVoiceState(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     guild_id: model.Snowflake,
     user_id: model.Snowflake,
     body: ModifyCurrentUserVoiceStateBody,
-) !rest.RestClient.Result(void) {
-    const url_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/voice-states/{f}", .{ guild_id, user_id });
+) !Result(void) {
+    const url_str = try allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/voice-states/{f}", .{ guild_id, user_id });
     defer client.rest_client.allocator.free(url_str);
     const url = try std.Uri.parse(url_str);
 

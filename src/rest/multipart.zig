@@ -1,21 +1,40 @@
 const std = @import("std");
-const zigcord = @import("../root.zig");
-const jconfig = zigcord.jconfig;
-const Upload = zigcord.rest.Upload;
+const Upload = @import("./upload.zig").Upload;
 
 pub const boundary = "f89767726a7827c6f785b40aee1ca2ade74d951d6a2d50e27cc0f0e5072a12b2";
 const boundary_start = "--" ++ boundary;
 const boundary_end = "--" ++ boundary ++ "--";
 
-pub fn writeMultipartFormDataBody(value: anytype, comptime upload_field_name: []const u8, writer: *std.Io.Writer) !void {
-    try printUploadAny(@field(value, upload_field_name), upload_field_name, writer);
-    try printPayloadJson(value, upload_field_name, writer);
+pub fn FormDataBody(comptime UploadT: type, comptime PayloadJsonT: type) type {
+    return struct {
+        files: UploadT,
+        payload_json: PayloadJsonT,
 
-    try writer.writeAll(boundary_end);
-    try writer.flush();
+        pub fn fmt(self: @This(), upload_field_name: []const u8) FormDataBodyFormatter(@This()) {
+            return .{
+                .upload_field_name = upload_field_name,
+                .form_data = self,
+            };
+        }
+    };
 }
 
-pub fn getTransferEncoding(value: anytype, comptime upload_field_name: []const u8) error{JsonError}!std.http.Client.Request.TransferEncoding {
+pub fn FormDataBodyFormatter(comptime FormDataBodyT: type) type {
+    return struct {
+        upload_field_name: []const u8,
+        form_data: FormDataBodyT,
+
+        pub fn format(self: @This(), writer: *std.Io.Writer) !void {
+            printUploadAny(self.form_data.files, self.upload_field_name, writer) catch return error.WriteFailed;
+            printPayloadJsonFromType(self.form_data.payload_json, writer) catch return error.WriteFailed;
+
+            try writer.writeAll(boundary_end);
+            try writer.flush();
+        }
+    };
+}
+
+pub fn getTransferEncoding(value: anytype, upload_field_name: []const u8) error{JsonError}!std.http.Client.Request.TransferEncoding {
     return if (countMultipartFormDataBody(value, upload_field_name)) |length|
         .{ .content_length = length }
     else |err| switch (err) {
@@ -24,9 +43,9 @@ pub fn getTransferEncoding(value: anytype, comptime upload_field_name: []const u
     };
 }
 
-fn countMultipartFormDataBody(value: anytype, comptime upload_field_name: []const u8) error{ JsonError, SizeUnknown }!usize {
-    if (countUploadAny(@field(value, upload_field_name), upload_field_name)) |upload_count| {
-        return upload_count + (countPayloadJson(value, upload_field_name) catch return error.JsonError) + boundary_end.len;
+fn countMultipartFormDataBody(value: anytype, upload_field_name: []const u8) error{ JsonError, SizeUnknown }!usize {
+    if (countUploadAny(value.files, upload_field_name)) |upload_count| {
+        return upload_count + (countPayloadJsonFromType(value.payload_json) catch return error.JsonError) + boundary_end.len;
     }
 
     return error.SizeUnknown;
@@ -129,59 +148,27 @@ fn countUpload(value: Upload, field_name: []const u8) ?usize {
     return null;
 }
 
-fn printPayloadJson(value: anytype, comptime upload_field_name: []const u8, writer: *std.Io.Writer) !void {
+fn printPayloadJsonFromType(value: anytype, writer: *std.Io.Writer) !void {
+    if (@TypeOf(value) == void) {
+        return;
+    }
     try printHeader("payload_json", null, "application/json", writer);
 
     var stringifier = std.json.Stringify{ .writer = writer };
-    try stringifier.beginObject();
-    inline for (std.meta.fields(@TypeOf(value))) |field| {
-        if (comptime std.mem.eql(u8, field.name, upload_field_name)) {
-            continue;
-        }
-        const field_value = @field(value, field.name);
-        switch (@typeInfo(field.type)) {
-            .optional => {
-                if (field_value) |nn_value| {
-                    try stringifier.objectField(field.name);
-                    try stringifier.write(nn_value);
-                }
-            },
-            else => {
-                try stringifier.objectField(field.name);
-                try stringifier.write(field_value);
-            },
-        }
-    }
-    try stringifier.endObject();
+    try stringifier.write(value);
 
     try writer.writeAll("\r\n");
 }
 
-fn countPayloadJson(value: anytype, comptime upload_field_name: []const u8) !usize {
+fn countPayloadJsonFromType(value: anytype) !usize {
+    if (@TypeOf(value) == void) {
+        return 0;
+    }
     var buf: [1000]u8 = undefined;
     var discarding_writer: std.Io.Writer.Discarding = .init(&buf);
     var stringifier: std.json.Stringify = .{ .writer = &discarding_writer.writer };
 
-    try stringifier.beginObject();
-    inline for (std.meta.fields(@TypeOf(value))) |field| {
-        if (comptime std.mem.eql(u8, field.name, upload_field_name)) {
-            continue;
-        }
-        const field_value = @field(value, field.name);
-        switch (@typeInfo(field.type)) {
-            .optional => {
-                if (field_value) |nn_value| {
-                    try stringifier.objectField(field.name);
-                    try stringifier.write(nn_value);
-                }
-            },
-            else => {
-                try stringifier.objectField(field.name);
-                try stringifier.write(field_value);
-            },
-        }
-    }
-    try stringifier.endObject();
+    try stringifier.write(value);
 
     return countHeader("payload_json", null, "application/json") + discarding_writer.fullCount() + 2;
 }
@@ -206,22 +193,20 @@ fn countHeader(field_name: []const u8, filename: ?[]const u8, content_type: []co
 }
 
 test "multipart single upload" {
-    const Foo = struct {
-        foo: Upload,
+    const jconfig = @import("jconfig");
+    const FooPayload = struct {
         bar: []const u8,
-        baz: ?i64 = null,
+        baz: jconfig.Omittable(u64) = .omit,
 
-        pub fn format(self: @This(), writer: *std.Io.Writer) !void {
-            writeMultipartFormDataBody(self, "foo", writer) catch return error.WriteFailed;
-        }
-        pub const jsonStringify = zigcord.jconfig.stringifyWithOmit;
+        pub const jsonStringify = jconfig.stringifyWithOmit;
     };
+    const FooBody = FormDataBody(Upload, FooPayload);
 
     const my_upload = "this is my upload";
-    const foo = Foo{ .foo = .fromBytes("upload.txt", "text/plain", my_upload), .bar = "some string" };
+    const foo = FooBody{ .files = .fromBytes("upload.txt", "text/plain", my_upload), .payload_json = .{ .bar = "some string" } };
 
     var buf: [1000]u8 = undefined;
-    const output = try std.fmt.bufPrint(&buf, "{f}", .{foo});
+    const output = try std.fmt.bufPrint(&buf, "{f}", .{foo.fmt("foo")});
 
     const expected =
         "--f89767726a7827c6f785b40aee1ca2ade74d951d6a2d50e27cc0f0e5072a12b2\r\n" ++
@@ -239,23 +224,24 @@ test "multipart single upload" {
 }
 
 test "multipart multi upload" {
-    const Foo = struct {
-        foo: []const Upload,
+    const jconfig = @import("jconfig");
+    const FooPayload = struct {
         bar: []const u8,
-        baz: ?i64 = null,
+        baz: jconfig.Omittable(u64) = .omit,
 
-        pub fn format(self: @This(), writer: *std.Io.Writer) !void {
-            writeMultipartFormDataBody(self, "foo", writer) catch return error.WriteFailed;
-        }
-        pub const jsonStringify = zigcord.jconfig.stringifyWithOmit;
+        pub const jsonStringify = jconfig.stringifyWithOmit;
     };
+    const FooBody = FormDataBody([]const Upload, FooPayload);
 
     const my_upload1 = "this is my first upload";
     const my_upload2 = "this is my second upload";
-    const foo = Foo{ .foo = &.{ .fromBytes("upload.txt", "text/plain", my_upload1), .fromBytes("upload.txt", "text/plain", my_upload2) }, .bar = "some string" };
+    const foo = FooBody{
+        .files = &.{ .fromBytes("upload.txt", "text/plain", my_upload1), .fromBytes("upload.txt", "text/plain", my_upload2) },
+        .payload_json = .{ .bar = "some string" },
+    };
 
     var buf: [1000]u8 = undefined;
-    const output = try std.fmt.bufPrint(&buf, "{f}", .{foo});
+    const output = try std.fmt.bufPrint(&buf, "{f}", .{foo.fmt("foo")});
 
     const expected =
         "--f89767726a7827c6f785b40aee1ca2ade74d951d6a2d50e27cc0f0e5072a12b2\r\n" ++
@@ -278,20 +264,20 @@ test "multipart multi upload" {
 }
 
 test "multipart optional single upload - present" {
-    const Foo = struct {
-        foo: ?Upload,
+    const jconfig = @import("jconfig");
+    const FooPayload = struct {
         bar: []const u8,
-        baz: ?i64 = null,
+        baz: jconfig.Omittable(u64) = .omit,
 
-        pub const jsonStringify = zigcord.jconfig.stringifyWithOmit;
+        pub const jsonStringify = jconfig.stringifyWithOmit;
     };
+    const FooBody = FormDataBody(?Upload, FooPayload);
 
     const my_upload = "this is my upload";
-    const foo = Foo{ .foo = .fromBytes("upload.txt", "text/plain", my_upload), .bar = "some string" };
+    const foo = FooBody{ .files = .fromBytes("upload.txt", "text/plain", my_upload), .payload_json = .{ .bar = "some string" } };
 
     var buf: [1000]u8 = undefined;
-    var output: std.Io.Writer = .fixed(&buf);
-    try writeMultipartFormDataBody(foo, "foo", &output);
+    const output = try std.fmt.bufPrint(&buf, "{f}", .{foo.fmt("foo")});
 
     const expected =
         "--f89767726a7827c6f785b40aee1ca2ade74d951d6a2d50e27cc0f0e5072a12b2\r\n" ++
@@ -305,23 +291,23 @@ test "multipart optional single upload - present" {
         "\r\n" ++
         "{\"bar\":\"some string\"}\r\n" ++
         "--f89767726a7827c6f785b40aee1ca2ade74d951d6a2d50e27cc0f0e5072a12b2--";
-    try std.testing.expectEqualStrings(expected, output.buffered());
+    try std.testing.expectEqualStrings(expected, output);
 }
 
 test "multipart optional single upload - null" {
-    const Foo = struct {
-        foo: ?Upload,
+    const jconfig = @import("jconfig");
+    const FooPayload = struct {
         bar: []const u8,
-        baz: ?i64 = null,
+        baz: jconfig.Omittable(u64) = .omit,
 
-        pub const jsonStringify = zigcord.jconfig.stringifyWithOmit;
+        pub const jsonStringify = jconfig.stringifyWithOmit;
     };
+    const FooBody = FormDataBody(?Upload, FooPayload);
 
-    const foo = Foo{ .foo = null, .bar = "some string" };
+    const foo = FooBody{ .files = null, .payload_json = .{ .bar = "some string" } };
 
     var buf: [1000]u8 = undefined;
-    var output: std.Io.Writer = .fixed(&buf);
-    try writeMultipartFormDataBody(foo, "foo", &output);
+    const output = try std.fmt.bufPrint(&buf, "{f}", .{foo.fmt("foo")});
 
     const expected =
         "--f89767726a7827c6f785b40aee1ca2ade74d951d6a2d50e27cc0f0e5072a12b2\r\n" ++
@@ -330,24 +316,27 @@ test "multipart optional single upload - null" {
         "\r\n" ++
         "{\"bar\":\"some string\"}\r\n" ++
         "--f89767726a7827c6f785b40aee1ca2ade74d951d6a2d50e27cc0f0e5072a12b2--";
-    try std.testing.expectEqualStrings(expected, output.buffered());
+    try std.testing.expectEqualStrings(expected, output);
 }
 
 test "multipart optional multi upload" {
-    const Foo = struct {
-        foo: []const ?Upload,
+    const jconfig = @import("jconfig");
+    const FooPayload = struct {
         bar: []const u8,
-        baz: ?i64 = null,
+        baz: jconfig.Omittable(u64) = .omit,
 
-        pub const jsonStringify = zigcord.jconfig.stringifyWithOmit;
+        pub const jsonStringify = jconfig.stringifyWithOmit;
     };
+    const FooBody = FormDataBody([]const ?Upload, FooPayload);
 
     const my_upload2 = "this is my second upload";
-    const foo = Foo{ .foo = &.{ null, .fromBytes("upload.txt", "text/plain", my_upload2) }, .bar = "some string" };
+    const foo = FooBody{
+        .files = &.{ null, .fromBytes("upload.txt", "text/plain", my_upload2) },
+        .payload_json = .{ .bar = "some string" },
+    };
 
     var buf: [1000]u8 = undefined;
-    var output: std.Io.Writer = .fixed(&buf);
-    try writeMultipartFormDataBody(foo, "foo", &output);
+    const output = try std.fmt.bufPrint(&buf, "{f}", .{foo.fmt("foo")});
 
     const expected =
         "--f89767726a7827c6f785b40aee1ca2ade74d951d6a2d50e27cc0f0e5072a12b2\r\n" ++
@@ -361,5 +350,5 @@ test "multipart optional multi upload" {
         "\r\n" ++
         "{\"bar\":\"some string\"}\r\n" ++
         "--f89767726a7827c6f785b40aee1ca2ade74d951d6a2d50e27cc0f0e5072a12b2--";
-    try std.testing.expectEqualStrings(expected, output.buffered());
+    try std.testing.expectEqualStrings(expected, output);
 }

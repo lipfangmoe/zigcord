@@ -1,5 +1,5 @@
 const std = @import("std");
-const jconfig = @import("../jconfig.zig");
+const omit = @import("./omit.zig");
 
 /// Partial(T) takes a struct, and returns a similar struct but with all types set to be Omittable(T).
 ///
@@ -16,7 +16,7 @@ pub fn Partial(comptime T: type) type {
         const Self = @This();
 
         pub fn jsonStringify(self: Self, json_writer: *std.json.Stringify) !void {
-            try jconfig.stringifyWithOmit(self.partial, json_writer);
+            try omit.stringifyWithOmit(self.partial, json_writer);
         }
 
         pub fn jsonParse(allocator: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !Self {
@@ -58,11 +58,11 @@ fn PartialStruct(comptime T: type) type {
                 .default_value_ptr = field.default_value_ptr,
             };
         } else {
-            field_types[idx] = jconfig.Omittable(field.type);
+            field_types[idx] = omit.Omittable(field.type);
             field_attributes[idx] = .{
                 .@"align" = field.alignment,
                 .@"comptime" = field.is_comptime,
-                .default_value_ptr = &@as(jconfig.Omittable(field.type), .omit),
+                .default_value_ptr = &@as(omit.Omittable(field.type), .omit),
             };
         }
     }
@@ -76,8 +76,8 @@ test "Partial Stringify" {
         something: []const u8,
         nested_type: struct { foo: i64 },
         omitted: u8,
-        already_omittable: jconfig.Omittable(u8) = .omit,
-        already_omittable_omitted: jconfig.Omittable(u8) = .omit,
+        already_omittable: omit.Omittable(u8) = .omit,
+        already_omittable_omitted: omit.Omittable(u8) = .omit,
     });
 
     const value = MyPartial{ .partial = .{
@@ -101,8 +101,8 @@ test "Partial Parse" {
         something: []const u8,
         nested_type: struct { foo: i64 },
         omitted: u8,
-        already_omittable: jconfig.Omittable(u8) = .omit,
-        already_omittable_omitted: jconfig.Omittable(u8) = .omit,
+        already_omittable: omit.Omittable(u8) = .omit,
+        already_omittable_omitted: omit.Omittable(u8) = .omit,
     });
 
     const value = try std.json.parseFromSlice(MyPartial, std.testing.allocator,

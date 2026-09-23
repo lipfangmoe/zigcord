@@ -1,7 +1,7 @@
 const std = @import("std");
-const zigcord = @import("../root.zig");
-const model = zigcord.model;
-const jconfig = zigcord.jconfig;
+const logger = @import("shared").logger;
+const jconfig = @import("jconfig");
+const model = @import("../model.zig");
 const Snowflake = model.Snowflake;
 
 const Message = @This();
@@ -74,7 +74,7 @@ pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, opti
         } else {
             if (object.get(field.name)) |field_value| {
                 @field(message, field.name) = std.json.innerParseFromValue(field.type, alloc, field_value, options) catch |err| {
-                    zigcord.logger.err("json parsing error while parsing Message field \"{s}\": {}", .{ field.name, err });
+                    logger.err("json parsing error while parsing Message field \"{s}\": {}", .{ field.name, err });
                     return err;
                 };
             } else {
@@ -82,7 +82,7 @@ pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, opti
                 if (default_opt) |default| {
                     @field(message, field.name) = default.*;
                 } else {
-                    zigcord.logger.err("Missing field: {s}", .{field.name});
+                    logger.err("Missing field: {s}", .{field.name});
                     return error.MissingField;
                 }
             }

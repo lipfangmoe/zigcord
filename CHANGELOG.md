@@ -1,3 +1,12 @@
+# v0.15.0
+
+There is a major breaking changes.
+
+* **breaking change:** the contract for multipart endpoints have been changed so that the files/payload_json are two fields on one struct, rather than trying to put all fields into a single struct.
+  * see [post_attachment](./examples/post_attachment.zig) and [createsticker](./examples/createsticker_bot.zig) to see an example of the new usage.
+* the entire library has been reorganized to split it into different modules
+  * there should be no changes from callers' perspectives
+
 # v0.14.6
 
 There are no breaking changes.

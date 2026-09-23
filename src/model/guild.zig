@@ -1,6 +1,6 @@
 const std = @import("std");
-const model = @import("../root.zig").model;
-const jconfig = @import("../root.zig").jconfig;
+const jconfig = @import("jconfig");
+const model = @import("../model.zig");
 const Snowflake = model.Snowflake;
 
 pub const Guild = MaybeAvailable(AvailableGuild);

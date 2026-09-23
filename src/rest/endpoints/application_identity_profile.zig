@@ -1,17 +1,20 @@
 const std = @import("std");
-const zigcord = @import("../../root.zig");
-const model = zigcord.model;
-const rest = zigcord.rest;
-const jconfig = zigcord.jconfig;
+const model = @import("model");
+const jconfig = @import("jconfig");
+const EndpointClient = @import("../EndpointClient.zig");
+const RestClient = @import("../RestClient.zig");
+const allocDiscordUriStr = @import("../discord_uri.zig").allocDiscordUriStr;
+const queryFmt = @import("../query_strings.zig").fmt;
+const Result = RestClient.Result;
 
 pub fn updateApplicationIdentityProfile(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     application_id: model.Snowflake,
     user_id: model.Snowflake,
     provider_issued_user_id: []const u8,
     body: UpdateApplicationIdentityProfileBody,
-) !rest.RestClient.Result(model.ApplicationIdentity.Profile) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/applications/{f}/users/{f}/identities/{f}/profile", .{ application_id, user_id, provider_issued_user_id });
+) !Result(model.ApplicationIdentity.Profile) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/applications/{f}/users/{f}/identities/{s}/profile", .{ application_id, user_id, provider_issued_user_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -19,12 +22,12 @@ pub fn updateApplicationIdentityProfile(
 }
 
 pub fn getApplicationIdentityProfile(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     application_id: model.Snowflake,
     user_id: model.Snowflake,
     provider_issued_user_id: []const u8,
-) !rest.RestClient.Result(model.ApplicationIdentity.Profile) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/applications/{f}/users/{f}/identities/{f}/profile", .{ application_id, user_id, provider_issued_user_id });
+) !Result(model.ApplicationIdentity.Profile) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/applications/{f}/users/{f}/identities/{s}/profile", .{ application_id, user_id, provider_issued_user_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -32,11 +35,11 @@ pub fn getApplicationIdentityProfile(
 }
 
 pub fn getApplicationIdentitiesByUserId(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     user_id: model.Snowflake,
     application_id: model.Snowflake,
-) !rest.RestClient.Result(WrappedApplicationIdentites) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/users/{f}/application-identities/{f}", .{ user_id, application_id });
+) !Result(WrappedApplicationIdentites) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/users/{f}/application-identities/{f}", .{ user_id, application_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -44,16 +47,16 @@ pub fn getApplicationIdentitiesByUserId(
 }
 
 pub fn getApplicationIdentitiesByExternalId(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     application_id: model.Snowflake,
     provider_type: []const u8,
     provider_issued_user_id: []const u8,
     query: GetApplicationIdentitiesByExternalIdQuery,
-) !rest.RestClient.Result(WrappedApplicationIdentites) {
-    const uri_str = try rest.allocDiscordUriStr(
+) !Result(WrappedApplicationIdentites) {
+    const uri_str = try allocDiscordUriStr(
         client.rest_client.allocator,
-        "/applications/{application_id}/application-identities/{provider_type}/{provider_issued_user_id}?{f}",
-        .{ application_id, provider_type, provider_issued_user_id, query },
+        "/applications/{f}/application-identities/{s}/{s}?{f}",
+        .{ application_id, provider_type, provider_issued_user_id, queryFmt(query) },
     );
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -62,16 +65,16 @@ pub fn getApplicationIdentitiesByExternalId(
 }
 
 pub fn deleteApplicationIdentity(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     user_id: model.Snowflake,
     application_id: model.Snowflake,
     provider_type: []const u8,
     provider_issued_user_id: []const u8,
     body: DeleteApplicationidentityBody,
-) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(
+) !Result(void) {
+    const uri_str = try allocDiscordUriStr(
         client.rest_client.allocator,
-        "/users/{f}/application-identities/{f}/{f}/{f}/delete",
+        "/users/{f}/application-identities/{f}/{s}/{s}/delete",
         .{ user_id, application_id, provider_type, provider_issued_user_id },
     );
     defer client.rest_client.allocator.free(uri_str);
@@ -93,8 +96,6 @@ pub const WrappedApplicationIdentites = struct {
 
 pub const GetApplicationIdentitiesByExternalIdQuery = struct {
     provider_id: ?[]const u8 = null,
-
-    pub const format = rest.QueryStringFormatMixin(@This()).format;
 };
 
 pub const DeleteApplicationidentityBody = struct {

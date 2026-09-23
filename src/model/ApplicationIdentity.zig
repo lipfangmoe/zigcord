@@ -1,6 +1,5 @@
 const std = @import("std");
-const zigcord = @import("../root.zig");
-const jconfig = zigcord.jconfig;
+const jconfig = @import("jconfig");
 
 provider_type: []const u8,
 provider_id: jconfig.Omittable([]const u8) = .omit,

@@ -1,15 +1,17 @@
-const zigcord = @import("../../root.zig");
 const std = @import("std");
-const model = zigcord.model;
-const rest = zigcord.rest;
-const jconfig = zigcord.jconfig;
+const model = @import("model");
+const jconfig = @import("jconfig");
+const EndpointClient = @import("../EndpointClient.zig");
+const RestClient = @import("../RestClient.zig");
+const Result = RestClient.Result;
+const allocDiscordUriStr = @import("../discord_uri.zig").allocDiscordUriStr;
 
 pub fn createStageInstance(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     body: CreateStageInstanceBody,
     audit_log_reason: ?[]const u8,
-) !rest.RestClient.Result(model.StageInstance) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/stage-instances", .{});
+) !Result(model.StageInstance) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/stage-instances", .{});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -17,10 +19,10 @@ pub fn createStageInstance(
 }
 
 pub fn getStageInstance(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: model.Snowflake,
-) !rest.RestClient.Result(model.StageInstance) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/stage-instances/{f}", .{channel_id});
+) !Result(model.StageInstance) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/stage-instances/{f}", .{channel_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -28,12 +30,12 @@ pub fn getStageInstance(
 }
 
 pub fn modifyStageInstance(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: model.Snowflake,
     body: ModifyStageInstanceBody,
     audit_log_reason: ?[]const u8,
-) !rest.RestClient.Result(model.StageInstance) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/stage-instances/{f}", .{channel_id});
+) !Result(model.StageInstance) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/stage-instances/{f}", .{channel_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -41,10 +43,10 @@ pub fn modifyStageInstance(
 }
 
 pub fn deleteStageInstance(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: model.Snowflake,
-) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/stage-instances/{f}", .{channel_id});
+) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/stage-instances/{f}", .{channel_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 

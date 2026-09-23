@@ -1,5 +1,5 @@
-const model = @import("../root.zig").model;
-const jconfig = @import("../root.zig").jconfig;
+const jconfig = @import("jconfig");
+const model = @import("../model.zig");
 
 id: model.Snowflake,
 guild_id: model.Snowflake,

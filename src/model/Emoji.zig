@@ -1,6 +1,6 @@
 const std = @import("std");
+const jconfig = @import("jconfig");
 const model = @import("../model.zig");
-const jconfig = @import("../root.zig").jconfig;
 const Snowflake = model.Snowflake;
 const User = @import("User.zig");
 const Emoji = @This();

@@ -1,20 +1,24 @@
 const std = @import("std");
-const zigcord = @import("../../root.zig");
-const model = zigcord.model;
-const rest = zigcord.rest;
+const model = @import("model");
+const EndpointClient = @import("../EndpointClient.zig");
+const RestClient = @import("../RestClient.zig");
+const Result = RestClient.Result;
+const discord_uri = @import("../discord_uri.zig");
+const allocDiscordUriStr = discord_uri.allocDiscordUriStr;
+const base_url = discord_uri.base_url;
 
 pub fn getGateway(
-    client: *rest.EndpointClient,
-) !rest.RestClient.Result(GetGatewayResponse) {
-    const uri = std.Uri.parse(rest.base_url ++ "/gateway?v=10&encoding=json") catch undefined;
+    client: *EndpointClient,
+) !Result(GetGatewayResponse) {
+    const uri = std.Uri.parse(base_url ++ "/gateway?v=10&encoding=json") catch undefined;
 
     return try client.rest_client.request(GetGatewayResponse, .GET, uri);
 }
 
 pub fn getGatewayBot(
-    client: *rest.EndpointClient,
-) !rest.RestClient.Result(GetGatewayBotResponse) {
-    const uri = std.Uri.parse(rest.base_url ++ "/gateway/bot") catch undefined;
+    client: *EndpointClient,
+) !Result(GetGatewayBotResponse) {
+    const uri = std.Uri.parse(base_url ++ "/gateway/bot") catch undefined;
 
     return try client.rest_client.request(GetGatewayBotResponse, .GET, uri);
 }

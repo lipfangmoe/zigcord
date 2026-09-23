@@ -1,17 +1,20 @@
-const zigcord = @import("../../root.zig");
 const std = @import("std");
-const model = zigcord.model;
-const rest = zigcord.rest;
-const jconfig = zigcord.jconfig;
+const model = @import("model");
+const jconfig = @import("jconfig");
+const EndpointClient = @import("../EndpointClient.zig");
+const RestClient = @import("../RestClient.zig");
+const Result = RestClient.Result;
+const allocDiscordUriStr = @import("../discord_uri.zig").allocDiscordUriStr;
+const query_strings = @import("../query_strings.zig");
 
 pub fn getAnswerVoters(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: model.Snowflake,
     message_id: model.Snowflake,
     answer_id: model.Snowflake,
     query: GetAnswerVotersQuery,
-) !rest.RestClient.Result(GetAnswerVotersResponse) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/polls/{f}/answers/{f}?{f}", .{ channel_id, message_id, answer_id, query });
+) !Result(GetAnswerVotersResponse) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/polls/{f}/answers/{f}?{f}", .{ channel_id, message_id, answer_id, query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -19,11 +22,11 @@ pub fn getAnswerVoters(
 }
 
 pub fn endPoll(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: model.Snowflake,
     message_id: model.Snowflake,
-) !rest.RestClient.Result(model.Message) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/polls/{f}/expire", .{ channel_id, message_id });
+) !Result(model.Message) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/polls/{f}/expire", .{ channel_id, message_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -34,7 +37,7 @@ pub const GetAnswerVotersQuery = struct {
     after: ?model.Snowflake,
     limit: ?i64,
 
-    pub const format = rest.QueryStringFormatMixin(@This()).format;
+    pub const format = query_strings.formatAsQueryString;
 };
 
 pub const GetAnswerVotersResponse = struct {

@@ -1,14 +1,16 @@
 const std = @import("std");
-const zigcord = @import("../../root.zig");
-const model = zigcord.model;
-const rest = zigcord.rest;
-const jconfig = zigcord.jconfig;
+const model = @import("model");
+const EndpointClient = @import("../EndpointClient.zig");
+const RestClient = @import("../RestClient.zig");
+const Result = RestClient.Result;
+const allocDiscordUriStr = @import("../discord_uri.zig").allocDiscordUriStr;
+const jconfig = @import("jconfig");
 
 pub fn getGuildTemplate(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     template_code: []const u8,
-) !rest.RestClient.Result(model.GuildTemplate) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/templates/{s}", .{template_code});
+) !Result(model.GuildTemplate) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/guilds/templates/{s}", .{template_code});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -16,11 +18,11 @@ pub fn getGuildTemplate(
 }
 
 pub fn createGuildFromGuildTemplate(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     template_code: []const u8,
     body: CreateGuildFromGuildTemplateBody,
-) !rest.RestClient.Result(model.guild.Guild) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/templates/{s}", .{template_code});
+) !Result(model.guild.Guild) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/guilds/templates/{s}", .{template_code});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -28,10 +30,10 @@ pub fn createGuildFromGuildTemplate(
 }
 
 pub fn getGuildTemplates(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     guild_id: model.Snowflake,
-) !rest.RestClient.Result([]model.GuildTemplate) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/templates", .{guild_id});
+) !Result([]model.GuildTemplate) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/templates", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -39,11 +41,11 @@ pub fn getGuildTemplates(
 }
 
 pub fn createGuildTemplate(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     guild_id: model.Snowflake,
     body: CreateGuildTemplateBody,
-) !rest.RestClient.Result(model.GuildTemplate) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/templates", .{guild_id});
+) !Result(model.GuildTemplate) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/templates", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -51,11 +53,11 @@ pub fn createGuildTemplate(
 }
 
 pub fn syncGuildTemplate(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     guild_id: model.Snowflake,
     template_code: []const u8,
-) !rest.RestClient.Result(model.GuildTemplate) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/templates/{s}", .{ guild_id, template_code });
+) !Result(model.GuildTemplate) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/templates/{s}", .{ guild_id, template_code });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -63,12 +65,12 @@ pub fn syncGuildTemplate(
 }
 
 pub fn modifyGuildTemplate(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     guild_id: model.Snowflake,
     template_code: []const u8,
     body: ModifyGuildTemplateBody,
-) !rest.RestClient.Result(model.GuildTemplate) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/templates/{s}", .{ guild_id, template_code });
+) !Result(model.GuildTemplate) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/templates/{s}", .{ guild_id, template_code });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -76,11 +78,11 @@ pub fn modifyGuildTemplate(
 }
 
 pub fn deleteGuildTemplate(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     guild_id: model.Snowflake,
     template_code: []const u8,
-) !rest.RestClient.Result(model.GuildTemplate) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/templates/{s}", .{ guild_id, template_code });
+) !Result(model.GuildTemplate) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/templates/{s}", .{ guild_id, template_code });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 

@@ -1,9 +1,17 @@
 const std = @import("std");
-const zigcord = @import("../root.zig");
-const jconfig = zigcord.jconfig;
-const model = zigcord.model;
-const rest = zigcord.rest;
-const Snowflake = model.Snowflake;
+const jconfig = @import("jconfig");
+const logger = @import("shared").logger;
+const guild = @import("./guild.zig");
+const Snowflake = @import("./snowflake.zig").Snowflake;
+const User = @import("./User.zig");
+const Channel = @import("./Channel.zig");
+const Message = @import("./Message.zig");
+const Permissions = @import("./permissions.zig").Permissions;
+const Entitlement = @import("./Entitlement.zig");
+const components = @import("./components.zig");
+const Role = @import("./Role.zig");
+const IsoTime = @import("./IsoTime.zig");
+const Poll = @import("./Poll.zig");
 
 pub const command = @import("./interaction/command.zig");
 pub const command_option = @import("./interaction/command_option.zig");
@@ -13,20 +21,20 @@ pub const Interaction = struct {
     application_id: Snowflake,
     type: InteractionType,
     data: jconfig.Omittable(InteractionData) = .omit,
-    guild: jconfig.Omittable(model.guild.PartialGuild) = .omit,
+    guild: jconfig.Omittable(guild.PartialGuild) = .omit,
     guild_id: jconfig.Omittable(Snowflake) = .omit,
-    channel: jconfig.Omittable(jconfig.Partial(model.Channel)) = .omit,
+    channel: jconfig.Omittable(jconfig.Partial(Channel)) = .omit,
     channel_id: jconfig.Omittable(Snowflake) = .omit,
-    member: jconfig.Omittable(model.guild.Member) = .omit,
-    user: jconfig.Omittable(model.User) = .omit,
+    member: jconfig.Omittable(guild.Member) = .omit,
+    user: jconfig.Omittable(User) = .omit,
     token: []const u8,
     version: i64,
-    message: jconfig.Omittable(model.Message) = .omit,
-    app_permissions: model.Permissions,
+    message: jconfig.Omittable(Message) = .omit,
+    app_permissions: Permissions,
     locale: jconfig.Omittable([]const u8) = .omit,
     guild_locale: jconfig.Omittable([]const u8) = .omit,
-    entitlements: []const model.Entitlement,
-    authorizing_integration_owners: std.json.ArrayHashMap(model.Snowflake),
+    entitlements: []const Entitlement,
+    authorizing_integration_owners: std.json.ArrayHashMap(Snowflake),
     context: jconfig.Omittable(Context) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
@@ -89,7 +97,7 @@ pub const InteractionType = enum(u8) {
 pub const InteractionData = union(InteractionType) {
     ping: void,
     application_command: ApplicationCommandInteractionData,
-    message_component: model.components.TopLevelMessageComponent.InteractionData,
+    message_component: components.TopLevelMessageComponent.InteractionData,
     application_command_autocomplete: ApplicationCommandInteractionData,
     modal_submit: ModalSubmitData,
 
@@ -104,8 +112,8 @@ pub const ApplicationCommandInteractionData = struct {
     type: command.ApplicationCommandType,
     resolved: jconfig.Omittable(ResolvedData) = .omit,
     options: jconfig.Omittable([]const ApplicationCommandInteractionDataOption) = .omit,
-    guild_id: jconfig.Omittable(model.Snowflake) = .omit,
-    target_id: jconfig.Omittable(model.Snowflake) = .omit,
+    guild_id: jconfig.Omittable(Snowflake) = .omit,
+    target_id: jconfig.Omittable(Snowflake) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
@@ -134,19 +142,19 @@ pub const ApplicationCommandInteractionDataOption = struct {
 
 pub const ModalSubmitData = struct {
     custom_id: []const u8,
-    components: []const model.components.TopLevelModalComponent.InteractionData,
+    components: []const components.TopLevelModalComponent.InteractionData,
     resolved: jconfig.Omittable(ResolvedData) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const ResolvedData = struct {
-    users: jconfig.Omittable(std.json.ArrayHashMap(model.User)) = .omit,
+    users: jconfig.Omittable(std.json.ArrayHashMap(User)) = .omit,
     members: jconfig.Omittable(std.json.ArrayHashMap(InteractionMember)) = .omit,
-    roles: jconfig.Omittable(std.json.ArrayHashMap(model.Role)) = .omit,
-    channels: jconfig.Omittable(std.json.ArrayHashMap(model.Channel)) = .omit,
-    messages: jconfig.Omittable(std.json.ArrayHashMap(model.Message)) = .omit,
-    attachments: jconfig.Omittable(std.json.ArrayHashMap(model.Message.Attachment)) = .omit,
+    roles: jconfig.Omittable(std.json.ArrayHashMap(Role)) = .omit,
+    channels: jconfig.Omittable(std.json.ArrayHashMap(Channel)) = .omit,
+    messages: jconfig.Omittable(std.json.ArrayHashMap(Message)) = .omit,
+    attachments: jconfig.Omittable(std.json.ArrayHashMap(Message.Attachment)) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
@@ -155,12 +163,12 @@ pub const InteractionMember = struct {
     nick: jconfig.Omittable(?[]const u8) = .omit,
     avatar: jconfig.Omittable(?[]const u8) = .omit,
     roles: []Snowflake,
-    joined_at: model.IsoTime,
-    premium_since: jconfig.Omittable(?model.IsoTime) = .omit,
-    flags: model.guild.Member.Flags,
+    joined_at: IsoTime,
+    premium_since: jconfig.Omittable(?IsoTime) = .omit,
+    flags: guild.Member.Flags,
     pending: jconfig.Omittable(bool) = .omit,
     permissions: jconfig.Omittable([]const u8) = .omit,
-    communication_disabled_until: jconfig.Omittable(?model.IsoTime) = .omit,
+    communication_disabled_until: jconfig.Omittable(?IsoTime) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
@@ -254,12 +262,12 @@ pub const ChannelMessageWithSource = struct {
     type: InteractionCallback.Type = .channel_message_with_source,
     tts: jconfig.Omittable(bool) = .omit,
     content: jconfig.Omittable([]const u8) = .omit,
-    embeds: jconfig.Omittable([]const model.Message.Embed) = .omit,
-    allowed_mentions: jconfig.Omittable(model.Message.AllowedMentions) = .omit,
-    flags: jconfig.Omittable(model.Message.Flags) = .omit,
-    components: jconfig.Omittable([]const model.components.TopLevelMessageComponent) = .omit,
-    attachments: jconfig.Omittable([]const rest.EndpointClient.AttachmentRequest) = .omit,
-    poll: jconfig.Omittable(model.Poll) = .omit,
+    embeds: jconfig.Omittable([]const Message.Embed) = .omit,
+    allowed_mentions: jconfig.Omittable(Message.AllowedMentions) = .omit,
+    flags: jconfig.Omittable(Message.Flags) = .omit,
+    components: jconfig.Omittable([]const components.TopLevelMessageComponent) = .omit,
+    attachments: jconfig.Omittable([]const PartialAttachment) = .omit,
+    poll: jconfig.Omittable(Poll) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
@@ -268,12 +276,12 @@ pub const DeferredChannelMessageWithSource = struct {
     type: InteractionCallback.Type = .deferred_channel_message_with_source,
     tts: jconfig.Omittable(bool) = .omit,
     content: jconfig.Omittable([]const u8) = .omit,
-    embeds: jconfig.Omittable([]const model.Message.Embed) = .omit,
-    allowed_mentions: jconfig.Omittable(model.Message.AllowedMentions) = .omit,
-    flags: jconfig.Omittable(model.Message.Flags) = .omit,
-    components: jconfig.Omittable([]const model.components.TopLevelMessageComponent) = .omit,
-    attachments: jconfig.Omittable([]const rest.EndpointClient.AttachmentRequest) = .omit,
-    poll: jconfig.Omittable(model.Poll) = .omit,
+    embeds: jconfig.Omittable([]const Message.Embed) = .omit,
+    allowed_mentions: jconfig.Omittable(Message.AllowedMentions) = .omit,
+    flags: jconfig.Omittable(Message.Flags) = .omit,
+    components: jconfig.Omittable([]components.TopLevelMessageComponent) = .omit,
+    attachments: jconfig.Omittable([]const PartialAttachment) = .omit,
+    poll: jconfig.Omittable(Poll) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
@@ -282,12 +290,12 @@ pub const DeferredUpdateMessage = struct {
     type: InteractionCallback.Type = .deferred_update_message,
     tts: jconfig.Omittable(bool) = .omit,
     content: jconfig.Omittable([]const u8) = .omit,
-    embeds: jconfig.Omittable([]const model.Message.Embed) = .omit,
-    allowed_mentions: jconfig.Omittable(model.Message.AllowedMentions) = .omit,
-    flags: jconfig.Omittable(model.Message.Flags) = .omit,
-    components: jconfig.Omittable([]const model.components.TopLevelMessageComponent) = .omit,
-    attachments: jconfig.Omittable([]const rest.EndpointClient.AttachmentRequest) = .omit,
-    poll: jconfig.Omittable(model.Poll) = .omit,
+    embeds: jconfig.Omittable([]const Message.Embed) = .omit,
+    allowed_mentions: jconfig.Omittable(Message.AllowedMentions) = .omit,
+    flags: jconfig.Omittable(Message.Flags) = .omit,
+    components: jconfig.Omittable([]const components.TopLevelMessageComponent) = .omit,
+    attachments: jconfig.Omittable([]const PartialAttachment) = .omit,
+    poll: jconfig.Omittable(Poll) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
@@ -296,12 +304,12 @@ pub const UpdateMessage = struct {
     type: InteractionCallback.Type = .update_message,
     tts: jconfig.Omittable(bool) = .omit,
     content: jconfig.Omittable([]const u8) = .omit,
-    embeds: jconfig.Omittable([]const model.Message.Embed) = .omit,
-    allowed_mentions: jconfig.Omittable(model.Message.AllowedMentions) = .omit,
-    flags: jconfig.Omittable(model.Message.Flags) = .omit,
-    components: jconfig.Omittable([]const model.components.TopLevelMessageComponent) = .omit,
-    attachments: jconfig.Omittable([]const rest.EndpointClient.AttachmentRequest) = .omit,
-    poll: jconfig.Omittable(model.Poll) = .omit,
+    embeds: jconfig.Omittable([]const Message.Embed) = .omit,
+    allowed_mentions: jconfig.Omittable(Message.AllowedMentions) = .omit,
+    flags: jconfig.Omittable(Message.Flags) = .omit,
+    components: jconfig.Omittable([]const components.TopLevelMessageComponent) = .omit,
+    attachments: jconfig.Omittable([]const PartialAttachment) = .omit,
+    poll: jconfig.Omittable(Poll) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
@@ -309,7 +317,7 @@ pub const UpdateMessage = struct {
 pub const ModalInteractionCallback = struct {
     custom_id: []const u8,
     title: []const u8,
-    components: []const model.components.TopLevelModalComponent,
+    components: []const components.TopLevelModalComponent,
 };
 
 pub const AnyInteractionCallbackAutocomplete = union(enum) {
@@ -336,6 +344,23 @@ pub const InteractionCallbackAutocompleteInteger = struct {
 pub const InteractionCallbackAutocompleteDouble = struct {
     type: InteractionCallback.Type = .application_command_autocomplete_result,
     choices: []const command_option.DoubleChoice,
+};
+
+pub const PartialAttachment = struct {
+    filename: jconfig.Omittable([]const u8) = .omit,
+    description: jconfig.Omittable([]const u8) = .omit,
+    content_type: jconfig.Omittable([]const u8) = .omit,
+    size: jconfig.Omittable(u64) = .omit,
+    url: jconfig.Omittable([]const u8) = .omit,
+    proxy_url: jconfig.Omittable([]const u8) = .omit,
+    height: jconfig.Omittable(?i64) = .omit,
+    width: jconfig.Omittable(?i64) = .omit,
+    ephemeral: jconfig.Omittable(bool) = .omit,
+    duration_secs: jconfig.Omittable(f64) = .omit,
+    waveform: jconfig.Omittable([]const u8) = .omit,
+    flags: jconfig.Omittable(Message.AttachmentFlags) = .omit,
+
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const Context = enum(u2) {

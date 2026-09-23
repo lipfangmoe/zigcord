@@ -42,10 +42,12 @@ pub fn main(init: std.process.Init) !void {
         switch (event.event orelse continue) {
             .message_create => |msg_event| {
                 const value = try endpoint_client.createGuildSticker(msg_event.guild_id.some, .{
-                    .name = "sticker test",
-                    .description = "fun sticker",
-                    .tags = "fun",
-                    .file = try .fromFileReader("klee.png", "image/png", &file_reader),
+                    .files = try .fromFileReader("klee.png", "image/png", &file_reader),
+                    .payload_json = .{
+                        .name = "sticker test",
+                        .description = "fun sticker",
+                        .tags = "fun",
+                    },
                 }, null);
                 defer value.deinit();
                 switch (value) {

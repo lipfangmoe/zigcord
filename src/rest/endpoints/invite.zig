@@ -1,15 +1,20 @@
-const zigcord = @import("../../root.zig");
 const std = @import("std");
-const model = zigcord.model;
-const rest = zigcord.rest;
-const jconfig = zigcord.jconfig;
+const model = @import("model");
+const jconfig = @import("jconfig");
+const EndpointClient = @import("../EndpointClient.zig");
+const RestClient = @import("../RestClient.zig");
+const Result = RestClient.Result;
+const allocDiscordUriStr = @import("../discord_uri.zig").allocDiscordUriStr;
+const Upload = @import("../upload.zig").Upload;
+const multipart = @import("../multipart.zig");
+const query_strings = @import("../query_strings.zig");
 
 pub fn getInvite(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     code: []const u8,
     query: GetInviteQuery,
-) !rest.RestClient.Result(model.Invite) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/invites/{s}?{f}", .{ code, query });
+) !Result(model.Invite) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/invites/{s}?{f}", .{ code, query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -17,11 +22,11 @@ pub fn getInvite(
 }
 
 pub fn deleteInvite(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     code: []const u8,
     audit_log_reason: ?[]const u8,
-) !rest.RestClient.Result(model.Invite) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/invites/{s}", .{code});
+) !Result(model.Invite) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/invites/{s}", .{code});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -29,30 +34,30 @@ pub fn deleteInvite(
 }
 
 pub fn getTargetUsers(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     invite_code: []const u8,
 ) !GetTargetUsersResponse {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/invites/{s}/target-users", .{invite_code});
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/invites/{s}/target-users", .{invite_code});
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
 
-    const pending_result = try client.rest_client.request(rest.RestClient.RawBody, .GET, uri);
+    const pending_result = try client.rest_client.request(RestClient.RawBody, .GET, uri);
 
     return .{ .rest_result = pending_result };
 }
 
 pub fn updateTargetUsers(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     invite_code: []const u8,
     body: UpdateTargetUsersFormBody,
-) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/invites/{s}/target-users", .{invite_code});
+) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/invites/{s}/target-users", .{invite_code});
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
 
-    const transfer_encoding = try rest.getTransferEncoding(body, "target_users_file");
+    const transfer_encoding = try multipart.getTransferEncoding(body, "target_users_file");
 
     // https://codeberg.org/ziglang/zig/issues/30623 - for now, we will write the file
     // to an allocatingwriter and send it all in one shot. once streaming to body_writer is fixed,
@@ -64,8 +69,10 @@ pub fn updateTargetUsers(
     };
     defer aw.deinit();
 
+    try aw.writer.print("{f}", .{body.fmt("target_users_file")});
+
     var buf: [1028]u8 = undefined;
-    var pending_request = try client.rest_client.beginMultipartRequest(void, .PUT, uri, transfer_encoding, rest.multipart_boundary, &buf);
+    var pending_request = try client.rest_client.beginMultipartRequest(void, .PUT, uri, transfer_encoding, multipart.boundary, &buf);
 
     try pending_request.request.sendBodyComplete(aw.written());
 
@@ -73,10 +80,10 @@ pub fn updateTargetUsers(
 }
 
 pub fn getTargetUsersJobStatus(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     invite_code: []const u8,
-) !rest.RestClient.Result(JobStatus) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/invites/{s}/target-users/job-status", .{invite_code});
+) !Result(JobStatus) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/invites/{s}/target-users/job-status", .{invite_code});
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -89,11 +96,11 @@ pub const GetInviteQuery = struct {
     with_expiration: ?bool,
     guild_scheduled_event_id: ?model.Snowflake,
 
-    pub const format = rest.QueryStringFormatMixin(@This()).format;
+    pub const format = query_strings.formatAsQueryString;
 };
 
 pub const GetTargetUsersResponse = struct {
-    rest_result: rest.RestClient.Result(rest.RestClient.RawBody),
+    rest_result: Result(RestClient.RawBody),
 
     /// same as iterUsers, but returns an easier-to-use but harder-to-debug error union instead of a DiscordError when an error occurs.
     pub fn iterUsersOk(self: *GetTargetUsersResponse) !UsersIterator {
@@ -101,7 +108,7 @@ pub const GetTargetUsersResponse = struct {
         return .{ .reader = raw_body.reader, .header_read = false };
     }
 
-    pub fn iterUsers(self: *GetTargetUsersResponse) rest.RestClient.Result(UsersIterator) {
+    pub fn iterUsers(self: *GetTargetUsersResponse) Result(UsersIterator) {
         return switch (self.rest_result) {
             .ok => |ok| .{ .ok = .{ .status = ok.status, .value = UsersIterator{ .reader = ok.value.reader, .header_read = false }, .parsed = null } },
             .err => |err| .{ .err = .{ .status = err.status, .value = err.value, .parsed = err.parsed } },
@@ -109,9 +116,7 @@ pub const GetTargetUsersResponse = struct {
     }
 };
 
-pub const UpdateTargetUsersFormBody = struct {
-    target_users_file: rest.Upload,
-};
+pub const UpdateTargetUsersFormBody = multipart.FormDataBody(Upload, void);
 
 pub const UsersIterator = struct {
     reader: *std.Io.Reader,

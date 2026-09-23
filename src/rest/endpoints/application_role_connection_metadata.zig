@@ -1,15 +1,17 @@
 const std = @import("std");
-const zigcord = @import("../../root.zig");
-const model = zigcord.model;
-const rest = zigcord.rest;
+const model = @import("model");
+const EndpointClient = @import("../EndpointClient.zig");
+const RestClient = @import("../RestClient.zig");
+const allocDiscordUriStr = @import("../discord_uri.zig").allocDiscordUriStr;
+const Result = RestClient.Result;
 const Snowflake = model.Snowflake;
 const ApplicationRoleConnectionMetadata = model.ApplicationRoleConnectionMetadata;
 
 pub fn getApplicationRoleConnectionMetadataRecords(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     application_id: Snowflake,
-) !rest.RestClient.Result([]ApplicationRoleConnectionMetadata) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/applications/{f}/role-connections/metadata", .{application_id});
+) !Result([]ApplicationRoleConnectionMetadata) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/applications/{f}/role-connections/metadata", .{application_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -17,11 +19,11 @@ pub fn getApplicationRoleConnectionMetadataRecords(
 }
 
 pub fn updateApplicationRoleConnectionMetadataRecords(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     application_id: Snowflake,
     new_records: []const ApplicationRoleConnectionMetadata,
-) !rest.RestClient.Result([]ApplicationRoleConnectionMetadata) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/applications/{f}/role-connections/metadata", .{application_id});
+) !Result([]ApplicationRoleConnectionMetadata) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/applications/{f}/role-connections/metadata", .{application_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 

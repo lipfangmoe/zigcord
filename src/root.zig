@@ -1,31 +1,17 @@
 const std = @import("std");
 const testing = std.testing;
 
-pub const logger = std.log.scoped(.zigcord);
-
-pub const interaction_server = @import("./interaction_server.zig");
-pub const model = @import("./model.zig");
-pub const rest = @import("./rest.zig");
-pub const gateway = @import("./gateway.zig");
-pub const jconfig = @import("./jconfig.zig");
+pub const interaction_server = @import("interaction_server");
+pub const model = @import("model");
+pub const rest = @import("rest");
+pub const gateway = @import("gateway");
+pub const jconfig = @import("jconfig");
 
 pub const HttpInteractionServer = interaction_server.HttpServer;
 pub const EndpointClient = rest.EndpointClient;
 pub const GatewayClient = gateway.Client;
 
-pub const Authorization = union(enum) {
-    bot: []const u8,
-    bearer: []const u8,
-
-    pub fn format(self: Authorization, writer: *std.Io.Writer) !void {
-        switch (self) {
-            .bot => |token| try writer.print("Bot {s}", .{token}),
-            .bearer => |token| try writer.print("Bearer {s}", .{token}),
-        }
-    }
-};
-
-pub const version = @import("build").version;
+pub const version = @import("shared").version;
 
 test {
     std.testing.refAllDecls(@This());
