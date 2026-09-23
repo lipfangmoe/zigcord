@@ -1,16 +1,21 @@
 const std = @import("std");
-const zigcord = @import("../../root.zig");
-const model = zigcord.model;
-const rest = zigcord.rest;
-const jconfig = zigcord.jconfig;
+const model = @import("model");
+const jconfig = @import("jconfig");
+const EndpointClient = @import("../EndpointClient.zig");
+const RestClient = @import("../RestClient.zig");
+const Result = RestClient.Result;
+const allocDiscordUriStr = @import("../discord_uri.zig").allocDiscordUriStr;
+const Upload = @import("../upload.zig").Upload;
+const multipart = @import("../multipart.zig");
+const query_strings = @import("../query_strings.zig");
 
 pub fn createInteractionResponse(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     interaction_id: model.Snowflake,
     interaction_token: []const u8,
     body: model.interaction.InteractionCallback,
-) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/interactions/{f}/{s}/callback", .{ interaction_id, interaction_token });
+) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/interactions/{f}/{s}/callback", .{ interaction_id, interaction_token });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -18,16 +23,16 @@ pub fn createInteractionResponse(
 }
 
 pub fn createInteractionResponseMultipart(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     interaction_id: model.Snowflake,
     interaction_token: []const u8,
     form: CreateInteractionResponseFormBody,
-) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/interactions/{f}/{s}/callback", .{ interaction_id, interaction_token });
+) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/interactions/{f}/{s}/callback", .{ interaction_id, interaction_token });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    const transfer_encoding = try rest.getTransferEncoding(form, "files");
+    const transfer_encoding = try multipart.getTransferEncoding(form, "files");
 
     // https://codeberg.org/ziglang/zig/issues/30623 - for now, we will write the file
     // to an allocatingwriter and send it all in one shot. once streaming to body_writer is fixed,
@@ -39,10 +44,10 @@ pub fn createInteractionResponseMultipart(
     };
     defer aw.deinit();
 
-    try rest.writeMultipartFormDataBody(form, "files", &aw.writer);
+    try aw.writer.print("{f}", .{form.fmt("files")});
 
     var buf: [1028]u8 = undefined;
-    var pending_request = try client.rest_client.beginMultipartRequest(void, .POST, uri, transfer_encoding, rest.multipart_boundary, &buf);
+    var pending_request = try client.rest_client.beginMultipartRequest(void, .POST, uri, transfer_encoding, multipart.boundary, &buf);
 
     try pending_request.request.sendBodyComplete(aw.written());
 
@@ -50,11 +55,11 @@ pub fn createInteractionResponseMultipart(
 }
 
 pub fn getOriginalInteractionResponse(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     application_id: model.Snowflake,
     interaction_token: []const u8,
-) !rest.RestClient.Result(model.Message) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}/messages/@original", .{ application_id, interaction_token });
+) !Result(model.Message) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}/messages/@original", .{ application_id, interaction_token });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -62,12 +67,12 @@ pub fn getOriginalInteractionResponse(
 }
 
 pub fn editOriginalInteractionResponse(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     application_id: model.Snowflake,
     interaction_token: []const u8,
-    body: rest.EndpointClient.webhook.EditWebhookMessageJsonBody,
-) !rest.RestClient.Result(model.Message) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}/messages/@original", .{ application_id, interaction_token });
+    body: EndpointClient.webhook.EditWebhookMessageJsonBody,
+) !Result(model.Message) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}/messages/@original", .{ application_id, interaction_token });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -75,16 +80,16 @@ pub fn editOriginalInteractionResponse(
 }
 
 pub fn editOriginalInteractionResponseMultipart(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     application_id: model.Snowflake,
     interaction_token: []const u8,
-    body: rest.EndpointClient.webhook.EditWebhookMessageFormBody,
-) !rest.RestClient.Result(model.Message) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}/messages/@original", .{ application_id, interaction_token });
+    body: EndpointClient.webhook.EditWebhookMessageFormBody,
+) !Result(model.Message) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}/messages/@original", .{ application_id, interaction_token });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    const transfer_encoding = try rest.getTransferEncoding(body, "files");
+    const transfer_encoding = try multipart.getTransferEncoding(body, "files");
 
     // https://codeberg.org/ziglang/zig/issues/30623 - for now, we will write the file
     // to an allocatingwriter and send it all in one shot. once streaming to body_writer is fixed,
@@ -96,10 +101,10 @@ pub fn editOriginalInteractionResponseMultipart(
     };
     defer aw.deinit();
 
-    try rest.writeMultipartFormDataBody(body, "files", &aw.writer);
+    try aw.writer.print("{f}", .{body.fmt("files")});
 
     var buf: [1028]u8 = undefined;
-    var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .PATCH, uri, transfer_encoding, rest.multipart_boundary, &buf);
+    var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .PATCH, uri, transfer_encoding, multipart.boundary, &buf);
 
     try pending_request.request.sendBodyComplete(aw.written());
 
@@ -107,11 +112,11 @@ pub fn editOriginalInteractionResponseMultipart(
 }
 
 pub fn deleteOriginalInteractionResponse(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     application_id: model.Snowflake,
     interaction_token: []const u8,
-) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}/messages/@original", .{ application_id, interaction_token });
+) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}/messages/@original", .{ application_id, interaction_token });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -119,63 +124,59 @@ pub fn deleteOriginalInteractionResponse(
 }
 
 pub fn createFollowupMessage(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     application_id: model.Snowflake,
     interaction_token: []const u8,
-    body: rest.EndpointClient.webhook.ExecuteWebhookJsonBody,
-) !rest.RestClient.Result(model.Message) {
+    body: EndpointClient.webhook.ExecuteWebhookJsonBody,
+) !Result(model.Message) {
     return client.executeWebhookWait(application_id, interaction_token, .{}, body);
 }
 
 pub fn createFollowupMessageMultipart(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     application_id: model.Snowflake,
     interaction_token: []const u8,
-    body: rest.EndpointClient.webhook.ExecuteWebhookFormBody,
-) !rest.RestClient.Result(model.Message) {
+    body: EndpointClient.webhook.ExecuteWebhookFormBody,
+) !Result(model.Message) {
     return client.executeWebhookWaitMultipart(application_id, interaction_token, .{}, body);
 }
 
 pub fn getFollowupMessage(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     application_id: model.Snowflake,
     interaction_token: []const u8,
     message_id: model.Snowflake,
-) !rest.RestClient.Result(model.Message) {
+) !Result(model.Message) {
     return client.getWebhookMessage(application_id, interaction_token, message_id, .{});
 }
 
 pub fn editFollowupMessage(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     application_id: model.Snowflake,
     interaction_token: []const u8,
     message_id: model.Snowflake,
-    body: rest.EndpointClient.webhook.EditWebhookMessageJsonBody,
-) !rest.RestClient.Result(model.Message) {
+    body: EndpointClient.webhook.EditWebhookMessageJsonBody,
+) !Result(model.Message) {
     return client.editWebhookMessage(application_id, interaction_token, message_id, .{}, body);
 }
 
 pub fn editFollowupMessageMultipart(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     application_id: model.Snowflake,
     interaction_token: []const u8,
     message_id: model.Snowflake,
-    body: rest.EndpointClient.webhook.EditWebhookMessageFormBody,
-) !rest.RestClient.Result(model.Message) {
+    body: EndpointClient.webhook.EditWebhookMessageFormBody,
+) !Result(model.Message) {
     return client.editWebhookMessageMultipart(application_id, interaction_token, message_id, .{}, body);
 }
 
 pub fn deleteFollowupMessage(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     application_id: model.Snowflake,
     interaction_token: []const u8,
     message_id: model.Snowflake,
-) !rest.RestClient.Result(void) {
+) !Result(void) {
     return client.deleteWebhookMessage(application_id, interaction_token, message_id, .{});
 }
 
-pub const CreateInteractionResponseFormBody = struct {
-    type: model.interaction.InteractionCallback.Type,
-    data: ?model.interaction.InteractionCallback = null,
-    files: ?[]const rest.Upload = null,
-};
+pub const CreateInteractionResponseFormBody = multipart.FormDataBody(?[]const Upload, model.interaction.InteractionCallback);

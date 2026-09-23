@@ -2,27 +2,28 @@
 
 const std = @import("std");
 const builtin = @import("builtin");
-const zigcord = @import("../root.zig");
+const shared = @import("shared");
+const Authorization = @import("./authorization.zig").Authorization;
 const ErrorCode = @import("./JsonErrorCodes.zig").ErrorCode;
 
 const RestClient = @This();
 
 io: std.Io,
 allocator: std.mem.Allocator,
-auth: zigcord.Authorization,
+auth: Authorization,
 client: std.http.Client,
 config: Config,
 
 /// Creates a discord http client with default configuration.
 ///
 /// Cannot be used in tests, instead use `initWithConfig` and provide a mock response from the server.
-pub fn init(io: std.Io, allocator: std.mem.Allocator, auth: zigcord.Authorization) RestClient {
+pub fn init(io: std.Io, allocator: std.mem.Allocator, auth: Authorization) RestClient {
     const config = Config{};
     return initWithConfig(io, allocator, auth, config);
 }
 
 /// Creates a discord http client based on a configuration
-pub fn initWithConfig(io: std.Io, allocator: std.mem.Allocator, auth: zigcord.Authorization, config: Config) RestClient {
+pub fn initWithConfig(io: std.Io, allocator: std.mem.Allocator, auth: Authorization, config: Config) RestClient {
     const client = std.http.Client{ .io = io, .allocator = allocator };
     return .{
         .io = io,
@@ -343,7 +344,7 @@ pub fn deinit(self: *RestClient) void {
 }
 
 pub const Config = struct {
-    pub const default_user_agent = std.fmt.comptimePrint("DiscordBot (https://codeberg.org/lipfang/zigcord, {f})", .{zigcord.version});
+    pub const default_user_agent = std.fmt.comptimePrint("DiscordBot (https://codeberg.org/lipfang/zigcord, {f})", .{shared.version});
 
     /// 1mb seems fair since all discord api responses should be text, with urls for anything large.
     /// surely they don't respond with more than 1 million characters... Clueless

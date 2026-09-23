@@ -1,7 +1,6 @@
 const std = @import("std");
-const zigcord = @import("../root.zig");
-const model = zigcord.model;
-const jconfig = zigcord.jconfig;
+const jconfig = @import("jconfig");
+const model = @import("../model.zig");
 
 const Lobby = @This();
 

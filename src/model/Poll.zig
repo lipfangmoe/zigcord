@@ -1,7 +1,6 @@
 const std = @import("std");
-const zigcord = @import("../root.zig");
-const jconfig = zigcord.jconfig;
-const model = zigcord.model;
+const jconfig = @import("jconfig");
+const model = @import("../model.zig");
 const Snowflake = model.Snowflake;
 
 const Poll = @This();

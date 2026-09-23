@@ -1,13 +1,20 @@
 const std = @import("std");
-const zigcord = @import("../../root.zig");
-const model = zigcord.model;
-const rest = zigcord.rest;
+const model = @import("model");
+const jconfig = @import("jconfig");
+const EndpointClient = @import("../EndpointClient.zig");
+const RestClient = @import("../RestClient.zig");
+const discord_uri = @import("../discord_uri.zig");
+const multipart = @import("../multipart.zig");
+const query_strings = @import("../query_strings.zig");
+const allocDiscordUriStr = discord_uri.allocDiscordUriStr;
+const Result = RestClient.Result;
 const Snowflake = model.Snowflake;
-const jconfig = zigcord.jconfig;
 const Channel = model.Channel;
+const Message = model.Message;
+const Upload = @import("../upload.zig").Upload;
 
-pub fn getChannel(client: *rest.EndpointClient, channel_id: Snowflake) !rest.RestClient.Result(Channel) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}", .{channel_id});
+pub fn getChannel(client: *EndpointClient, channel_id: Snowflake) !Result(Channel) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}", .{channel_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -15,12 +22,12 @@ pub fn getChannel(client: *rest.EndpointClient, channel_id: Snowflake) !rest.Res
 }
 
 pub fn modifyChannel(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: Snowflake,
     body: ModifyChannelBody,
     audit_log_reason: ?[]const u8,
-) !rest.RestClient.Result(Channel) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}", .{channel_id});
+) !Result(Channel) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}", .{channel_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -28,12 +35,12 @@ pub fn modifyChannel(
 }
 
 pub fn setVoiceChannelStatus(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: Snowflake,
     body: SetVoiceChannelStatusBody,
     audit_log_reason: ?[]const u8,
-) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}", .{channel_id});
+) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}", .{channel_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -41,11 +48,11 @@ pub fn setVoiceChannelStatus(
 }
 
 pub fn deleteChannel(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: Snowflake,
     audit_log_reason: ?[]const u8,
-) !rest.RestClient.Result(Channel) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}", .{channel_id});
+) !Result(Channel) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}", .{channel_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -53,11 +60,11 @@ pub fn deleteChannel(
 }
 
 pub fn getChannelMessages(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: Snowflake,
     query: GetChannelMessagesQuery,
-) !rest.RestClient.Result([]const model.Message) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages?{f}", .{ channel_id, query });
+) !Result([]const model.Message) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages?{f}", .{ channel_id, query });
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -66,11 +73,11 @@ pub fn getChannelMessages(
 }
 
 pub fn getChannelMessage(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: Snowflake,
     message_id: Snowflake,
-) !rest.RestClient.Result(model.Message) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages/{f}", .{ channel_id, message_id });
+) !Result(model.Message) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages/{f}", .{ channel_id, message_id });
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -80,11 +87,11 @@ pub fn getChannelMessage(
 
 /// Note - the CreateMessageJsonBody type has several helpers for creating messages easily
 pub fn createMessage(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: Snowflake,
     body: CreateMessageJsonBody,
-) !rest.RestClient.Result(model.Message) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages", .{channel_id});
+) !Result(model.Message) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages", .{channel_id});
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -94,16 +101,16 @@ pub fn createMessage(
 
 /// Note - the CreateMessageFormBody type has several helpers for creating messages easily
 pub fn createMessageMultipart(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: Snowflake,
     body: CreateMessageFormBody,
-) !rest.RestClient.Result(model.Message) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages", .{channel_id});
+) !Result(model.Message) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages", .{channel_id});
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
 
-    const transfer_encoding = try rest.getTransferEncoding(body, "files");
+    const transfer_encoding = try multipart.getTransferEncoding(body, "files");
 
     // https://codeberg.org/ziglang/zig/issues/30623 - for now, we will write the file
     // to an allocatingwriter and send it all in one shot. once streaming to body_writer is fixed,
@@ -115,10 +122,10 @@ pub fn createMessageMultipart(
     };
     defer aw.deinit();
 
-    try rest.writeMultipartFormDataBody(body, "files", &aw.writer);
+    try aw.writer.print("{f}", .{body.fmt("files")});
 
     var buf: [1028]u8 = undefined;
-    var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .POST, uri, transfer_encoding, rest.multipart_boundary, &buf);
+    var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .POST, uri, transfer_encoding, multipart.boundary, &buf);
 
     try pending_request.request.sendBodyComplete(aw.written());
 
@@ -126,11 +133,11 @@ pub fn createMessageMultipart(
 }
 
 pub fn crosspostMessage(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: Snowflake,
     message_id: Snowflake,
-) !rest.RestClient.Result(model.Message) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages/{f}/crosspost", .{ channel_id, message_id });
+) !Result(model.Message) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages/{f}/crosspost", .{ channel_id, message_id });
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -139,12 +146,12 @@ pub fn crosspostMessage(
 }
 
 pub fn createReaction(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: Snowflake,
     message_id: Snowflake,
     emoji: ReactionEmoji,
-) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages/{f}/reactions/{f}/@me", .{ channel_id, message_id, emoji });
+) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages/{f}/reactions/{f}/@me", .{ channel_id, message_id, emoji });
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -153,12 +160,12 @@ pub fn createReaction(
 }
 
 pub fn deleteOwnReaction(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: Snowflake,
     message_id: Snowflake,
     emoji: ReactionEmoji,
-) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages/{f}/reactions/{f}/@me", .{ channel_id, message_id, emoji });
+) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages/{f}/reactions/{f}/@me", .{ channel_id, message_id, emoji });
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -167,13 +174,13 @@ pub fn deleteOwnReaction(
 }
 
 pub fn deleteUserReaction(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: Snowflake,
     message_id: Snowflake,
     emoji: ReactionEmoji,
     user_id: Snowflake,
-) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages/{f}/reactions/{f}/{f}", .{ channel_id, message_id, emoji, user_id });
+) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages/{f}/reactions/{f}/{f}", .{ channel_id, message_id, emoji, user_id });
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -182,13 +189,13 @@ pub fn deleteUserReaction(
 }
 
 pub fn getReactions(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: Snowflake,
     message_id: Snowflake,
     emoji: ReactionEmoji,
     query: GetEmojiQuery,
-) !rest.RestClient.Result([]const model.User) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages/{f}/reactions/{f}?{f}", .{ channel_id, message_id, emoji, query });
+) !Result([]const model.User) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages/{f}/reactions/{f}?{f}", .{ channel_id, message_id, emoji, query });
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -197,11 +204,11 @@ pub fn getReactions(
 }
 
 pub fn deleteAllReactions(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: Snowflake,
     message_id: Snowflake,
-) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages/{f}/reactions", .{ channel_id, message_id });
+) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages/{f}/reactions", .{ channel_id, message_id });
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -210,12 +217,12 @@ pub fn deleteAllReactions(
 }
 
 pub fn deleteAllReactionsForEmoji(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: Snowflake,
     message_id: Snowflake,
     emoji: ReactionEmoji,
-) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages/{f}/reactions/{f}", .{ channel_id, message_id, emoji });
+) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages/{f}/reactions/{f}", .{ channel_id, message_id, emoji });
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -224,12 +231,12 @@ pub fn deleteAllReactionsForEmoji(
 }
 
 pub fn editMessage(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: Snowflake,
     message_id: Snowflake,
     body: EditMessageJsonBody,
-) !rest.RestClient.Result(model.Message) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages/{f}", .{ channel_id, message_id });
+) !Result(model.Message) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages/{f}", .{ channel_id, message_id });
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -238,17 +245,17 @@ pub fn editMessage(
 }
 
 pub fn editMessageMultipart(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: Snowflake,
     message_id: Snowflake,
     body: EditMessageFormBody,
-) !rest.RestClient.Result(model.Message) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages/{f}", .{ channel_id, message_id });
+) !Result(model.Message) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages/{f}", .{ channel_id, message_id });
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
 
-    const transfer_encoding = try rest.getTransferEncoding(body, "files");
+    const transfer_encoding = try multipart.getTransferEncoding(body, "files");
 
     // https://codeberg.org/ziglang/zig/issues/30623 - for now, we will write the file
     // to an allocatingwriter and send it all in one shot. once streaming to body_writer is fixed,
@@ -260,10 +267,10 @@ pub fn editMessageMultipart(
     };
     defer aw.deinit();
 
-    try rest.writeMultipartFormDataBody(body, "files", &aw.writer);
+    try aw.writer.print("{f}", .{body.fmt("files")});
 
     var buf: [1028]u8 = undefined;
-    var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .PATCH, uri, transfer_encoding, rest.multipart_boundary, &buf);
+    var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .PATCH, uri, transfer_encoding, multipart.boundary, &buf);
 
     try pending_request.request.sendBodyComplete(aw.written());
 
@@ -271,12 +278,12 @@ pub fn editMessageMultipart(
 }
 
 pub fn deleteMessage(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: Snowflake,
     message_id: Snowflake,
     audit_log_reason: ?[]const u8,
-) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages/{f}", .{ channel_id, message_id });
+) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages/{f}", .{ channel_id, message_id });
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -285,12 +292,12 @@ pub fn deleteMessage(
 }
 
 pub fn bulkDeleteMessages(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: Snowflake,
     message_ids: []const Snowflake,
     audit_log_reason: ?[]const u8,
-) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages/bulk-delete", .{channel_id});
+) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages/bulk-delete", .{channel_id});
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -299,11 +306,11 @@ pub fn bulkDeleteMessages(
 }
 
 pub fn getChannelPins(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: Snowflake,
     query: GetChannelPinsQuery,
-) !rest.RestClient.Result([]const model.Channel.MessagePin) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages/pins?{f}", .{ channel_id, query });
+) !Result([]const model.Channel.MessagePin) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages/pins?{f}", .{ channel_id, query });
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -312,13 +319,13 @@ pub fn getChannelPins(
 }
 
 pub fn editChannelPermissions(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: Snowflake,
     overwrite_id: Snowflake,
     body: EditChannelPermissions,
     audit_log_reason: ?[]const u8,
-) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/permissions/{f}", .{ channel_id, overwrite_id });
+) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/permissions/{f}", .{ channel_id, overwrite_id });
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -326,8 +333,8 @@ pub fn editChannelPermissions(
     return client.rest_client.requestWithJsonBodyAndAuditLogReason(void, .PUT, uri, body, .{}, audit_log_reason);
 }
 
-pub fn getChannelInvites(client: *rest.EndpointClient, channel_id: Snowflake) !rest.RestClient.Result([]const model.Invite.WithMetadata) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/invites", .{channel_id});
+pub fn getChannelInvites(client: *EndpointClient, channel_id: Snowflake) !Result([]const model.Invite.WithMetadata) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/invites", .{channel_id});
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -336,12 +343,12 @@ pub fn getChannelInvites(client: *rest.EndpointClient, channel_id: Snowflake) !r
 }
 
 pub fn createChannelInvite(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: Snowflake,
     body: CreateChannelInviteJsonBody,
     audit_log_reason: ?[]const u8,
-) !rest.RestClient.Result(model.Invite) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/invites", .{channel_id});
+) !Result(model.Invite) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/invites", .{channel_id});
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -350,17 +357,17 @@ pub fn createChannelInvite(
 }
 
 pub fn createChannelInviteMultipart(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: Snowflake,
     body: CreateChannelInviteFormBody,
     audit_log_reason: ?[]const u8,
-) !rest.RestClient.Result(model.Invite) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/invites", .{channel_id});
+) !Result(model.Invite) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/invites", .{channel_id});
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
 
-    const transfer_encoding = try rest.getTransferEncoding(body, "target_users_file");
+    const transfer_encoding = try multipart.getTransferEncoding(body, "target_users_file");
 
     // https://codeberg.org/ziglang/zig/issues/30623 - for now, we will write the file
     // to an allocatingwriter and send it all in one shot. once streaming to body_writer is fixed,
@@ -372,8 +379,10 @@ pub fn createChannelInviteMultipart(
     };
     defer aw.deinit();
 
+    try aw.writer.print("{f}", .{body.fmt("target_users_file")});
+
     var buf: [1028]u8 = undefined;
-    var pending_request = try client.rest_client.beginMultipartRequestWithAuditLogReason(model.Invite, .PUT, uri, transfer_encoding, rest.multipart_boundary, &buf, audit_log_reason);
+    var pending_request = try client.rest_client.beginMultipartRequestWithAuditLogReason(model.Invite, .PUT, uri, transfer_encoding, multipart.boundary, &buf, audit_log_reason);
 
     try pending_request.request.sendBodyComplete(aw.written());
 
@@ -381,12 +390,12 @@ pub fn createChannelInviteMultipart(
 }
 
 pub fn deleteChannelPermission(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: Snowflake,
     overwrite_id: Snowflake,
     audit_log_reason: ?[]const u8,
-) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/permissions/{f}", .{ channel_id, overwrite_id });
+) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/permissions/{f}", .{ channel_id, overwrite_id });
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -395,12 +404,12 @@ pub fn deleteChannelPermission(
 }
 
 pub fn followAnnouncementChannel(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_to_follow_id: Snowflake,
     target_channel_id: Snowflake,
     audit_log_reason: ?[]const u8,
-) !rest.RestClient.Result(Channel.Followed) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/followers", .{channel_to_follow_id});
+) !Result(Channel.Followed) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/followers", .{channel_to_follow_id});
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -412,10 +421,10 @@ pub fn followAnnouncementChannel(
 }
 
 pub fn triggerTypingIndicator(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: Snowflake,
-) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/typing", .{channel_id});
+) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/typing", .{channel_id});
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -424,12 +433,12 @@ pub fn triggerTypingIndicator(
 }
 
 pub fn pinMessage(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: Snowflake,
     message_id: Snowflake,
     audit_log_reason: ?[]const u8,
-) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages/pins/{f}", .{ channel_id, message_id });
+) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages/pins/{f}", .{ channel_id, message_id });
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -438,12 +447,12 @@ pub fn pinMessage(
 }
 
 pub fn unpinMessage(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: Snowflake,
     message_id: Snowflake,
     audit_log_reason: ?[]const u8,
-) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages/pins/{f}", .{ channel_id, message_id });
+) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages/pins/{f}", .{ channel_id, message_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -451,13 +460,13 @@ pub fn unpinMessage(
 }
 
 pub fn groupDmAddRecipient(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: Snowflake,
     user_id: Snowflake,
     access_token: []const u8,
     nick: []const u8,
-) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/recipients/{f}", .{ channel_id, user_id });
+) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/recipients/{f}", .{ channel_id, user_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -468,11 +477,11 @@ pub fn groupDmAddRecipient(
 }
 
 pub fn groupDmRemoveRecipient(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: Snowflake,
     user_id: Snowflake,
-) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/recipients/{f}", .{ channel_id, user_id });
+) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/recipients/{f}", .{ channel_id, user_id });
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -481,13 +490,13 @@ pub fn groupDmRemoveRecipient(
 }
 
 pub fn startThreadFromMessage(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: Snowflake,
     message_id: Snowflake,
     body: StartThreadFromMessage,
     audit_log_reason: ?[]const u8,
-) !rest.RestClient.Result(Channel) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages/{f}/threads", .{ channel_id, message_id });
+) !Result(Channel) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/messages/{f}/threads", .{ channel_id, message_id });
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -496,12 +505,12 @@ pub fn startThreadFromMessage(
 }
 
 pub fn startThreadWithoutMessage(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: Snowflake,
     body: StartThreadWithoutMessage,
     audit_log_reason: ?[]const u8,
-) !rest.RestClient.Result(Channel) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/threads", .{channel_id});
+) !Result(Channel) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/threads", .{channel_id});
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -510,12 +519,12 @@ pub fn startThreadWithoutMessage(
 }
 
 pub fn startThreadInForumOrMediaChannel(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: Snowflake,
     body: StartThreadInForumOrMediaChannelJsonBody,
     audit_log_reason: ?[]const u8,
-) !rest.RestClient.Result(Channel) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/threads", .{channel_id});
+) !Result(Channel) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/threads", .{channel_id});
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -524,16 +533,16 @@ pub fn startThreadInForumOrMediaChannel(
 }
 
 pub fn startThreadInForumOrMediaChannelMultipart(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: Snowflake,
     body: StartThreadInForumOrMediaChannelFormBody,
     audit_log_reason: ?[]const u8,
-) !rest.RestClient.Result(Channel) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/threads", .{channel_id});
+) !Result(Channel) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/threads", .{channel_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    const transfer_encoding = try rest.getTransferEncoding(body, "files");
+    const transfer_encoding = try multipart.getTransferEncoding(body, "files");
 
     // https://codeberg.org/ziglang/zig/issues/30623 - for now, we will write the file
     // to an allocatingwriter and send it all in one shot. once streaming to body_writer is fixed,
@@ -545,18 +554,18 @@ pub fn startThreadInForumOrMediaChannelMultipart(
     };
     defer aw.deinit();
 
-    try rest.writeMultipartFormDataBody(body, "files", &aw.writer);
+    try aw.writer.print("{f}", .{body.fmt("files")});
 
     var buf: [1028]u8 = undefined;
-    var pending_request = try client.rest_client.beginMultipartRequestWithAuditLogReason(Channel, .POST, uri, transfer_encoding, rest.multipart_boundary, &buf, audit_log_reason);
+    var pending_request = try client.rest_client.beginMultipartRequestWithAuditLogReason(Channel, .POST, uri, transfer_encoding, multipart.boundary, &buf, audit_log_reason);
 
     try pending_request.request.sendBodyComplete(aw.written());
 
     return pending_request.waitForResponse();
 }
 
-pub fn joinThread(client: *rest.EndpointClient, channel_id: Snowflake) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/thread-members/@me", .{channel_id});
+pub fn joinThread(client: *EndpointClient, channel_id: Snowflake) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/thread-members/@me", .{channel_id});
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -564,8 +573,8 @@ pub fn joinThread(client: *rest.EndpointClient, channel_id: Snowflake) !rest.Res
     return client.rest_client.requestWithJsonBody(void, .PUT, uri, .{}, .{});
 }
 
-pub fn addThreadMember(client: *rest.EndpointClient, channel_id: Snowflake, user_id: Snowflake) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/thread-members/{f}", .{ channel_id, user_id });
+pub fn addThreadMember(client: *EndpointClient, channel_id: Snowflake, user_id: Snowflake) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/thread-members/{f}", .{ channel_id, user_id });
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -573,8 +582,8 @@ pub fn addThreadMember(client: *rest.EndpointClient, channel_id: Snowflake, user
     return client.rest_client.request(void, .PUT, uri);
 }
 
-pub fn leaveThread(client: *rest.EndpointClient, channel_id: Snowflake) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/thread-members/@me", .{channel_id});
+pub fn leaveThread(client: *EndpointClient, channel_id: Snowflake) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/thread-members/@me", .{channel_id});
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -582,8 +591,8 @@ pub fn leaveThread(client: *rest.EndpointClient, channel_id: Snowflake) !rest.Re
     return client.rest_client.request(void, .DELETE, uri);
 }
 
-pub fn removeThreadMember(client: *rest.EndpointClient, channel_id: Snowflake, user_id: Snowflake) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/thread-members/{f}", .{ channel_id, user_id });
+pub fn removeThreadMember(client: *EndpointClient, channel_id: Snowflake, user_id: Snowflake) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/thread-members/{f}", .{ channel_id, user_id });
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -591,15 +600,15 @@ pub fn removeThreadMember(client: *rest.EndpointClient, channel_id: Snowflake, u
     return client.rest_client.request(void, .DELETE, uri);
 }
 
-pub fn getThreadMember(client: *rest.EndpointClient, channel_id: Snowflake, user_id: Snowflake, with_member: ?bool) !rest.RestClient.Result(Channel.ThreadMember) {
+pub fn getThreadMember(client: *EndpointClient, channel_id: Snowflake, user_id: Snowflake, with_member: ?bool) !Result(Channel.ThreadMember) {
     const Query = struct {
         with_member: ?bool = null,
 
-        pub const format = rest.QueryStringFormatMixin(@This()).format;
+        pub const format = query_strings.formatAsQueryString;
     };
 
     const query = Query{ .with_member = with_member };
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/thread-members/{f}?{f}", .{ channel_id, user_id, query });
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/thread-members/{f}?{f}", .{ channel_id, user_id, query });
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -607,8 +616,8 @@ pub fn getThreadMember(client: *rest.EndpointClient, channel_id: Snowflake, user
     return client.rest_client.request(Channel.ThreadMember, .GET, uri);
 }
 
-pub fn listThreadMembers(client: *rest.EndpointClient, channel_id: Snowflake, query: ListThreadMembersQuery) !rest.RestClient.Result([]const Channel.ThreadMember) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/thread-members?{f}", .{ channel_id, query });
+pub fn listThreadMembers(client: *EndpointClient, channel_id: Snowflake, query: ListThreadMembersQuery) !Result([]const Channel.ThreadMember) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/thread-members?{f}", .{ channel_id, query });
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -616,8 +625,8 @@ pub fn listThreadMembers(client: *rest.EndpointClient, channel_id: Snowflake, qu
     return client.rest_client.request([]const Channel.ThreadMember, .GET, uri);
 }
 
-pub fn listPublicArchivedThreads(client: *rest.EndpointClient, channel_id: Snowflake, query: ListThreadsQuery) !rest.RestClient.Result(ListThreadsResponse) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/threads/archived/public?{f}", .{ channel_id, query });
+pub fn listPublicArchivedThreads(client: *EndpointClient, channel_id: Snowflake, query: ListThreadsQuery) !Result(ListThreadsResponse) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/threads/archived/public?{f}", .{ channel_id, query });
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -625,8 +634,8 @@ pub fn listPublicArchivedThreads(client: *rest.EndpointClient, channel_id: Snowf
     return client.rest_client.request(ListThreadsResponse, .GET, uri);
 }
 
-pub fn listPrivateArchivedThreads(client: *rest.EndpointClient, channel_id: Snowflake, query: ListThreadsQuery) !rest.RestClient.Result(ListThreadsResponse) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/threads/archived/private?{f}", .{ channel_id, query });
+pub fn listPrivateArchivedThreads(client: *EndpointClient, channel_id: Snowflake, query: ListThreadsQuery) !Result(ListThreadsResponse) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/threads/archived/private?{f}", .{ channel_id, query });
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -634,8 +643,8 @@ pub fn listPrivateArchivedThreads(client: *rest.EndpointClient, channel_id: Snow
     return client.rest_client.request(ListThreadsResponse, .GET, uri);
 }
 
-pub fn listJoinedPrivateArchivedThreads(client: *rest.EndpointClient, channel_id: Snowflake, query: ListThreadsQuery) !rest.RestClient.Result(ListThreadsResponse) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/users/@me/threads/archived/private?{f}", .{ channel_id, query });
+pub fn listJoinedPrivateArchivedThreads(client: *EndpointClient, channel_id: Snowflake, query: ListThreadsQuery) !Result(ListThreadsResponse) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/users/@me/threads/archived/private?{f}", .{ channel_id, query });
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -708,7 +717,7 @@ pub const GetChannelMessagesQuery = struct {
     } = null,
     limit: ?i64 = null,
 
-    pub const format = rest.QueryStringFormatMixin(@This()).format;
+    pub const format = query_strings.formatAsQueryString;
 };
 
 pub const CreateMessageJsonBody = struct {
@@ -763,9 +772,8 @@ pub const CreateMessageJsonBody = struct {
     }
 };
 
-// note to maintainers: top-level properties are encoded as form parameters, although the
-// properties themselves (except files) will be encoded as JSON
-pub const CreateMessageFormBody = struct {
+pub const CreateMessageFormBody = multipart.FormDataBody(?[]const Upload, CreateMessageFormPayload);
+pub const CreateMessageFormPayload = struct {
     content: ?[]const u8 = null,
     nonce: ?union(enum) { int: i64, str: []const u8 } = null,
     tts: ?bool = null,
@@ -774,7 +782,6 @@ pub const CreateMessageFormBody = struct {
     message_reference: ?model.Message.Reference = null,
     components: ?[]const model.components.TopLevelMessageComponent = null,
     sticker_ids: ?[]const Snowflake = null,
-    files: ?[]const rest.Upload = null,
     attachments: ?[]const PartialAttachmentRequest = null,
     flags: ?model.Message.Flags = null,
     enforce_nonce: ?bool = null,
@@ -788,7 +795,7 @@ pub const CreateMessageFormBody = struct {
     /// Creates a text message with a file upload. The length of `files` and `attachments` must be equal.
     pub fn initMessageWithFiles(
         message: ?[]const u8,
-        files: []const rest.Upload,
+        files: []const Upload,
         attachments: []const PartialAttachmentRequest,
     ) CreateMessageFormBody {
         std.debug.assert(files.len == attachments.len);
@@ -839,7 +846,7 @@ pub const GetEmojiQuery = struct {
     after: ?Snowflake = null,
     limit: ?i64 = null,
 
-    pub const format = rest.QueryStringFormatMixin(@This()).format;
+    pub const format = query_strings.formatAsQueryString;
 
     pub const GetEmojiQueryType = enum(u1) {
         normal = 0,
@@ -859,15 +866,13 @@ pub const EditMessageJsonBody = struct {
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
-pub const EditMessageFormBody = struct {
+pub const EditMessageFormBody = multipart.FormDataBody(?[]const ?Upload, EditMessageFormPayload);
+pub const EditMessageFormPayload = struct {
     content: ?[]const u8 = null,
     embeds: ?[]const model.Message.Embed = null,
     flags: ?model.Message.Flags = null,
     allowed_mentions: ?model.Message.AllowedMentions = null,
     components: ?[]const model.components.TopLevelMessageComponent = null,
-    /// set a file to `null` to not affect it
-    files: ?[]const ?rest.Upload = null,
-    /// must also include already-uploaded files
     attachments: ?[]const AttachmentRequest = null,
 };
 
@@ -921,14 +926,14 @@ pub const CreateChannelInviteJsonBody = struct {
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
-pub const CreateChannelInviteFormBody = struct {
+pub const CreateChannelInviteFormBody = multipart.FormDataBody(?Upload, CreateChannelInviteFormPayload);
+pub const CreateChannelInviteFormPayload = struct {
     max_age: ?i64 = null,
     max_uses: ?i64 = null,
     temporary: ?i64 = null,
     unique: ?bool = null,
     target_type: ?i64 = null,
     target_user_id: ?Snowflake = null,
-    target_users_file: ?rest.Upload = null,
     target_application_id: ?Snowflake = null,
     role_ids: ?Snowflake = null,
 };
@@ -972,13 +977,13 @@ pub const StartThreadInForumOrMediaChannelJsonBody = struct {
     };
 };
 
-pub const StartThreadInForumOrMediaChannelFormBody = struct {
+pub const StartThreadInForumOrMediaChannelFormBody = multipart.FormDataBody(?[]const Upload, StartThreadInForumOrMediaChannelFormPayload);
+pub const StartThreadInForumOrMediaChannelFormPayload = struct {
     name: []const u8,
     auto_archive_duration: ?i64 = null,
     rate_limit_per_user: ?i64 = null,
     message: ForumAndMediaThreadMessage,
     applied_tags: ?[]const Snowflake = null,
-    files: ?[]const rest.Upload = null,
 
     pub const ForumAndMediaThreadMessage = struct {
         content: jconfig.Omittable([]const u8) = .omit,
@@ -994,8 +999,8 @@ pub const StartThreadInForumOrMediaChannelFormBody = struct {
 };
 
 pub const StartThreadInForumOrMediaChannelResponse = struct {
-    thread: zigcord.model.Channel,
-    message: zigcord.model.Message,
+    thread: Channel,
+    message: Message,
 
     const Mixin = jconfig.InlineSingleStructFieldMixin(@This(), "thread");
     pub const jsonStringify = Mixin.jsonStringify;
@@ -1008,14 +1013,14 @@ pub const ListThreadMembersQuery = struct {
     after: ?Snowflake = null,
     limit: ?i64 = null,
 
-    pub const format = rest.QueryStringFormatMixin(@This()).format;
+    pub const format = query_strings.formatAsQueryString;
 };
 
 pub const ListThreadsQuery = struct {
     before: ?[]const u8 = null,
     limit: ?i64 = null,
 
-    pub const format = rest.QueryStringFormatMixin(@This()).format;
+    pub const format = query_strings.formatAsQueryString;
 };
 
 pub const ListThreadsResponse = struct {
@@ -1028,5 +1033,5 @@ pub const GetChannelPinsQuery = struct {
     before: ?model.IsoTime = null,
     limit: ?i64 = null,
 
-    pub const format = rest.QueryStringFormatMixin(@This()).format;
+    pub const format = query_strings.formatAsQueryString;
 };

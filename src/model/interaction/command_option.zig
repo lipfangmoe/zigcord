@@ -1,7 +1,6 @@
 const std = @import("std");
-const model = @import("../../root.zig").model;
-const jconfig = @import("../../root.zig").jconfig;
-const Channel = model.Channel;
+const jconfig = @import("jconfig");
+const Channel = @import("../Channel.zig");
 const Omittable = jconfig.Omittable;
 
 pub const ApplicationCommandOptionType = enum(u8) {

@@ -1,6 +1,5 @@
-const zigcord = @import("../root.zig");
-const model = zigcord.model;
-const jconfig = zigcord.jconfig;
+const jconfig = @import("jconfig");
+const model = @import("../model.zig");
 
 name: []const u8,
 type: Type,

@@ -1,6 +1,6 @@
 const std = @import("std");
 
-const version = std.SemanticVersion.parse("0.14.4") catch unreachable; // TODO: get from build.zig.zon
+const version = std.SemanticVersion.parse("0.15.0") catch unreachable; // TODO: get from build.zig.zon
 
 // Although this function looks imperative, note that its job is to
 // declaratively construct a build graph that will be executed by an external
@@ -38,18 +38,18 @@ pub fn build(b: *std.Build) !void {
     const weebsocket_dependency = b.dependency("weebsocket", .{});
     const weebsocket_module = weebsocket_dependency.module("weebsocket");
 
-    const zigcord_module = b.addModule("zigcord", .{
-        .root_source_file = b.path("./src/root.zig"),
-        .imports = &.{.{ .name = "weebsocket", .module = weebsocket_module }},
-        .target = target,
-        .optimize = optimize,
-    });
-    zigcord_module.addOptions("build", options);
+    const zigcord_module = createZigcordModule(b, weebsocket_module, options, optimize, target);
 
     // zig build test
+    const test_step = b.step("test", "Run unit tests");
     const test_runner = b.addTest(.{ .root_module = zigcord_module, .filters = test_filters });
     const test_run_artifact = b.addRunArtifact(test_runner);
-    const test_step = b.step("test", "Run unit tests");
+    var zigcord_imports_iter = zigcord_module.import_table.iterator();
+    while (zigcord_imports_iter.next()) |import| {
+        const sub_test_runner = b.addTest(.{ .root_module = import.value_ptr.*, .filters = test_filters });
+        const sub_test_run_artifact = b.addRunArtifact(sub_test_runner);
+        test_step.dependOn(&sub_test_run_artifact.step);
+    }
     test_step.dependOn(&test_run_artifact.step);
     test_step.dependOn(generate_step);
 
@@ -96,6 +96,81 @@ pub fn build(b: *std.Build) !void {
 
     // zig build examples:interaction_server
     createExample(b, "interaction_server", .{ .description = "Builds a bot that operates via an interaction server", .root_source_file = b.path("./examples/interaction_server.zig"), .common = common });
+}
+
+fn createZigcordModule(b: *std.Build, weebsocket: *std.Build.Module, options: *std.Build.Step.Options, optimize: std.builtin.OptimizeMode, target: std.Build.ResolvedTarget) *std.Build.Module {
+    const shared = b.addModule("shared", .{
+        .root_source_file = b.path("src/shared.zig"),
+        .optimize = optimize,
+        .target = target,
+    });
+    shared.addOptions("build", options);
+
+    const jconfig = b.addModule("jconfig", .{
+        .root_source_file = b.path("src/jconfig.zig"),
+        .optimize = optimize,
+        .target = target,
+        .imports = &.{
+            .{ .name = "shared", .module = shared },
+        },
+    });
+    const model = b.addModule("model", .{
+        .root_source_file = b.path("src/model.zig"),
+        .optimize = optimize,
+        .target = target,
+        .imports = &.{
+            .{ .name = "jconfig", .module = jconfig },
+            .{ .name = "shared", .module = shared },
+        },
+    });
+
+    const rest = b.addModule("rest", .{
+        .root_source_file = b.path("src/rest.zig"),
+        .optimize = optimize,
+        .target = target,
+        .imports = &.{
+            .{ .name = "jconfig", .module = jconfig },
+            .{ .name = "model", .module = model },
+            .{ .name = "shared", .module = shared },
+        },
+    });
+    const gateway = b.addModule("gateway", .{
+        .root_source_file = b.path("src/gateway.zig"),
+        .optimize = optimize,
+        .target = target,
+        .imports = &.{
+            .{ .name = "jconfig", .module = jconfig },
+            .{ .name = "model", .module = model },
+            .{ .name = "rest", .module = rest },
+            .{ .name = "shared", .module = shared },
+            .{ .name = "weebsocket", .module = weebsocket },
+        },
+    });
+    const interaction_server = b.addModule("interaction_server", .{
+        .root_source_file = b.path("src/interaction_server.zig"),
+        .optimize = optimize,
+        .target = target,
+        .imports = &.{
+            .{ .name = "model", .module = model },
+            .{ .name = "rest", .module = rest },
+            .{ .name = "shared", .module = shared },
+        },
+    });
+    const zigcord = b.addModule("zigcord", .{
+        .root_source_file = b.path("src/root.zig"),
+        .optimize = optimize,
+        .target = target,
+        .imports = &.{
+            .{ .name = "gateway", .module = gateway },
+            .{ .name = "interaction_server", .module = interaction_server },
+            .{ .name = "jconfig", .module = jconfig },
+            .{ .name = "model", .module = model },
+            .{ .name = "rest", .module = rest },
+            .{ .name = "shared", .module = shared },
+        },
+    });
+
+    return zigcord;
 }
 
 fn createExample(b: *std.Build, comptime name: []const u8, params: CreateExample) void {

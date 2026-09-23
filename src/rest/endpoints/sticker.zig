@@ -1,14 +1,18 @@
-const zigcord = @import("../../root.zig");
 const std = @import("std");
-const model = zigcord.model;
-const rest = zigcord.rest;
-const jconfig = zigcord.jconfig;
+const model = @import("model");
+const jconfig = @import("jconfig");
+const EndpointClient = @import("../EndpointClient.zig");
+const RestClient = @import("../RestClient.zig");
+const Result = RestClient.Result;
+const allocDiscordUriStr = @import("../discord_uri.zig").allocDiscordUriStr;
+const multipart = @import("../multipart.zig");
+const Upload = @import("../upload.zig").Upload;
 
 pub fn getSticker(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     sticker_id: model.Snowflake,
-) !rest.RestClient.Result(model.Sticker) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/stickers/{f}", .{sticker_id});
+) !Result(model.Sticker) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/stickers/{f}", .{sticker_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -16,9 +20,9 @@ pub fn getSticker(
 }
 
 pub fn listStickerPacks(
-    client: *rest.EndpointClient,
-) !rest.RestClient.Result(ListStickerPacksResponse) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/sticker-packs", .{});
+    client: *EndpointClient,
+) !Result(ListStickerPacksResponse) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/sticker-packs", .{});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -26,10 +30,10 @@ pub fn listStickerPacks(
 }
 
 pub fn listGuildStickers(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     guild_id: model.Snowflake,
-) !rest.RestClient.Result([]const model.Sticker) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/stickers", .{guild_id});
+) !Result([]const model.Sticker) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/stickers", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -37,11 +41,11 @@ pub fn listGuildStickers(
 }
 
 pub fn getGuildSticker(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     guild_id: model.Snowflake,
     sticker_id: model.Snowflake,
-) !rest.RestClient.Result(model.Sticker) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/stickers/{f}", .{ guild_id, sticker_id });
+) !Result(model.Sticker) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/stickers/{f}", .{ guild_id, sticker_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -49,16 +53,16 @@ pub fn getGuildSticker(
 }
 
 pub fn createGuildSticker(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     guild_id: model.Snowflake,
     body: CreateGuildStickerFormBody,
     audit_log_reason: ?[]const u8,
-) !rest.RestClient.Result(model.Sticker) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/stickers", .{guild_id});
+) !Result(model.Sticker) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/stickers", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    const transfer_encoding = try rest.getTransferEncoding(body, "file");
+    const transfer_encoding = try multipart.getTransferEncoding(body, "file");
 
     // https://codeberg.org/ziglang/zig/issues/30623 - for now, we will write the file
     // to an allocatingwriter and send it all in one shot. once streaming to body_writer is fixed,
@@ -70,10 +74,10 @@ pub fn createGuildSticker(
     };
     defer aw.deinit();
 
-    try rest.writeMultipartFormDataBody(body, "file", &aw.writer);
+    try aw.writer.print("{f}", .{body.fmt("file")});
 
     var buf: [1028]u8 = undefined;
-    var pending_request = try client.rest_client.beginMultipartRequestWithAuditLogReason(model.Sticker, .POST, uri, transfer_encoding, rest.multipart_boundary, &buf, audit_log_reason);
+    var pending_request = try client.rest_client.beginMultipartRequestWithAuditLogReason(model.Sticker, .POST, uri, transfer_encoding, multipart.boundary, &buf, audit_log_reason);
 
     try pending_request.request.sendBodyComplete(aw.written());
 
@@ -84,9 +88,9 @@ pub const ListStickerPacksResponse = struct {
     sticker_packs: []const model.Sticker.Pack,
 };
 
-pub const CreateGuildStickerFormBody = struct {
+pub const CreateGuildStickerFormBody = multipart.FormDataBody(Upload, CreateGuildStickerFormPayload);
+pub const CreateGuildStickerFormPayload = struct {
     name: []const u8,
     description: []const u8,
     tags: []const u8,
-    file: rest.Upload,
 };

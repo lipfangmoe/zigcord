@@ -1,14 +1,17 @@
 const std = @import("std");
-const zigcord = @import("../../root.zig");
-const model = zigcord.model;
-const rest = zigcord.rest;
-const jconfig = zigcord.jconfig;
+const model = @import("model");
+const jconfig = @import("jconfig");
+const EndpointClient = @import("../EndpointClient.zig");
+const RestClient = @import("../RestClient.zig");
+const Result = RestClient.Result;
+const allocDiscordUriStr = @import("../discord_uri.zig").allocDiscordUriStr;
+const query_strings = @import("../query_strings.zig");
 
 pub fn createLobby(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     body: CreateLobbyBody,
-) !rest.RestClient.Result(model.Lobby) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/lobbies", .{});
+) !Result(model.Lobby) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/lobbies", .{});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -16,10 +19,10 @@ pub fn createLobby(
 }
 
 pub fn createOrJoinLobby(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     body: CreateOrJoinLobbyBody,
-) !rest.RestClient.Result(model.Lobby) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/lobbies", .{});
+) !Result(model.Lobby) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/lobbies", .{});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -27,10 +30,10 @@ pub fn createOrJoinLobby(
 }
 
 pub fn getLobby(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     lobby_id: model.Snowflake,
-) !rest.RestClient.Result(model.Lobby) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/lobbies/{f}", .{lobby_id});
+) !Result(model.Lobby) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/lobbies/{f}", .{lobby_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -38,10 +41,10 @@ pub fn getLobby(
 }
 
 pub fn modifyLobby(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     body: ModifyLobbyBody,
-) !rest.RestClient.Result(model.Lobby) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/lobbies", .{});
+) !Result(model.Lobby) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/lobbies", .{});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -49,10 +52,10 @@ pub fn modifyLobby(
 }
 
 pub fn deleteLobby(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     lobby_id: model.Snowflake,
-) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/lobbies/{f}", .{lobby_id});
+) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/lobbies/{f}", .{lobby_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -60,12 +63,12 @@ pub fn deleteLobby(
 }
 
 pub fn addAMemberToALobby(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     lobby_id: model.Snowflake,
     user_id: model.Snowflake,
     body: AddAMemberToALobbyBody,
-) !rest.RestClient.Result(model.Lobby.LobbyMember) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/lobbies/{f}/members/{f}", .{ lobby_id, user_id });
+) !Result(model.Lobby.LobbyMember) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/lobbies/{f}/members/{f}", .{ lobby_id, user_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -73,11 +76,11 @@ pub fn addAMemberToALobby(
 }
 
 pub fn bulkUpdateLobbyMembers(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     lobby_id: model.Snowflake,
     body: []const BulkUpdateLobbyMember,
-) !rest.RestClient.Result([]const model.Lobby.LobbyMember) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/lobbies/{f}/members/bulk", .{lobby_id});
+) !Result([]const model.Lobby.LobbyMember) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/lobbies/{f}/members/bulk", .{lobby_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -85,11 +88,11 @@ pub fn bulkUpdateLobbyMembers(
 }
 
 pub fn deleteAMemberFromALobby(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     lobby_id: model.Snowflake,
     user_id: model.Snowflake,
-) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/lobbies/{f}/members/{f}", .{ lobby_id, user_id });
+) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/lobbies/{f}/members/{f}", .{ lobby_id, user_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -97,10 +100,10 @@ pub fn deleteAMemberFromALobby(
 }
 
 pub fn leaveLobby(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     lobby_id: model.Snowflake,
-) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/lobbies/{f}/members/@me", .{lobby_id});
+) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/lobbies/{f}/members/@me", .{lobby_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -108,11 +111,11 @@ pub fn leaveLobby(
 }
 
 pub fn linkChannelToLobby(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     lobby_id: model.Snowflake,
     body: LinkChannelToLobbyBody,
-) !rest.RestClient.Result(model.Lobby) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/lobbies/{f}/channel-linking", .{lobby_id});
+) !Result(model.Lobby) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/lobbies/{f}/channel-linking", .{lobby_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -120,10 +123,10 @@ pub fn linkChannelToLobby(
 }
 
 pub fn unlinkChannelFromLobby(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     lobby_id: model.Snowflake,
-) !rest.RestClient.Result(model.Lobby) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/lobbies/{f}/channel-linking", .{lobby_id});
+) !Result(model.Lobby) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/lobbies/{f}/channel-linking", .{lobby_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -131,11 +134,11 @@ pub fn unlinkChannelFromLobby(
 }
 
 pub fn sendLobbyMessage(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     lobby_id: model.Snowflake,
     body: SendLobbyMessageBody,
-) !rest.RestClient.Result(model.Lobby.LobbyMessage) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/lobbies/{f}/messages", .{lobby_id});
+) !Result(model.Lobby.LobbyMessage) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/lobbies/{f}/messages", .{lobby_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -143,11 +146,11 @@ pub fn sendLobbyMessage(
 }
 
 pub fn getLobbyMessages(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     lobby_id: model.Snowflake,
     query: GetLobbyMessagesQuery,
-) !rest.RestClient.Result([]const model.Lobby.LobbyMessage) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/lobbies/{f}/messages?{f}", .{ lobby_id, query });
+) !Result([]const model.Lobby.LobbyMessage) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/lobbies/{f}/messages?{f}", .{ lobby_id, query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -155,12 +158,12 @@ pub fn getLobbyMessages(
 }
 
 pub fn updateLobbyMessageModerationMetadata(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     lobby_id: model.Snowflake,
     message_id: model.Snowflake,
     body: std.json.ArrayHashMap([]const u8),
-) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/lobbies/{f}/messages/{f}/moderation-metadata", .{ lobby_id, message_id });
+) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/lobbies/{f}/messages/{f}/moderation-metadata", .{ lobby_id, message_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -168,10 +171,10 @@ pub fn updateLobbyMessageModerationMetadata(
 }
 
 pub fn createLobbyChannelInviteForSelf(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     lobby_id: model.Snowflake,
-) !rest.RestClient.Result(model.Lobby.LobbyInvite) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/lobbies/{f}/members/@me/invites", .{lobby_id});
+) !Result(model.Lobby.LobbyInvite) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/lobbies/{f}/members/@me/invites", .{lobby_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -179,11 +182,11 @@ pub fn createLobbyChannelInviteForSelf(
 }
 
 pub fn createLobbyChannelInviteForUser(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     lobby_id: model.Snowflake,
     user_id: model.Snowflake,
-) !rest.RestClient.Result(model.Lobby.LobbyInvite) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/lobbies/{f}/members/{f}/invites", .{ lobby_id, user_id });
+) !Result(model.Lobby.LobbyInvite) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/lobbies/{f}/members/{f}/invites", .{ lobby_id, user_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -248,7 +251,7 @@ pub const SendLobbyMessageBody = struct {
 pub const GetLobbyMessagesQuery = struct {
     limit: ?u8 = null,
 
-    pub const format = rest.QueryStringFormatMixin(GetLobbyMessagesQuery).format;
+    pub const format = query_strings.formatAsQueryString;
 };
 
 test {

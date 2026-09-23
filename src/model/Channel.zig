@@ -1,9 +1,8 @@
-const zigcord = @import("../root.zig");
-const model = zigcord.model;
+const jconfig = @import("jconfig");
+const model = @import("../model.zig");
 const Snowflake = model.Snowflake;
 const User = model.User;
 const Member = model.guild.Member;
-const jconfig = zigcord.jconfig;
 const Omittable = jconfig.Omittable;
 
 id: Snowflake,

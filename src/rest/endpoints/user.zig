@@ -1,22 +1,27 @@
-const zigcord = @import("../../root.zig");
 const std = @import("std");
-const model = zigcord.model;
-const rest = zigcord.rest;
-const jconfig = zigcord.jconfig;
+const model = @import("model");
+const jconfig = @import("jconfig");
+const EndpointClient = @import("../EndpointClient.zig");
+const RestClient = @import("../RestClient.zig");
+const Result = RestClient.Result;
+const discord_uri = @import("../discord_uri.zig");
+const allocDiscordUriStr = discord_uri.allocDiscordUriStr;
+const base_url = discord_uri.base_url;
+const query_strings = @import("../query_strings.zig");
 
 pub fn getCurrentUser(
-    client: *rest.EndpointClient,
-) !rest.RestClient.Result(model.User) {
-    const uri = try std.Uri.parse(rest.base_url ++ "/users/@me");
+    client: *EndpointClient,
+) !Result(model.User) {
+    const uri = try std.Uri.parse(base_url ++ "/users/@me");
 
     return client.rest_client.request(model.User, .GET, uri);
 }
 
 pub fn getUser(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     user_id: model.Snowflake,
-) !rest.RestClient.Result(model.User) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/users/{f}", .{user_id});
+) !Result(model.User) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/users/{f}", .{user_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -24,19 +29,19 @@ pub fn getUser(
 }
 
 pub fn modifyCurrentUser(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     body: ModifyCurrentUserBody,
-) !rest.RestClient.Result(model.User) {
-    const uri = try std.Uri.parse(rest.base_url ++ "/users/@me");
+) !Result(model.User) {
+    const uri = try std.Uri.parse(base_url ++ "/users/@me");
 
     return client.rest_client.requestWithJsonBody(model.User, .PATCH, uri, body, .{});
 }
 
 pub fn getCurrentUserGuilds(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     query: GetCurrentUserGuildsQuery,
-) !rest.RestClient.Result([]const model.guild.PartialGuild) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/users/@me/guilds?{f}", .{query});
+) !Result([]const model.guild.PartialGuild) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/users/@me/guilds?{f}", .{query});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -44,10 +49,10 @@ pub fn getCurrentUserGuilds(
 }
 
 pub fn leaveGuild(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     guild_id: model.Snowflake,
-) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/users/@me/guilds/{f}", .{guild_id});
+) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/users/@me/guilds/{f}", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -55,10 +60,10 @@ pub fn leaveGuild(
 }
 
 pub fn createDm(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     body: CreateDmBody,
-) !rest.RestClient.Result(model.Channel) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/users/@me/channels", .{});
+) !Result(model.Channel) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/users/@me/channels", .{});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -66,10 +71,10 @@ pub fn createDm(
 }
 
 pub fn createGroupDm(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     body: CreateGroupDmBody,
-) !rest.RestClient.Result(model.Channel) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/users/@me/channels", .{});
+) !Result(model.Channel) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/users/@me/channels", .{});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -77,18 +82,18 @@ pub fn createGroupDm(
 }
 
 pub fn getCurrentUserConnections(
-    client: *rest.EndpointClient,
-) !rest.RestClient.Result([]const model.User.Connection) {
-    const uri = try std.Uri.parse(rest.base_url ++ "/users/@me/connections");
+    client: *EndpointClient,
+) !Result([]const model.User.Connection) {
+    const uri = try std.Uri.parse(base_url ++ "/users/@me/connections");
 
     return try client.rest_client.request([]const model.User.Connection, .GET, uri);
 }
 
 pub fn getCurrentUserApplicationRoleConnection(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     application_id: model.Snowflake,
-) !rest.RestClient.Result([]const model.User.ApplicationRoleConnection) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/users/@me/applications/{f}/role-connection", .{application_id});
+) !Result([]const model.User.ApplicationRoleConnection) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/users/@me/applications/{f}/role-connection", .{application_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -96,11 +101,11 @@ pub fn getCurrentUserApplicationRoleConnection(
 }
 
 pub fn updateCurrentUserApplicationRoleConnection(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     application_id: model.Snowflake,
     body: UpdateCurrentUserApplicationRoleConnectionBody,
-) !rest.RestClient.Result(model.User.ApplicationRoleConnection) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/users/@me/applications/{f}/role-connection", .{application_id});
+) !Result(model.User.ApplicationRoleConnection) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/users/@me/applications/{f}/role-connection", .{application_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -121,7 +126,7 @@ pub const GetCurrentUserGuildsQuery = struct {
     limit: ?i64 = null,
     with_counts: ?bool,
 
-    pub const format = rest.QueryStringFormatMixin(@This()).format;
+    pub const format = query_strings.formatAsQueryString;
 };
 
 pub const CreateDmBody = struct {

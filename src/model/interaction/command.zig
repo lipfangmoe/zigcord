@@ -1,10 +1,9 @@
 const std = @import("std");
-const model = @import("../../root.zig").model;
-const jconfig = @import("../../root.zig").jconfig;
-const Snowflake = model.Snowflake;
-const ApplicationCommandOption = model.interaction.command_option.ApplicationCommandOption;
+const jconfig = @import("jconfig");
+const Snowflake = @import("../../model.zig").Snowflake;
+const ApplicationCommandOption = @import("command_option.zig").ApplicationCommandOption;
 const Omittable = jconfig.Omittable;
-const Permissions = model.Permissions;
+const Permissions = @import("../../model.zig").Permissions;
 
 // TODO - sometimes this contains name_localized and description_localized fields.
 // See https://discord.com/developers/docs/interactions/application-commands#retrieving-localized-commands
@@ -38,16 +37,16 @@ pub const ApplicationCommandType = enum(u8) {
 };
 
 pub const GuildApplicationCommandPermissions = struct {
-    id: model.Snowflake,
-    application_id: model.Snowflake,
-    guild_id: model.Snowflake,
+    id: Snowflake,
+    application_id: Snowflake,
+    guild_id: Snowflake,
     permissions: []const ApplicationCommandPermission,
 };
 
 pub const ApplicationCommandPermission = struct {
     /// NOTE: id may be set to `guild_id` to represent @everyone in a guild,
     /// or `guild_id-1`  to represent all channels in a guild
-    id: model.Snowflake,
+    id: Snowflake,
     type: Type,
     permission: bool,
 

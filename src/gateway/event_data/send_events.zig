@@ -1,7 +1,6 @@
-const zigcord = @import("../../root.zig");
-const model = zigcord.model;
-const jconfig = zigcord.jconfig;
-const receive_events = zigcord.gateway.event_data.receive_events;
+const model = @import("model");
+const jconfig = @import("jconfig");
+const receive_events = @import("./receive_events.zig");
 
 pub const Identify = struct {
     token: []const u8,

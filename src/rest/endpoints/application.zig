@@ -1,16 +1,17 @@
 const std = @import("std");
-const root = @import("../../root.zig");
-const model = root.model;
-const rest = root.rest;
+const model = @import("model");
+const EndpointClient = @import("../EndpointClient.zig");
+const Result = @import("../RestClient.zig").Result;
+const base_url = @import("../discord_uri.zig").base_url;
 const Application = model.Application;
 
-pub fn getCurrentApplication(client: *rest.EndpointClient) !rest.RestClient.Result(Application) {
-    const uri = try std.Uri.parse(rest.base_url ++ "/applications/@me");
+pub fn getCurrentApplication(client: *EndpointClient) !Result(Application) {
+    const uri = try std.Uri.parse(base_url ++ "/applications/@me");
     return client.rest_client.request(Application, .GET, uri);
 }
 
-pub fn editCurrentApplication(client: *rest.EndpointClient, params: EditParams) !rest.RestClient.Result(Application) {
-    const uri = try std.Uri.parse(rest.base_url ++ "/applications/@me");
+pub fn editCurrentApplication(client: *EndpointClient, params: EditParams) !Result(Application) {
+    const uri = try std.Uri.parse(base_url ++ "/applications/@me");
     return client.rest_client.requestWithJsonBody(Application, .PATCH, uri, params, .{});
 }
 

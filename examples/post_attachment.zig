@@ -73,26 +73,19 @@ fn executePostAttachmentCommand(
     const file = @embedFile("./klee_small.png");
 
     const result = try endpoint_client.createInteractionResponseMultipart(interaction.id, interaction.token, .{
-        .type = .channel_message_with_source,
         .files = &.{.fromBytes("klee.png", "image/png", file)},
-        .data = .{ .channel_message_with_source = .{
-            .attachments = .initSome(&.{.{ .id = .fromU64(0), .filename = .initSome("attachments://klee.png"), .is_spoiler = .initSome(true) }}),
-        } },
+        .payload_json = .initChannelMessageWithSource(.{
+            .flags = .initSome(.{ .is_components_v2 = true }),
+            .components = .initSome(&.{
+                .initMediaGallery(.{ .items = &.{.{ .media = .{ .url = "attachment://klee.png" }, .spoiler = .initSome(true) }} }),
+            }),
+        }),
     });
+
     defer result.deinit();
 
     switch (result) {
         .ok => {},
         .err => |err| std.log.err("error sending request: {f}", .{err}),
     }
-}
-
-fn getOption(option_name: []const u8, options: []const zigcord.model.interaction.ApplicationCommandInteractionDataOption) ?zigcord.model.interaction.ApplicationCommandInteractionDataOption {
-    for (options) |option| {
-        if (std.mem.eql(u8, option.name, option_name)) {
-            return option;
-        }
-    }
-
-    return null;
 }

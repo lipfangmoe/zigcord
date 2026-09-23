@@ -1,7 +1,6 @@
 const std = @import("std");
-const model = @import("../root.zig").model;
-const jconfig = @import("../root.zig").jconfig;
-const omittable_util = @import("../jconfig/omit.zig");
+const jconfig = @import("jconfig");
+const model = @import("../model.zig");
 
 pub const AnyComponentType = enum(u8) {
     action_row = 1,

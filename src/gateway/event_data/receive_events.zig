@@ -1,7 +1,6 @@
 const std = @import("std");
-const zigcord = @import("../../root.zig");
-const model = zigcord.model;
-const jconfig = zigcord.jconfig;
+const model = @import("model");
+const jconfig = @import("jconfig");
 
 pub const Hello = struct {
     heartbeat_interval: u64,

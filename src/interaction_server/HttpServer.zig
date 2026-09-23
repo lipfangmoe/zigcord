@@ -3,7 +3,8 @@
 //! If you have an existing `std.net.Address`, it is okay to create this struct via struct initialization.
 
 const std = @import("std");
-const zigcord = @import("../root.zig");
+
+const logger = @import("shared").logger;
 const Server = @This();
 const InteractionRequest = @import("./InteractionRequest.zig");
 const verify = @import("./verify.zig");
@@ -35,7 +36,7 @@ pub fn deinit(self: *Server, io: std.Io) void {
 pub fn receiveInteraction(self: *Server, gpa: std.mem.Allocator, io: std.Io) !InteractionRequest {
     while (true) {
         var conn = self.net_server.accept(io) catch |err| {
-            zigcord.logger.warn("error occurred while accepting request: {}", .{err});
+            logger.warn("error occurred while accepting request: {}", .{err});
             continue;
         };
         var stream_writer_buf: [1000]u8 = undefined;
@@ -46,30 +47,30 @@ pub fn receiveInteraction(self: *Server, gpa: std.mem.Allocator, io: std.Io) !In
 
         var http_server = std.http.Server.init(&stream_reader.interface, &stream_writer.interface);
         var http_req = http_server.receiveHead() catch |err| {
-            zigcord.logger.warn("error occurred while receiving headers: {}", .{err});
+            logger.warn("error occurred while receiving headers: {}", .{err});
             continue;
         };
         var sig_buf: [64]u8 = undefined;
         const signature_headers = verify.SignatureHeaders.initFromHttpRequest(&http_req, &sig_buf) catch |err| {
-            zigcord.logger.warn("error occurred while looking for signature headers: {}", .{err});
+            logger.warn("error occurred while looking for signature headers: {}", .{err});
             http_req.respond("", .{ .status = .unauthorized }) catch |respond_err| {
-                zigcord.logger.warn("IO error occurred while writing error response: {}", .{respond_err});
+                logger.warn("IO error occurred while writing error response: {}", .{respond_err});
             };
             continue;
         };
 
         var reader_buf: [1000]u8 = undefined;
         const body_reader = http_req.readerExpectContinue(&reader_buf) catch |err| {
-            zigcord.logger.err("http error occurred while writing a response to 100-continue: {}", .{err});
+            logger.err("http error occurred while writing a response to 100-continue: {}", .{err});
             http_req.respond("", .{ .status = .expectation_failed }) catch |respond_err| {
-                zigcord.logger.warn("IO error occurred while writing error response: {}", .{respond_err});
+                logger.warn("IO error occurred while writing error response: {}", .{respond_err});
             };
             return error.HttpError;
         };
         const body = body_reader.allocRemaining(gpa, .limited(1024 * 1024)) catch |err| {
-            zigcord.logger.err("error occurred while reading request body: {}", .{err});
+            logger.err("error occurred while reading request body: {}", .{err});
             http_req.respond("", .{ .status = .internal_server_error }) catch |respond_err| {
-                zigcord.logger.warn("IO error occurred while writing error response: {}", .{respond_err});
+                logger.warn("IO error occurred while writing error response: {}", .{respond_err});
             };
             return error.BodyReadError;
         };
@@ -77,16 +78,16 @@ pub fn receiveInteraction(self: *Server, gpa: std.mem.Allocator, io: std.Io) !In
         verify.verify(signature_headers, body, self.application_public_key) catch |err| {
             switch (err) {
                 error.InvalidPublicKey => {
-                    zigcord.logger.err("Application Public Key is invalid: {}", .{self.application_public_key});
+                    logger.err("Application Public Key is invalid: {}", .{self.application_public_key});
                     http_req.respond("", .{ .status = .internal_server_error }) catch |respond_err| {
-                        zigcord.logger.warn("IO error occurred while writing error response: {}", .{respond_err});
+                        logger.warn("IO error occurred while writing error response: {}", .{respond_err});
                     };
                     return error.InvalidPublicKey;
                 },
                 error.SignatureVerificationError => {
-                    zigcord.logger.warn("Signature verification failed, responding with 401", .{});
+                    logger.warn("Signature verification failed, responding with 401", .{});
                     http_req.respond("", .{ .status = .unauthorized }) catch |respond_err| {
-                        zigcord.logger.warn("IO error occurred while writing error response: {}", .{respond_err});
+                        logger.warn("IO error occurred while writing error response: {}", .{respond_err});
                     };
                     continue;
                 },
@@ -94,7 +95,7 @@ pub fn receiveInteraction(self: *Server, gpa: std.mem.Allocator, io: std.Io) !In
         };
 
         var req = InteractionRequest.init(gpa, body, http_req) catch |err| {
-            zigcord.logger.err("error while parsing interaction: {}", .{err});
+            logger.err("error while parsing interaction: {}", .{err});
             return error.InteractionParseError;
         };
         if (req.interaction.type == .ping) {

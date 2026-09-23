@@ -1,18 +1,20 @@
-const zigcord = @import("../root.zig");
-const model = zigcord.model;
-const jconfig = zigcord.jconfig;
+const jconfig = @import("jconfig");
+const Snowflake = @import("./snowflake.zig").Snowflake;
+const User = @import("./User.zig");
+const guild = @import("./guild.zig");
+const Channel = @import("./Channel.zig");
 
-id: model.Snowflake,
+id: Snowflake,
 type: Type,
-guild_id: jconfig.Omittable(?model.Snowflake) = .omit,
-channel_id: ?model.Snowflake,
-user: jconfig.Omittable(model.User) = .omit,
+guild_id: jconfig.Omittable(?Snowflake) = .omit,
+channel_id: ?Snowflake,
+user: jconfig.Omittable(User) = .omit,
 name: ?[]const u8,
 avatar: ?[]const u8, // avatar hash
 token: jconfig.Omittable([]const u8) = .omit,
-application_id: ?model.Snowflake,
-source_guild: jconfig.Omittable(model.guild.PartialGuild) = .omit,
-source_channel: jconfig.Omittable(jconfig.Partial(model.Channel)) = .omit,
+application_id: ?Snowflake,
+source_guild: jconfig.Omittable(guild.PartialGuild) = .omit,
+source_channel: jconfig.Omittable(jconfig.Partial(Channel)) = .omit,
 url: jconfig.Omittable([]const u8) = .omit,
 
 pub const jsonStringify = jconfig.stringifyWithOmit;

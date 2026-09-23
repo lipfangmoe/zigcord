@@ -1,19 +1,22 @@
-const zigcord = @import("../../root.zig");
 const std = @import("std");
-const model = zigcord.model;
-const rest = zigcord.rest;
-const jconfig = zigcord.jconfig;
+const model = @import("model");
+const jconfig = @import("jconfig");
+const EndpointClient = @import("../EndpointClient.zig");
+const RestClient = @import("../RestClient.zig");
+const Result = RestClient.Result;
+const allocDiscordUriStr = @import("../discord_uri.zig").allocDiscordUriStr;
+const query_strings = @import("../query_strings.zig");
 
-pub fn listSkuSubscriptions(client: *rest.EndpointClient, sku_id: model.Snowflake, query: ListSkuSubscriptionsQuery) !rest.RestClient.Result([]model.Subscription) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/skus/{f}/subscriptions?{f}", .{ sku_id, query });
+pub fn listSkuSubscriptions(client: *EndpointClient, sku_id: model.Snowflake, query: ListSkuSubscriptionsQuery) !Result([]model.Subscription) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/skus/{f}/subscriptions?{f}", .{ sku_id, query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
     return client.rest_client.request([]model.Subscription, .GET, uri);
 }
 
-pub fn getSkuSubscription(client: *rest.EndpointClient, sku_id: model.Snowflake, subscription_id: model.Snowflake) !rest.RestClient.Result(model.Subscription) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/skus/{f}/subscriptions/{f}", .{ sku_id, subscription_id });
+pub fn getSkuSubscription(client: *EndpointClient, sku_id: model.Snowflake, subscription_id: model.Snowflake) !Result(model.Subscription) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/skus/{f}/subscriptions/{f}", .{ sku_id, subscription_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -26,5 +29,5 @@ pub const ListSkuSubscriptionsQuery = struct {
     limit: ?u7 = null,
     user_id: ?model.Snowflake = null,
 
-    pub const format = rest.QueryStringFormatMixin(@This()).format;
+    pub const format = query_strings.formatAsQueryString;
 };

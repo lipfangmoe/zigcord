@@ -1,31 +1,31 @@
 //! EndpointClient is a wrapper around an HttpClient which contains methods that call Discord API endpoints.
 
 const std = @import("std");
-const zigcord = @import("../root.zig");
-const rest = zigcord.rest;
+const Authorization = @import("./authorization.zig").Authorization;
+const RestClient = @import("./RestClient.zig");
 
 const EndpointClient = @This();
 
-rest_client: rest.RestClient,
+rest_client: RestClient,
 
 /// Creates a discord http client with default configuration.
 ///
 /// Cannot be used in tests, instead use `initWithConfig` and provide a mock response from the server.
-pub fn init(io: std.Io, allocator: std.mem.Allocator, auth: zigcord.Authorization) EndpointClient {
+pub fn init(io: std.Io, allocator: std.mem.Allocator, auth: Authorization) EndpointClient {
     return initWithConfig(io, allocator, auth, .{});
 }
 
 /// Creates a discord http client based on a configuration
-pub fn initWithConfig(io: std.Io, allocator: std.mem.Allocator, auth: zigcord.Authorization, config: rest.RestClient.Config) EndpointClient {
+pub fn initWithConfig(io: std.Io, allocator: std.mem.Allocator, auth: Authorization, config: RestClient.Config) EndpointClient {
     const http_client = std.http.Client{ .io = io, .allocator = allocator };
-    const rest_client = rest.RestClient{
+    const rest_client: RestClient = .{
         .io = io,
         .allocator = allocator,
         .auth = auth,
         .client = http_client,
         .config = config,
     };
-    return EndpointClient{ .rest_client = rest_client };
+    return .{ .rest_client = rest_client };
 }
 
 pub fn deinit(self: *EndpointClient) void {
@@ -61,6 +61,16 @@ pub const getGuildApplicationCommand = application_commands.getGuildApplicationC
 pub const getGuildApplicationCommandPermissions = application_commands.getGuildApplicationCommandPermissions;
 pub const getGuildApplicationCommands = application_commands.getGuildApplicationCommands;
 pub const OverwriteApplicationCommand = application_commands.OverwriteApplicationCommand;
+pub const application_identity_profile = @import("./endpoints/application_identity_profile.zig");
+pub const deleteApplicationIdentity = application_identity_profile.deleteApplicationIdentity;
+pub const DeleteApplicationidentityBody = application_identity_profile.DeleteApplicationidentityBody;
+pub const getApplicationIdentitiesByExternalId = application_identity_profile.getApplicationIdentitiesByExternalId;
+pub const GetApplicationIdentitiesByExternalIdQuery = application_identity_profile.GetApplicationIdentitiesByExternalIdQuery;
+pub const getApplicationIdentitiesByUserId = application_identity_profile.getApplicationIdentitiesByUserId;
+pub const getApplicationIdentityProfile = application_identity_profile.getApplicationIdentityProfile;
+pub const updateApplicationIdentityProfile = application_identity_profile.updateApplicationIdentityProfile;
+pub const UpdateApplicationIdentityProfileBody = application_identity_profile.UpdateApplicationIdentityProfileBody;
+pub const WrappedApplicationIdentites = application_identity_profile.WrappedApplicationIdentites;
 pub const application_role_connection_metadata = @import("./endpoints/application_role_connection_metadata.zig");
 pub const getApplicationRoleConnectionMetadataRecords = application_role_connection_metadata.getApplicationRoleConnectionMetadataRecords;
 pub const updateApplicationRoleConnectionMetadataRecords = application_role_connection_metadata.updateApplicationRoleConnectionMetadataRecords;

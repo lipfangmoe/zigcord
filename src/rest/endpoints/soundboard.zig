@@ -1,33 +1,35 @@
-const zigcord = @import("../../root.zig");
 const std = @import("std");
-const model = zigcord.model;
-const rest = zigcord.rest;
-const jconfig = zigcord.jconfig;
+const model = @import("model");
+const EndpointClient = @import("../EndpointClient.zig");
+const RestClient = @import("../RestClient.zig");
+const Result = RestClient.Result;
+const allocDiscordUriStr = @import("../discord_uri.zig").allocDiscordUriStr;
+const jconfig = @import("jconfig");
 
-pub fn sendSoundboardSound(client: *rest.EndpointClient, channel_id: model.Snowflake, body: SendSoundboardSoundBody) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/send-soundboard-sound", .{channel_id});
+pub fn sendSoundboardSound(client: *EndpointClient, channel_id: model.Snowflake, body: SendSoundboardSoundBody) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/send-soundboard-sound", .{channel_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
     return client.rest_client.requestWithJsonBody(void, .POST, uri, body, .{});
 }
 
-pub fn listDefaultSoundboardSounds(client: *rest.EndpointClient) !rest.RestClient.Result([]model.SoundboardSound) {
+pub fn listDefaultSoundboardSounds(client: *EndpointClient) !Result([]model.SoundboardSound) {
     const uri = try std.Uri.parse("/soundboard-default-sounds");
 
     return client.rest_client.request([]model.SoundboardSound, .GET, uri);
 }
 
-pub fn listGuildSoundboardSounds(client: *rest.EndpointClient, guild_id: model.Snowflake) !rest.RestClient.Result([]model.SoundboardSound) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/soundboard-sounds", .{guild_id});
+pub fn listGuildSoundboardSounds(client: *EndpointClient, guild_id: model.Snowflake) !Result([]model.SoundboardSound) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/soundboard-sounds", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
     return client.rest_client.request([]model.SoundboardSound, .GET, uri);
 }
 
-pub fn getGuildSoundboardSound(client: *rest.EndpointClient, guild_id: model.Snowflake, sound_id: model.Snowflake) !rest.RestClient.Result(model.SoundboardSound) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/soundboard-sounds/{f}", .{ guild_id, sound_id });
+pub fn getGuildSoundboardSound(client: *EndpointClient, guild_id: model.Snowflake, sound_id: model.Snowflake) !Result(model.SoundboardSound) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/soundboard-sounds/{f}", .{ guild_id, sound_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -35,12 +37,12 @@ pub fn getGuildSoundboardSound(client: *rest.EndpointClient, guild_id: model.Sno
 }
 
 pub fn createGuildSoundboardSound(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     guild_id: model.Snowflake,
     body: CreateGuildSoundboardSoundBody,
     audit_log_reason: ?[]const u8,
-) !rest.RestClient.Result(model.SoundboardSound) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/soundboard-sounds", .{guild_id});
+) !Result(model.SoundboardSound) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/soundboard-sounds", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -48,13 +50,13 @@ pub fn createGuildSoundboardSound(
 }
 
 pub fn modifyGuildSoundboardSound(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     guild_id: model.Snowflake,
     sound_id: model.Snowflake,
     body: ModifyGuildSoundboardSoundBody,
     audit_log_reason: ?[]const u8,
-) !rest.RestClient.Result(model.SoundboardSound) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/soundboard-sounds/{f}", .{ guild_id, sound_id });
+) !Result(model.SoundboardSound) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/soundboard-sounds/{f}", .{ guild_id, sound_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -62,12 +64,12 @@ pub fn modifyGuildSoundboardSound(
 }
 
 pub fn deleteGuildSoundboardSound(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     guild_id: model.Snowflake,
     sound_id: model.Snowflake,
     audit_log_reason: ?[]const u8,
-) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/soundboard-sounds/{f}", .{ guild_id, sound_id });
+) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/soundboard-sounds/{f}", .{ guild_id, sound_id });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 

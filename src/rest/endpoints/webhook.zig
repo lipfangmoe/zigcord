@@ -1,16 +1,21 @@
-const zigcord = @import("../../root.zig");
 const std = @import("std");
-const model = zigcord.model;
-const rest = zigcord.rest;
-const jconfig = zigcord.jconfig;
+const model = @import("model");
+const jconfig = @import("jconfig");
+const EndpointClient = @import("../EndpointClient.zig");
+const RestClient = @import("../RestClient.zig");
+const Result = RestClient.Result;
+const allocDiscordUriStr = @import("../discord_uri.zig").allocDiscordUriStr;
+const multipart = @import("../multipart.zig");
+const query_strings = @import("../query_strings.zig");
+const Upload = @import("../upload.zig").Upload;
 
 pub fn createWebhook(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: model.Snowflake,
     body: CreateWebhookBody,
     audit_log_reason: ?[]const u8,
-) !rest.RestClient.Result(model.Webhook) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/webhooks", .{channel_id});
+) !Result(model.Webhook) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/webhooks", .{channel_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -18,10 +23,10 @@ pub fn createWebhook(
 }
 
 pub fn getChannelWebhooks(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     channel_id: model.Snowflake,
-) !rest.RestClient.Result([]const model.Webhook) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/webhooks", .{channel_id});
+) !Result([]const model.Webhook) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/webhooks", .{channel_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -29,10 +34,10 @@ pub fn getChannelWebhooks(
 }
 
 pub fn getGuildWebhooks(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     guild_id: model.Snowflake,
-) !rest.RestClient.Result([]const model.Webhook) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/webhooks", .{guild_id});
+) !Result([]const model.Webhook) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/webhooks", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -40,10 +45,10 @@ pub fn getGuildWebhooks(
 }
 
 pub fn getWebhook(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     webhook_id: model.Snowflake,
-) !rest.RestClient.Result(model.Webhook) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}", .{webhook_id});
+) !Result(model.Webhook) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}", .{webhook_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -51,11 +56,11 @@ pub fn getWebhook(
 }
 
 pub fn getWebhookWithToken(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     webhook_id: model.Snowflake,
     webhook_token: []const u8,
-) !rest.RestClient.Result(model.Webhook) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}", .{ webhook_id, webhook_token });
+) !Result(model.Webhook) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}", .{ webhook_id, webhook_token });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -63,12 +68,12 @@ pub fn getWebhookWithToken(
 }
 
 pub fn modifyWebhook(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     webhook_id: model.Snowflake,
     body: ModifyWebhookBody,
     audit_log_reason: ?[]const u8,
-) !rest.RestClient.Result(model.Webhook) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}", .{webhook_id});
+) !Result(model.Webhook) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}", .{webhook_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -76,13 +81,13 @@ pub fn modifyWebhook(
 }
 
 pub fn modifyWebhookWithToken(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     webhook_id: model.Snowflake,
     webhook_token: []const u8,
     body: ModifyWebhookBody,
     audit_log_reason: ?[]const u8,
-) !rest.RestClient.Result(model.Webhook) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}", .{ webhook_id, webhook_token });
+) !Result(model.Webhook) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}", .{ webhook_id, webhook_token });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -90,11 +95,11 @@ pub fn modifyWebhookWithToken(
 }
 
 pub fn deleteWebhook(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     webhook_id: model.Snowflake,
     audit_log_reason: ?[]const u8,
-) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}", .{webhook_id});
+) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}", .{webhook_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -102,12 +107,12 @@ pub fn deleteWebhook(
 }
 
 pub fn deleteWebhookWithToken(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     webhook_id: model.Snowflake,
     webhook_token: []const u8,
     audit_log_reason: ?[]const u8,
-) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}", .{ webhook_id, webhook_token });
+) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}", .{ webhook_id, webhook_token });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -115,15 +120,15 @@ pub fn deleteWebhookWithToken(
 }
 
 pub fn executeWebhookWait(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     webhook_id: model.Snowflake,
     webhook_token: []const u8,
     query: ExecuteWebhookQuery,
     body: ExecuteWebhookJsonBody,
-) !rest.RestClient.Result(model.Message) {
+) !Result(model.Message) {
     var override_query = query;
     override_query.wait = true;
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}?{f}", .{ webhook_id, webhook_token, override_query });
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}?{f}", .{ webhook_id, webhook_token, override_query });
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -132,15 +137,15 @@ pub fn executeWebhookWait(
 }
 
 pub fn executeWebhookNoWait(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     webhook_id: model.Snowflake,
     webhook_token: []const u8,
     query: ExecuteWebhookQuery,
     body: ExecuteWebhookJsonBody,
-) !rest.RestClient.Result(void) {
+) !Result(void) {
     var override_query = query;
     override_query.wait = true;
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}?{f}", .{ webhook_id, webhook_token, override_query });
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}?{f}", .{ webhook_id, webhook_token, override_query });
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -149,19 +154,19 @@ pub fn executeWebhookNoWait(
 }
 
 pub fn executeWebhookWaitMultipart(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     webhook_id: model.Snowflake,
     webhook_token: []const u8,
     query: ExecuteWebhookQuery,
     body: ExecuteWebhookFormBody,
-) !rest.RestClient.Result(model.Message) {
+) !Result(model.Message) {
     var override_query = query;
     override_query.wait = true;
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}?{f}", .{ webhook_id, webhook_token, override_query });
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}?{f}", .{ webhook_id, webhook_token, override_query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    const transfer_encoding = try rest.getTransferEncoding(body, "files");
+    const transfer_encoding = try multipart.getTransferEncoding(body, "files");
 
     // https://codeberg.org/ziglang/zig/issues/30623 - for now, we will write the file
     // to an allocatingwriter and send it all in one shot. once streaming to body_writer is fixed,
@@ -173,10 +178,10 @@ pub fn executeWebhookWaitMultipart(
     };
     defer aw.deinit();
 
-    try rest.writeMultipartFormDataBody(body, "files", &aw.writer);
+    try aw.writer.print("{f}", .{body.fmt("files")});
 
     var buf: [1028]u8 = undefined;
-    var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .POST, uri, transfer_encoding, rest.multipart_boundary, &buf);
+    var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .POST, uri, transfer_encoding, multipart.boundary, &buf);
 
     try pending_request.request.sendBodyComplete(aw.written());
 
@@ -184,19 +189,19 @@ pub fn executeWebhookWaitMultipart(
 }
 
 pub fn executeWebhookNoWaitMultipart(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     webhook_id: model.Snowflake,
     webhook_token: []const u8,
     query: ExecuteWebhookQuery,
     body: ExecuteWebhookFormBody,
-) !rest.RestClient.Result(void) {
+) !Result(void) {
     var override_query = query;
     override_query.wait = true;
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}?{f}", .{ webhook_id, webhook_token, override_query });
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}?{f}", .{ webhook_id, webhook_token, override_query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    const transfer_encoding = try rest.getTransferEncoding(body, "files");
+    const transfer_encoding = try multipart.getTransferEncoding(body, "files");
 
     // https://codeberg.org/ziglang/zig/issues/30623 - for now, we will write the file
     // to an allocatingwriter and send it all in one shot. once streaming to body_writer is fixed,
@@ -208,10 +213,10 @@ pub fn executeWebhookNoWaitMultipart(
     };
     defer aw.deinit();
 
-    try rest.writeMultipartFormDataBody(body, "files", &aw.writer);
+    try aw.writer.print("{f}", .{body.fmt("files")});
 
     var header_buf: [1028]u8 = undefined;
-    var pending_request = try client.rest_client.beginMultipartRequest(void, .POST, uri, transfer_encoding, rest.multipart_boundary, &header_buf);
+    var pending_request = try client.rest_client.beginMultipartRequest(void, .POST, uri, transfer_encoding, multipart.boundary, &header_buf);
 
     try pending_request.request.sendBodyComplete(aw.written());
 
@@ -221,13 +226,13 @@ pub fn executeWebhookNoWaitMultipart(
 // is there a point in supporting slack/github compatible webhook endpoints? i don't want to have to build entirely new models just to support them
 
 pub fn getWebhookMessage(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     webhook_id: model.Snowflake,
     webhook_token: []const u8,
     message_id: model.Snowflake,
     query: PossiblyInThreadQuery,
-) !rest.RestClient.Result(model.Message) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}/messages/{f}?{f}", .{ webhook_id, webhook_token, message_id, query });
+) !Result(model.Message) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}/messages/{f}?{f}", .{ webhook_id, webhook_token, message_id, query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -235,14 +240,14 @@ pub fn getWebhookMessage(
 }
 
 pub fn editWebhookMessage(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     webhook_id: model.Snowflake,
     webhook_token: []const u8,
     message_id: model.Snowflake,
     query: PossiblyInThreadQuery,
     body: EditWebhookMessageJsonBody,
-) !rest.RestClient.Result(model.Message) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}/messages/{f}?{f}", .{ webhook_id, webhook_token, message_id, query });
+) !Result(model.Message) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}/messages/{f}?{f}", .{ webhook_id, webhook_token, message_id, query });
     defer client.rest_client.allocator.free(uri_str);
 
     const uri = try std.Uri.parse(uri_str);
@@ -251,18 +256,18 @@ pub fn editWebhookMessage(
 }
 
 pub fn editWebhookMessageMultipart(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     webhook_id: model.Snowflake,
     webhook_token: []const u8,
     message_id: model.Snowflake,
     query: PossiblyInThreadQuery,
     body: EditWebhookMessageFormBody,
-) !rest.RestClient.Result(model.Message) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}/messages/{f}?{f}", .{ webhook_id, webhook_token, message_id, query });
+) !Result(model.Message) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}/messages/{f}?{f}", .{ webhook_id, webhook_token, message_id, query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    const transfer_encoding = try rest.getTransferEncoding(body, "files");
+    const transfer_encoding = try multipart.getTransferEncoding(body, "files");
 
     // https://codeberg.org/ziglang/zig/issues/30623 - for now, we will write the file
     // to an allocatingwriter and send it all in one shot. once streaming to body_writer is fixed,
@@ -274,23 +279,23 @@ pub fn editWebhookMessageMultipart(
     };
     defer aw.deinit();
 
-    try rest.writeMultipartFormDataBody(body, "files", &aw.writer);
+    try aw.writer.print("{f}", .{body.fmt("files")});
 
     var buf: [1028]u8 = undefined;
-    var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .PATCH, uri, transfer_encoding, rest.multipart_boundary, &buf);
+    var pending_request = try client.rest_client.beginMultipartRequest(model.Message, .PATCH, uri, transfer_encoding, multipart.boundary, &buf);
     try pending_request.request.sendBodyComplete(aw.written());
 
     return pending_request.waitForResponse();
 }
 
 pub fn deleteWebhookMessage(
-    client: *rest.EndpointClient,
+    client: *EndpointClient,
     webhook_id: model.Snowflake,
     webhook_token: []const u8,
     message_id: model.Snowflake,
     query: PossiblyInThreadQuery,
-) !rest.RestClient.Result(void) {
-    const uri_str = try rest.allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}/messages/{f}?{f}", .{ webhook_id, webhook_token, message_id, query });
+) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/webhooks/{f}/{s}/messages/{f}?{f}", .{ webhook_id, webhook_token, message_id, query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
@@ -316,7 +321,7 @@ pub const ExecuteWebhookQuery = struct {
     thread_id: ?model.Snowflake = null,
     wait: ?bool = null,
 
-    pub const format = rest.QueryStringFormatMixin(@This()).format;
+    pub const format = query_strings.formatAsQueryString;
 };
 
 pub const ExecuteWebhookJsonBody = struct {
@@ -327,7 +332,7 @@ pub const ExecuteWebhookJsonBody = struct {
     embeds: jconfig.Omittable(?[]const model.Message.Embed) = .omit,
     allowed_mentions: jconfig.Omittable(?model.Message.AllowedMentions) = .omit,
     components: jconfig.Omittable(?[]const model.components.TopLevelMessageComponent) = .omit,
-    attachments: jconfig.Omittable(?[]const rest.EndpointClient.PartialAttachmentRequest) = .omit,
+    attachments: jconfig.Omittable(?[]const EndpointClient.PartialAttachmentRequest) = .omit,
     flags: jconfig.Omittable(?model.Message.Flags) = .omit,
     thread_name: jconfig.Omittable(?[]const u8) = .omit,
     applied_tags: jconfig.Omittable(?[]const model.Snowflake) = .omit,
@@ -336,7 +341,8 @@ pub const ExecuteWebhookJsonBody = struct {
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
-pub const ExecuteWebhookFormBody = struct {
+pub const ExecuteWebhookFormBody = multipart.FormDataBody(?[]const ?Upload, ExecuteWebhookFormPayload);
+pub const ExecuteWebhookFormPayload = struct {
     content: ?[]const u8 = null,
     username: ?[]const u8 = null,
     avatar_url: ?[]const u8 = null,
@@ -344,8 +350,7 @@ pub const ExecuteWebhookFormBody = struct {
     embeds: ?[]const model.Message.Embed = null,
     allowed_mentions: ?model.Message.AllowedMentions = null,
     components: ?[]const model.components.TopLevelMessageComponent = null,
-    files: ?[]const ?rest.Upload = null,
-    attachments: ?[]const rest.EndpointClient.PartialAttachmentRequest = null,
+    attachments: ?[]const EndpointClient.PartialAttachmentRequest = null,
     flags: ?model.Message.Flags = null,
     thread_name: ?[]const u8 = null,
     applied_tags: ?[]const model.Snowflake = null,
@@ -355,7 +360,7 @@ pub const ExecuteWebhookFormBody = struct {
 pub const PossiblyInThreadQuery = struct {
     thread_id: ?model.Snowflake = null,
 
-    pub const format = rest.QueryStringFormatMixin(@This()).format;
+    pub const format = query_strings.formatAsQueryString;
 };
 
 pub const EditWebhookMessageJsonBody = struct {
@@ -364,19 +369,19 @@ pub const EditWebhookMessageJsonBody = struct {
     flags: jconfig.Omittable(?model.Message.Flags) = .omit,
     allowed_mentions: jconfig.Omittable(?model.Message.AllowedMentions) = .omit,
     components: jconfig.Omittable(?[]const model.components.TopLevelMessageComponent) = .omit,
-    attachments: jconfig.Omittable(?[]const rest.EndpointClient.AttachmentRequest) = .omit,
+    attachments: jconfig.Omittable(?[]const EndpointClient.AttachmentRequest) = .omit,
     poll: jconfig.Omittable(?model.Poll) = .omit, // Polls can only be added when editing a deferred interaction response.
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
-pub const EditWebhookMessageFormBody = struct {
+pub const EditWebhookMessageFormBody = multipart.FormDataBody(?[]const ?Upload, EditWebhookMessageFormPayload);
+pub const EditWebhookMessageFormPayload = struct {
     content: ?[]const u8 = null,
     embeds: ?[]const model.Message.Embed = null,
     flags: ?model.Message.Flags = null,
     allowed_mentions: ?model.Message.AllowedMentions = null,
     components: ?[]const model.components.TopLevelMessageComponent = null,
-    files: ?[]const ?rest.Upload = null,
-    attachments: ?[]const rest.EndpointClient.AttachmentRequest = null,
+    attachments: ?[]const EndpointClient.AttachmentRequest = null,
     poll: ?model.Poll = null, // Polls can only be added when editing a deferred interaction response.
 };

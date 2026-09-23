@@ -1,7 +1,7 @@
 const std = @import("std");
-const model = @import("../root.zig").model;
 const command = model.interaction.command;
-const jconfig = @import("../root.zig").jconfig;
+const jconfig = @import("jconfig");
+const model = @import("../model.zig");
 
 application_commands: []const model.interaction.command.ApplicationCommand,
 audit_log_entries: []const Entry,

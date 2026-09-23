@@ -1,6 +1,6 @@
 const std = @import("std");
 const event_data = @import("./event_data.zig");
-const jconfig = @import("../root.zig").jconfig;
+const jconfig = @import("jconfig");
 const ReceiveEvent = @This();
 
 op: event_data.Opcode,

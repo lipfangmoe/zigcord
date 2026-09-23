@@ -2,14 +2,19 @@
 //! Has a relatively simple API, automatic reconnecting and nice stuff like that!
 
 const std = @import("std");
-const zigcord = @import("../root.zig");
+const model = @import("model");
+const logger = @import("shared").logger;
+const JsonWSClient = @import("./JsonWSClient.zig");
+const event_data = @import("./event_data.zig");
+const ReceiveEvent = @import("./ReceiveEvent.zig");
+const SendEvent = @import("./SendEvent.zig");
 const Client = @This();
 
 io: std.Io,
 allocator: std.mem.Allocator,
 token: []const u8,
-intents: zigcord.model.Intents,
-json_ws_client: *zigcord.gateway.JsonWSClient,
+intents: model.Intents,
+json_ws_client: *JsonWSClient,
 
 oldest_reconnect: ?std.Io.Timestamp = null,
 reconnects: u5 = 0,
@@ -17,11 +22,11 @@ reconnects: u5 = 0,
 const InitError = error{AuthError} || std.mem.Allocator.Error;
 
 /// Create a Discord Websocket Client. The `token` string must live as for as long as this bot is active.
-pub fn init(io: std.Io, allocator: std.mem.Allocator, token: []const u8, intents: zigcord.model.Intents) InitError!Client {
-    const json_ws_client = try allocator.create(zigcord.gateway.JsonWSClient);
+pub fn init(io: std.Io, allocator: std.mem.Allocator, token: []const u8, intents: model.Intents) InitError!Client {
+    const json_ws_client = try allocator.create(JsonWSClient);
     errdefer allocator.destroy(json_ws_client);
 
-    json_ws_client.* = zigcord.gateway.JsonWSClient.init(io, allocator, .{ .bot = token }) catch return error.AuthError;
+    json_ws_client.* = JsonWSClient.init(io, allocator, .{ .bot = token }) catch return error.AuthError;
     errdefer json_ws_client.deinit();
 
     json_ws_client.authenticate(token, intents) catch return error.AuthError;
@@ -36,13 +41,13 @@ pub fn init(io: std.Io, allocator: std.mem.Allocator, token: []const u8, intents
 }
 
 /// Gets the ready event which initialized this bot
-pub fn getReadyEvent(self: Client) zigcord.gateway.event_data.receive_events.Ready {
+pub fn getReadyEvent(self: Client) event_data.receive_events.Ready {
     return self.json_ws_client.ready_event.?.event;
 }
 
 pub const ReadEvent = struct {
-    event: ?zigcord.gateway.ReadEventData,
-    json_parsed_value: std.json.Parsed(zigcord.gateway.ReceiveEvent),
+    event: ?event_data.ReceiveEventData,
+    json_parsed_value: std.json.Parsed(ReceiveEvent),
 
     pub fn deinit(self: ReadEvent) void {
         self.json_parsed_value.deinit();
@@ -57,15 +62,15 @@ pub fn readEvent(self: *Client) error{ Canceled, Disconnected, JsonError, Respon
             error.JsonError => return error.JsonError,
             error.ResponseTooLong => return error.ResponseTooLong,
             error.WebsocketError => {
-                zigcord.logger.err("WebsocketError encountered", .{});
+                logger.err("WebsocketError encountered", .{});
                 if (@errorReturnTrace()) |trace| {
                     var err_trace: std.Io.Writer.Allocating = .init(self.allocator);
                     defer err_trace.deinit();
                     std.debug.writeErrorReturnTrace(trace, .{ .writer = &err_trace.writer, .mode = .no_color }) catch |err2| {
-                        zigcord.logger.err("error writing error return trace: {}", .{err2});
+                        logger.err("error writing error return trace: {}", .{err2});
                     };
 
-                    zigcord.logger.err("trace: {s}", .{err_trace.written()});
+                    logger.err("trace: {s}", .{err_trace.written()});
                 }
                 self.reconnect() catch return error.Disconnected;
                 return try self.readEvent();
@@ -89,8 +94,8 @@ pub fn readEvent(self: *Client) error{ Canceled, Disconnected, JsonError, Respon
         defer json_parsed_value.deinit();
         self_owned = true;
 
-        zigcord.logger.debug("received heartbeat event. responding!", .{});
-        self.writeEvent(zigcord.gateway.SendEvent.heartbeat(self.json_ws_client.sequence)) catch |err| switch (err) {
+        logger.debug("received heartbeat event. responding!", .{});
+        self.writeEvent(SendEvent.heartbeat(self.json_ws_client.sequence)) catch |err| switch (err) {
             error.Canceled => return error.Canceled,
             error.JsonError => return error.JsonError,
             error.WebsocketError => {
@@ -116,7 +121,7 @@ pub fn readEvent(self: *Client) error{ Canceled, Disconnected, JsonError, Respon
 }
 
 /// Sends an event over the gateway. This functionality is rarely needed, you may be looking for REST API (located under `zigcord.rest`).
-pub fn writeEvent(self: *Client, event: zigcord.gateway.SendEvent) error{ Canceled, WebsocketError, JsonError }!void {
+pub fn writeEvent(self: *Client, event: SendEvent) error{ Canceled, WebsocketError, JsonError }!void {
     try self.json_ws_client.writeEvent(event);
 }
 
@@ -137,7 +142,7 @@ pub fn reinit(self: *Client) ReinitError!void {
     };
 
     {
-        var json_ws_client = zigcord.gateway.JsonWSClient.initWithUri(self.io, self.allocator, .{ .bot = self.token }, ready_event.event.resume_gateway_url) catch return error.AuthError;
+        var json_ws_client = JsonWSClient.initWithUri(self.io, self.allocator, .{ .bot = self.token }, ready_event.event.resume_gateway_url) catch return error.AuthError;
         errdefer json_ws_client.deinit();
         json_ws_client.@"resume"(self.token, sequence, ready_event) catch return error.AuthError;
 
@@ -165,5 +170,5 @@ fn reconnect(self: *Client) !void {
     }
 
     try self.reinit();
-    zigcord.logger.debug("reconnected!", .{});
+    logger.debug("reconnected!", .{});
 }
