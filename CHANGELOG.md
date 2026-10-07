@@ -1,4 +1,4 @@
-# pending (untagged) changes
+# v0.15.0
 
 There are breaking changes.
 
