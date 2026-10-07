@@ -6,6 +6,7 @@ There are breaking changes.
   * see [post_attachment](./examples/post_attachment.zig) and [createsticker](./examples/createsticker_bot.zig) to see an example of the new usage.
 * the entire library has been reorganized to split it into different modules
   * there should be no changes from callers' perspectives
+* Updated to Zig 0.17.0
 
 # v0.14.6
 

@@ -41,28 +41,28 @@ fn is_omittable_type(comptime T: type) bool {
 }
 
 fn PartialStruct(comptime T: type) type {
-    const fields: []const std.builtin.Type.StructField = std.meta.fields(T);
+    const t_info = @typeInfo(T).@"struct";
+    const field_count = t_info.field_names.len;
+    var field_names: [field_count][]const u8 = undefined;
+    var field_types: [field_count]type = undefined;
+    var field_attributes: [field_count]std.builtin.Type.Struct.FieldAttributes = undefined;
 
-    var field_names: [fields.len][]const u8 = undefined;
-    var field_types: [fields.len]type = undefined;
-    var field_attributes: [fields.len]std.builtin.Type.StructField.Attributes = undefined;
-
-    inline for (0.., fields) |idx, field| {
-        field_names[idx] = field.name;
-        if (is_omittable_type(field.type)) {
-            field_types[idx] = field.type;
+    inline for (0.., t_info.field_names, t_info.field_types, t_info.field_attrs) |idx, field_name, FieldType, field_attrs| {
+        field_names[idx] = field_name;
+        if (is_omittable_type(FieldType)) {
+            field_types[idx] = FieldType;
 
             field_attributes[idx] = .{
-                .@"align" = field.alignment,
-                .@"comptime" = field.is_comptime,
-                .default_value_ptr = field.default_value_ptr,
+                .@"align" = field_attrs.@"align",
+                .@"comptime" = field_attrs.@"comptime",
+                .default_value_ptr = field_attrs.default_value_ptr,
             };
         } else {
-            field_types[idx] = omit.Omittable(field.type);
+            field_types[idx] = omit.Omittable(FieldType);
             field_attributes[idx] = .{
-                .@"align" = field.alignment,
-                .@"comptime" = field.is_comptime,
-                .default_value_ptr = &@as(omit.Omittable(field.type), .omit),
+                .@"align" = field_attrs.@"align",
+                .@"comptime" = field_attrs.@"comptime",
+                .default_value_ptr = &@as(omit.Omittable(FieldType), .omit),
             };
         }
     }
@@ -115,7 +115,7 @@ test "Partial Parse" {
     try std.testing.expectEqual(5, my_partial.partial.five.some);
     try std.testing.expectEqualStrings("lol", my_partial.partial.something.some);
     try std.testing.expectEqual(5, my_partial.partial.nested_type.some.foo);
-    try std.testing.expectEqual(void{}, my_partial.partial.omitted.omit);
+    try std.testing.expectEqual({}, my_partial.partial.omitted.omit);
     try std.testing.expectEqual(255, my_partial.partial.already_omittable.some);
-    try std.testing.expectEqual(void{}, my_partial.partial.already_omittable_omitted.omit);
+    try std.testing.expectEqual({}, my_partial.partial.already_omittable_omitted.omit);
 }
