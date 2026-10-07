@@ -45,16 +45,16 @@ pub const Interaction = struct {
         };
 
         var interaction: Interaction = undefined;
-
-        inline for (comptime std.meta.fields(Interaction)) |field| {
-            if (comptime std.mem.eql(u8, field.name, "data")) {
+        const interaction_typeinfo = @typeInfo(Interaction).@"struct";
+        inline for (interaction_typeinfo.field_names, interaction_typeinfo.field_types, interaction_typeinfo.field_attrs) |field_name, FieldType, field_attrs| {
+            if (comptime std.mem.eql(u8, field_name, "data")) {
                 continue;
             }
-            if (obj.get(field.name)) |value| {
-                @field(interaction, field.name) = try std.json.innerParseFromValue(field.type, allocator, value, options);
-            } else if (field.default_value_ptr) |value_ptr| {
-                const value: *const field.type = @ptrCast(@alignCast(value_ptr));
-                @field(interaction, field.name) = value.*;
+            if (obj.get(field_name)) |value| {
+                @field(interaction, field_name) = try std.json.innerParseFromValue(FieldType, allocator, value, options);
+            } else if (field_attrs.default_value_ptr) |value_ptr| {
+                const value: *const FieldType = @ptrCast(@alignCast(value_ptr));
+                @field(interaction, field_name) = value.*;
             } else {
                 return error.MissingField;
             }
@@ -187,7 +187,7 @@ pub const InteractionCallback = union(Type) {
         try jw.beginObject();
 
         try jw.objectField("type");
-        try jw.write(@intFromEnum(std.meta.activeTag(self)));
+        try jw.write(@backingInt(std.meta.activeTag(self)));
 
         switch (self) {
             inline else => |prong| {

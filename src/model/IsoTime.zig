@@ -86,7 +86,8 @@ pub fn parse(str: []const u8) !IsoTime {
         }
     };
     if (divider == '.') {
-        var buf: [10]u8 = .{'.'} ++ .{undefined} ** 9;
+        var buf: [10]u8 = undefined;
+        buf[0] = '.';
         const fractional_second_str = blk: {
             for (1.., buf[1..]) |idx, *byte| {
                 const digit = try reader.takeByte();

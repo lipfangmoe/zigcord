@@ -81,33 +81,33 @@ pub fn stringifyWithOmit(self: anytype, json_writer: *std.json.Stringify) @typeI
 
     try json_writer.beginObject();
 
-    inline for (struct_info.fields) |field| {
-        const value = @field(self, field.name);
-        try writePossiblyOmittableFieldToStream(field, value, json_writer);
+    inline for (struct_info.field_names, struct_info.field_types) |field_name, FieldType| {
+        const value = @field(self, field_name);
+        try writePossiblyOmittableFieldToStream(field_name, FieldType, value, json_writer);
     }
 
     try json_writer.endObject();
 }
 
-pub fn writePossiblyOmittableFieldToStream(field: std.builtin.Type.StructField, value: anytype, json_writer: *std.json.Stringify) !void {
+pub fn writePossiblyOmittableFieldToStream(comptime field_name: []const u8, comptime FieldType: type, value: anytype, json_writer: *std.json.Stringify) !void {
     const is_omittable = comptime blk: {
-        if (@typeInfo(field.type) != .@"union") {
+        if (@typeInfo(FieldType) != .@"union") {
             break :blk false;
         }
-        const field_names = std.meta.fieldNames(field.type);
+        const field_names = std.meta.fieldNames(FieldType);
         break :blk field_names.len == 2 and std.mem.eql(u8, field_names[0], "some") and std.mem.eql(u8, field_names[1], "omit");
     };
 
     if (is_omittable) {
         switch (value) {
             .some => |some| {
-                try json_writer.objectField(field.name);
+                try json_writer.objectField(field_name);
                 try json_writer.write(some);
             },
             .omit => {},
         }
     } else {
-        try json_writer.objectField(field.name);
+        try json_writer.objectField(field_name);
         try json_writer.write(value);
     }
 }

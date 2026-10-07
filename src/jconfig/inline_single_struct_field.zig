@@ -24,20 +24,21 @@ pub fn InlineSingleStructFieldMixin(comptime T: type, comptime inline_field: []c
             inner_options.ignore_unknown_fields = true;
 
             var t: T = undefined;
-            inline for (std.meta.fields(T)) |field| {
-                @field(t, field.name) = blk: {
-                    if (std.mem.eql(u8, field.name, inline_field)) {
-                        const field_value = try std.json.innerParseFromValue(field.type, allocator, source, inner_options);
+            const t_typeinfo = @typeInfo(T).@"struct";
+            inline for (t_typeinfo.field_names, t_typeinfo.field_types, t_typeinfo.field_attrs) |field_name, FieldType, field_attrs| {
+                @field(t, field_name) = blk: {
+                    if (std.mem.eql(u8, field_name, inline_field)) {
+                        const field_value = try std.json.innerParseFromValue(FieldType, allocator, source, inner_options);
                         break :blk field_value;
                     } else {
-                        if (object.get(field.name)) |value| {
-                            const field_value = try std.json.innerParseFromValue(field.type, allocator, value, options);
+                        if (object.get(field_name)) |value| {
+                            const field_value = try std.json.innerParseFromValue(FieldType, allocator, value, options);
                             break :blk field_value;
                         } else {
-                            if (field.default_value_ptr) |default_value| {
-                                break :blk @as(*const field.type, @ptrCast(@alignCast(default_value))).*;
+                            if (field_attrs.default_value_ptr) |default_value| {
+                                break :blk @as(*const FieldType, @ptrCast(@alignCast(default_value))).*;
                             } else {
-                                logger.err("Missing field for type '{s}': '{s}'", .{ @typeName(T), field.name });
+                                logger.err("Missing field for type '{s}': '{s}'", .{ @typeName(T), field_name });
                                 return error.MissingField;
                             }
                         }
@@ -50,22 +51,26 @@ pub fn InlineSingleStructFieldMixin(comptime T: type, comptime inline_field: []c
 
         pub fn jsonStringify(self: T, jw: *std.json.Stringify) !void {
             try jw.beginObject();
-            inline for (std.meta.fields(T)) |outer_field| {
-                const outer_field_value = @field(self, outer_field.name);
-                if (comptime std.mem.eql(u8, outer_field.name, inline_field)) {
-                    if (comptime std.meta.hasMethod(outer_field.type, "jsonStringify")) {
+            const wrapper_type_info = @typeInfo(T).@"struct";
+
+            inline for (wrapper_type_info.field_names, wrapper_type_info.field_types) |wrapper_field_name, WrapperFieldType| {
+                const wrapper_field_value = @field(self, wrapper_field_name);
+                if (comptime std.mem.eql(u8, wrapper_field_name, inline_field)) {
+                    if (comptime std.meta.hasMethod(WrapperFieldType, "jsonStringify")) {
                         var buf: [100]u8 = undefined;
                         var substring_writer: SubstringWriter = .init(jw.writer, &buf);
-                        try std.json.Stringify.value(outer_field_value, jw.options, &substring_writer.interface);
+                        try std.json.Stringify.value(wrapper_field_value, jw.options, &substring_writer.interface);
                         try substring_writer.interface.flush();
                         continue;
                     }
-                    inline for (std.meta.fields(outer_field.type)) |inner_field| {
-                        const inner_field_value = @field(outer_field_value, inner_field.name);
-                        try writePossiblyOmittableFieldToStream(inner_field, inner_field_value, jw);
+
+                    const inlining_field_type_info = @typeInfo(WrapperFieldType).@"struct";
+                    inline for (inlining_field_type_info.field_names, inlining_field_type_info.field_types) |inlining_field_name, InliningFieldType| {
+                        const inner_field_value = @field(wrapper_field_value, inlining_field_name);
+                        try writePossiblyOmittableFieldToStream(inlining_field_name, InliningFieldType, inner_field_value, jw);
                     }
                 } else {
-                    try writePossiblyOmittableFieldToStream(outer_field, outer_field_value, jw);
+                    try writePossiblyOmittableFieldToStream(wrapper_field_name, WrapperFieldType, wrapper_field_value, jw);
                 }
             }
             try jw.endObject();

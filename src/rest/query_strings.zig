@@ -19,17 +19,17 @@ pub fn formatAsQueryString(data: anytype, writer: *std.Io.Writer) error{WriteFai
         .pointer => std.meta.Child(@TypeOf(data)),
         else => @TypeOf(data),
     };
-    const fields = std.meta.fields(T);
+    const t_typeinfo = @typeInfo(T).@"struct";
     var is_first_print = true;
-    inline for (fields) |field| {
-        const value = @field(data, field.name);
+    inline for (t_typeinfo.field_names) |field_name| {
+        const value = @field(data, field_name);
         if (willPrint(value)) {
             if (!is_first_print) {
                 try writer.writeByte('&');
             }
             is_first_print = false;
         }
-        try formatField(field.name, writer, value);
+        try formatField(field_name, writer, value);
     }
 }
 
