@@ -1,0 +1,112 @@
+[
+    {
+        "url": "https://www.oginstagram.com/p/DeDnWXNjHkG/?stkn=d3FoM2s4c2dkcDc1",
+        "type": "components",
+        "reference_id": "1558554847387848865",
+        "id": "1558554851573768326",
+        "content_scan_version": 4,
+        "components": [
+            {
+                "type": 17,
+                "spoiler": false,
+                "id": 1,
+                "components": [
+                    {
+                        "type": 9,
+                        "id": 2,
+                        "components": [
+                            {
+                                "type": 10,
+                                "id": 3,
+                                "content": "**Genshin Impact** <:verified:1556598045670514798>\n[@genshinimpact](https://www.instagram.com/genshinimpact/)\n\n❤️ **495,358**  💬 **4,606**"
+                            }
+                        ],
+                        "accessory": {
+                            "type": 11,
+                            "spoiler": false,
+                            "media": {
+                                "width": 150,
+                                "url": "https://www.oginstagram.com/offload/DeDnWXNjHkG/avatar?v=2&kid=vultr1&exp=1792868433&sig=_TLKjLaF2ab_D0teiKHgm11gLImF5hK_maw9rHCRAP4",
+                                "proxy_url": "https://images-ext-1.discordapp.net/external/BWlX82g18f4EQkRjIBEYZyvflAJwI9ASfknOCVGe4a4/%3Fv%3D2%26kid%3Dvultr1%26exp%3D1792868433%26sig%3D_TLKjLaF2ab_D0teiKHgm11gLImF5hK_maw9rHCRAP4/https/www.oginstagram.com/offload/DeDnWXNjHkG/avatar",
+                                "placeholder_version": 1,
+                                "placeholder": "qCgSHwR3iHh/d3lxd7eHd3eG2fuNrc8H",
+                                "loading_state": 2,
+                                "id": "1558554851573768324",
+                                "height": 150,
+                                "content_type": "image/jpeg",
+                                "content_scan_metadata": {
+                                    "version": 4,
+                                    "flags": 0
+                                }
+                            },
+                            "id": 4,
+                            "description": null
+                        }
+                    },
+                    {
+                        "type": 10,
+                        "id": 5,
+                        "content": "Ruler of Death — Ronova\n\n\"Death renders all things equal. A remedy bestowed upon one long wearied by illness, or the clear sky unveiled when the clouds at last disperse — such are the metaphors for death.\"\n— \"The Visionary\" Vedrfolnir\n\n[#GenshinImpact](https://www.instagram.com/explore/search/keyword/?q=%23GenshinImpact) [#Ronova](https://www.instagram.com/explore/search/keyword/?q=%23Ronova)"
+                    },
+                    {
+                        "type": 12,
+                        "items": [
+                            {
+                                "spoiler": false,
+                                "media": {
+                                    "width": 1440,
+                                    "url": "https://www.oginstagram.com/offload/DeDnWXNjHkG/1?v=2&kid=vultr1&exp=1792868433&sig=cw3LjuYRjBlRNSHDCtTXZI0Pd311U6LqLd79x73mPmA",
+                                    "proxy_url": "https://images-ext-1.discordapp.net/external/7KMsIJm0z8mxN8HdshTvSCGtb2uk1njCQXHsvZIqV7M/%3Fv%3D2%26kid%3Dvultr1%26exp%3D1792868433%26sig%3Dcw3LjuYRjBlRNSHDCtTXZI0Pd311U6LqLd79x73mPmA/https/www.oginstagram.com/offload/DeDnWXNjHkG/1",
+                                    "placeholder_version": 1,
+                                    "placeholder": "XkgKDwTRQDGbhHiUhmmJl4aEeqD3F3oP",
+                                    "loading_state": 2,
+                                    "id": "1558554851573768325",
+                                    "height": 1440,
+                                    "content_type": "image/jpeg",
+                                    "content_scan_metadata": {
+                                        "version": 4,
+                                        "flags": 0
+                                    }
+                                },
+                                "description": null
+                            }
+                        ],
+                        "id": 6
+                    },
+                    {
+                        "type": 10,
+                        "id": 7,
+                        "content": "-# <:OGInstagram:1556597080229810266> OGInstagram · <t:1791086401:s>"
+                    },
+                    {
+                        "type": 14,
+                        "spacing": 1,
+                        "id": 8,
+                        "divider": true
+                    },
+                    {
+                        "type": 1,
+                        "id": 9,
+                        "components": [
+                            {
+                                "url": "https://www.instagram.com/p/DeDnWXNjHkG/",
+                                "type": 2,
+                                "style": 5,
+                                "label": "📷 Instagram",
+                                "id": 10
+                            },
+                            {
+                                "url": "https://ko-fi.com/seirenkr",
+                                "type": 2,
+                                "style": 5,
+                                "label": "☕ Support me",
+                                "id": 11
+                            }
+                        ]
+                    }
+                ],
+                "accent_color": 16711785
+            }
+        ]
+    }
+]

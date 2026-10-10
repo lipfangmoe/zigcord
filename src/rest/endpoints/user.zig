@@ -124,7 +124,8 @@ pub const GetCurrentUserGuildsQuery = struct {
     before: ?model.Snowflake = null,
     after: ?model.Snowflake = null,
     limit: ?i64 = null,
-    with_counts: ?bool,
+    with_counts: ?bool = null,
+    shard: ?i64 = null,
 
     pub const format = query_strings.formatAsQueryString;
 };
