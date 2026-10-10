@@ -1,3 +1,14 @@
+# v0.15.1
+
+There are no breaking changes.
+
+* [Shard Param Required for Large Bot Sharding](https://docs.discord.com/developers/change-log#shard-param-required-for-get-current-user-guilds-with-large-bot-sharding): Added `shard` query parameter to `getCurrentUserGuilds`
+* Added default value to `with_counts` query parameter for `getCurrentUserGuilds`
+* [New Invite Target user Endpoints and Options](https://docs.discord.com/developers/change-log#new-invite-target-user-endpoints-and-options)
+  * Added support for Discord's several new endpoints for editing server invites in-place
+* [Component Embeds](https://docs.discord.com/developers/change-log#component-embeds-and-link-preview-docs)
+  * Discord now supports for hyperlinks to have Discord Component V2 embeds, these embeds should now parse correctly in zigcord.
+
 # v0.15.0
 
 There are breaking changes.

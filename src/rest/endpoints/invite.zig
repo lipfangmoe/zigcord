@@ -47,6 +47,32 @@ pub fn getTargetUsers(
     return .{ .rest_result = pending_result };
 }
 
+pub fn addTargetUser(
+    client: *EndpointClient,
+    invite_code: []const u8,
+    user_id: model.Snowflake,
+) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/invites/{s}/target-users/{f}", .{ invite_code, user_id });
+    defer client.rest_client.allocator.free(uri_str);
+
+    const uri = try std.Uri.parse(uri_str);
+
+    return try client.rest_client.request(void, .PUT, uri);
+}
+
+pub fn removeTargetUser(
+    client: *EndpointClient,
+    invite_code: []const u8,
+    user_id: model.Snowflake,
+) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/invites/{s}/target-users/{f}", .{ invite_code, user_id });
+    defer client.rest_client.allocator.free(uri_str);
+
+    const uri = try std.Uri.parse(uri_str);
+
+    return try client.rest_client.request(void, .DELETE, uri);
+}
+
 pub fn updateTargetUsers(
     client: *EndpointClient,
     invite_code: []const u8,
@@ -77,6 +103,32 @@ pub fn updateTargetUsers(
     try pending_request.request.sendBodyComplete(aw.written());
 
     return try pending_request.waitForResponse();
+}
+
+pub fn bulkAddTargetUser(
+    client: *EndpointClient,
+    invite_code: []const u8,
+    body: BulkAddTargetUsersBody,
+) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/invites/{s}/target-users/bulk-add", .{invite_code});
+    defer client.rest_client.allocator.free(uri_str);
+
+    const uri = try std.Uri.parse(uri_str);
+
+    return try client.rest_client.requestWithJsonBody(void, .POST, uri, body, .{});
+}
+
+pub fn bulkDeleteTargetUser(
+    client: *EndpointClient,
+    invite_code: []const u8,
+    body: BulkDeleteTargetUsersBody,
+) !Result(void) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/invites/{s}/target-users/bulk-delete", .{invite_code});
+    defer client.rest_client.allocator.free(uri_str);
+
+    const uri = try std.Uri.parse(uri_str);
+
+    return try client.rest_client.requestWithJsonBody(void, .POST, uri, body, .{});
 }
 
 pub fn getTargetUsersJobStatus(
@@ -160,4 +212,12 @@ pub const JobStatus = struct {
 
         pub const jsonStringify = jconfig.stringifyEnumAsInt;
     };
+};
+
+pub const BulkAddTargetUsersBody = struct {
+    user_ids: []const model.Snowflake,
+};
+
+pub const BulkDeleteTargetUsersBody = struct {
+    user_ids: []const model.Snowflake,
 };

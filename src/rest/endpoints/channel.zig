@@ -920,6 +920,7 @@ pub const CreateChannelInviteJsonBody = struct {
     unique: jconfig.Omittable(bool) = .omit,
     target_type: jconfig.Omittable(i64) = .omit,
     target_user_id: jconfig.Omittable(Snowflake) = .omit,
+    target_user_ids: jconfig.Omittable([]const Snowflake) = .omit,
     target_application_id: jconfig.Omittable(Snowflake) = .omit,
     role_ids: jconfig.Omittable(Snowflake) = .omit,
 
@@ -934,6 +935,7 @@ pub const CreateChannelInviteFormPayload = struct {
     unique: ?bool = null,
     target_type: ?i64 = null,
     target_user_id: ?Snowflake = null,
+    target_user_ids: ?[]const Snowflake = null,
     target_application_id: ?Snowflake = null,
     role_ids: ?Snowflake = null,
 };

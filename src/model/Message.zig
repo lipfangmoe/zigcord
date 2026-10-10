@@ -164,6 +164,7 @@ pub const Embed = struct {
     provider: jconfig.Omittable(Provider) = .omit,
     author: jconfig.Omittable(Author) = .omit,
     fields: jconfig.Omittable([]const Field) = .omit,
+    components: jconfig.Omittable([]const model.components.TopLevelMessageComponent) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 
@@ -175,6 +176,7 @@ pub const Embed = struct {
         article,
         link,
         poll_result,
+        components,
 
         // enums are encoded as string by default, no need for custom jsonStringify
     };
@@ -415,6 +417,11 @@ test "embeds" {
         \\[{"type":"poll_result","id":"0","fields":[{"value":"redacted","name":"poll_question_text","inline":false},{"value":"redacted","name":"victor_answer_votes","inline":false},{"value":"redacted","name":"total_votes","inline":false},{"value":"redacted","name":"victor_answer_id","inline":false},{"value":"redacted","name":"victor_answer_text","inline":false}],"content_scan_version":0}]
     ;
 
-    const value = try std.json.parseFromSlice([]const Embed, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
-    defer value.deinit();
+    try jconfig.testing.expectParsedSuccessfully([]const Embed, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
+}
+
+test "embeds 2" {
+    const input = @embedFile("./test/message_embeds.test.json");
+
+    try jconfig.testing.expectParsedSuccessfully([]const Embed, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
 }
