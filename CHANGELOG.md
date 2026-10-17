@@ -1,3 +1,9 @@
+# v0.15.2
+
+There are no breaking changes.
+
+* Regenerated EndpointClient file to account for the v0.15.1 changes.
+
 # v0.15.1
 
 There are no breaking changes.
