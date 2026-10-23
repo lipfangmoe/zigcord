@@ -230,6 +230,7 @@ pub fn startHeartbeatListener(self: *JsonWSClient, heartbeat_interval: u64) erro
     if (self.heartbeat_future) |*fut| {
         fut.cancel(self.io);
     }
+
     self.heartbeat_future = try self.io.concurrent(defaultHeartbeatHandler, .{ self, std.math.lossyCast(i64, heartbeat_interval) });
 }
 
@@ -239,13 +240,14 @@ fn defaultHeartbeatHandler(self: *JsonWSClient, interval_ms: i64) void {
 
     std.Io.sleep(self.io, .fromMilliseconds(interval_ms_with_jitter), .awake) catch return;
 
-    var buf: [8096]u8 = undefined;
-    var buf_allocator = std.heap.FixedBufferAllocator.init(&buf);
     while (true) {
         const sequence = self.sequence;
         const heartbeat: SendEvent = .heartbeat(sequence);
 
         self.writeEvent(heartbeat) catch |err| {
+            if (err == error.Canceled) {
+                return;
+            }
             logger.warn("failed to write heartbeat: {}", .{err});
             if (@errorReturnTrace()) |trace| {
                 var err_trace: std.Io.Writer.Allocating = .init(self.allocator);
@@ -257,7 +259,6 @@ fn defaultHeartbeatHandler(self: *JsonWSClient, interval_ms: i64) void {
                 logger.err("trace: {s}", .{err_trace.written()});
             }
         };
-        buf_allocator.reset();
 
         std.Io.sleep(self.io, .fromMilliseconds(interval_ms), .awake) catch return;
     }
