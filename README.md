@@ -10,7 +10,7 @@ on a more recent version of Zig, please create an [issue](https://codeberg.org/l
 To include this in your zig project, use the Zig Package Manager:
 
 ```sh
-# you can get a lock a specific version by replacing "#main" with the version number, ie "#v0.14.1"
+# you can get a lock a specific version by replacing "#main" with the version number, ie "#v0.15.3"
 zig fetch --save 'git+https://codeberg.org/lipfang/zigcord#main'
 ```
 
@@ -31,7 +31,7 @@ Then, make sure something similar to the following is in your `build.zig`:
 # Feature Support
 
  - Static typing for the Discord API
- - All Discord API features up to September 14th, 2026
+ - All Discord API features up to October 28th, 2026
    - [User-installable Apps](https://discord.com/developers/docs/tutorials/developing-a-user-installable-app#developing-a-userinstallable-app)
    - [Components V2](https://discord.com/developers/docs/components/overview)
  - WebSocket Gateway Client

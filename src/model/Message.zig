@@ -131,9 +131,11 @@ pub const AttachmentFlags = packed struct(u64) {
     is_thumbnail: bool = false,
     is_remix: bool = false,
     is_spoiler: bool = false,
-    _unknown: u1 = 0,
+    contains_explicit_content: bool = false,
     is_animated: bool = false,
-    _padding: u58 = 0,
+    contains_gore_content: bool = false,
+    contains_self_harm_content: bool = false,
+    _padding: u56 = 0,
 
     const Mixin = model.PackedFlagsMixin(@This());
     pub const format = Mixin.format;
@@ -165,6 +167,7 @@ pub const Embed = struct {
     author: jconfig.Omittable(Author) = .omit,
     fields: jconfig.Omittable([]const Field) = .omit,
     components: jconfig.Omittable([]const model.components.TopLevelMessageComponent) = .omit,
+    flags: jconfig.Omittable(EmbedFlags) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 
@@ -220,6 +223,22 @@ pub const Embed = struct {
         @"inline": jconfig.Omittable(bool) = .omit,
 
         pub const jsonStringify = jconfig.stringifyWithOmit;
+    };
+
+    pub const EmbedFlags = packed struct(u64) {
+        _unused: u4 = 0,
+        contains_explicit_content: bool = false,
+        is_content_inventory_entry: bool = false,
+        contains_gore_content: bool = false,
+        contains_self_harm_content: bool = false,
+        _padding: u56 = 0,
+
+        const Mixin = model.PackedFlagsMixin(@This());
+        pub const format = Mixin.format;
+        pub const formatNumber = Mixin.formatNumber;
+        pub const jsonStringify = Mixin.jsonStringify;
+        pub const jsonParse = Mixin.jsonParse;
+        pub const jsonParseFromValue = Mixin.jsonParseFromValue;
     };
 };
 

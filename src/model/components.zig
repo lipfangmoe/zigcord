@@ -68,13 +68,13 @@ pub const TopLevelMessageComponent = union(Type) {
     }
 
     pub const Type = enum(u8) {
-        action_row = @intFromEnum(AnyComponentType.action_row),
-        section = @intFromEnum(AnyComponentType.section),
-        text_display = @intFromEnum(AnyComponentType.text_display),
-        media_gallery = @intFromEnum(AnyComponentType.media_gallery),
-        file = @intFromEnum(AnyComponentType.file),
-        separator = @intFromEnum(AnyComponentType.separator),
-        container = @intFromEnum(AnyComponentType.container),
+        action_row = @backingInt(AnyComponentType.action_row),
+        section = @backingInt(AnyComponentType.section),
+        text_display = @backingInt(AnyComponentType.text_display),
+        media_gallery = @backingInt(AnyComponentType.media_gallery),
+        file = @backingInt(AnyComponentType.file),
+        separator = @backingInt(AnyComponentType.separator),
+        container = @backingInt(AnyComponentType.container),
 
         pub const jsonStringify = jconfig.stringifyEnumAsInt;
     };
@@ -87,12 +87,12 @@ pub const TopLevelMessageComponent = union(Type) {
         channel_select: model.components.ChannelSelect.MessageInteractionData,
 
         pub const Type = enum(u8) {
-            button = @intFromEnum(AnyComponentType.button),
-            string_select = @intFromEnum(AnyComponentType.string_select),
-            user_select = @intFromEnum(AnyComponentType.user_select),
-            role_select = @intFromEnum(AnyComponentType.role_select),
-            mentionable_select = @intFromEnum(AnyComponentType.mentionable_select),
-            channel_select = @intFromEnum(AnyComponentType.channel_select),
+            button = @backingInt(AnyComponentType.button),
+            string_select = @backingInt(AnyComponentType.string_select),
+            user_select = @backingInt(AnyComponentType.user_select),
+            role_select = @backingInt(AnyComponentType.role_select),
+            mentionable_select = @backingInt(AnyComponentType.mentionable_select),
+            channel_select = @backingInt(AnyComponentType.channel_select),
 
             pub const jsonStringify = jconfig.stringifyEnumAsInt;
         };
@@ -123,7 +123,7 @@ pub const TopLevelModalComponent = union(Type) {
     }
 
     pub const Type = enum(u8) {
-        label = @intFromEnum(AnyComponentType.label),
+        label = @backingInt(AnyComponentType.label),
 
         pub const jsonStringify = jconfig.stringifyEnumAsInt;
     };
@@ -190,12 +190,12 @@ pub const ActionRowChildComponent = union(Type) {
     }
 
     pub const Type = enum(u8) {
-        button = @intFromEnum(AnyComponentType.button),
-        string_select = @intFromEnum(AnyComponentType.string_select),
-        user_select = @intFromEnum(AnyComponentType.user_select),
-        role_select = @intFromEnum(AnyComponentType.role_select),
-        mentionable_select = @intFromEnum(AnyComponentType.mentionable_select),
-        channel_select = @intFromEnum(AnyComponentType.channel_select),
+        button = @backingInt(AnyComponentType.button),
+        string_select = @backingInt(AnyComponentType.string_select),
+        user_select = @backingInt(AnyComponentType.user_select),
+        role_select = @backingInt(AnyComponentType.role_select),
+        mentionable_select = @backingInt(AnyComponentType.mentionable_select),
+        channel_select = @backingInt(AnyComponentType.channel_select),
 
         pub const jsonStringify = jconfig.stringifyEnumAsInt;
     };
@@ -237,8 +237,8 @@ pub const SectionAccessoryComponent = union(Type) {
     }
 
     pub const Type = enum(u8) {
-        button = @intFromEnum(AnyComponentType.button),
-        thumbnail = @intFromEnum(AnyComponentType.thumbnail),
+        button = @backingInt(AnyComponentType.button),
+        thumbnail = @backingInt(AnyComponentType.thumbnail),
 
         pub const jsonStringify = jconfig.stringifyEnumAsInt;
     };
@@ -260,7 +260,7 @@ pub const SectionChildComponent = union(Type) {
     }
 
     pub const Type = enum(u8) {
-        text_display = @intFromEnum(AnyComponentType.text_display),
+        text_display = @backingInt(AnyComponentType.text_display),
 
         pub const jsonStringify = jconfig.stringifyEnumAsInt;
     };
@@ -302,12 +302,12 @@ pub const ContainerChildComponent = union(Type) {
     }
 
     pub const Type = enum(u8) {
-        action_row = @intFromEnum(AnyComponentType.action_row),
-        text_display = @intFromEnum(AnyComponentType.text_display),
-        section = @intFromEnum(AnyComponentType.section),
-        media_gallery = @intFromEnum(AnyComponentType.media_gallery),
-        separator = @intFromEnum(AnyComponentType.separator),
-        file = @intFromEnum(AnyComponentType.file),
+        action_row = @backingInt(AnyComponentType.action_row),
+        text_display = @backingInt(AnyComponentType.text_display),
+        section = @backingInt(AnyComponentType.section),
+        media_gallery = @backingInt(AnyComponentType.media_gallery),
+        separator = @backingInt(AnyComponentType.separator),
+        file = @backingInt(AnyComponentType.file),
 
         pub const jsonStringify = jconfig.stringifyEnumAsInt;
     };
@@ -365,16 +365,16 @@ pub const LabelChildComponent = union(Type) {
     }
 
     pub const Type = enum(u8) {
-        text_input = @intFromEnum(AnyComponentType.text_input),
-        string_select = @intFromEnum(AnyComponentType.string_select),
-        user_select = @intFromEnum(AnyComponentType.user_select),
-        role_select = @intFromEnum(AnyComponentType.role_select),
-        mentionable_select = @intFromEnum(AnyComponentType.mentionable_select),
-        channel_select = @intFromEnum(AnyComponentType.channel_select),
-        file_upload = @intFromEnum(AnyComponentType.file_upload),
-        radio_group = @intFromEnum(AnyComponentType.radio_group),
-        checkbox_group = @intFromEnum(AnyComponentType.checkbox_group),
-        checkbox = @intFromEnum(AnyComponentType.checkbox),
+        text_input = @backingInt(AnyComponentType.text_input),
+        string_select = @backingInt(AnyComponentType.string_select),
+        user_select = @backingInt(AnyComponentType.user_select),
+        role_select = @backingInt(AnyComponentType.role_select),
+        mentionable_select = @backingInt(AnyComponentType.mentionable_select),
+        channel_select = @backingInt(AnyComponentType.channel_select),
+        file_upload = @backingInt(AnyComponentType.file_upload),
+        radio_group = @backingInt(AnyComponentType.radio_group),
+        checkbox_group = @backingInt(AnyComponentType.checkbox_group),
+        checkbox = @backingInt(AnyComponentType.checkbox),
 
         pub const jsonStringify = jconfig.stringifyEnumAsInt;
     };
@@ -953,8 +953,41 @@ pub const UnfurledMediaItem = struct {
     proxy_url: jconfig.Omittable([]const u8) = .omit,
     height: jconfig.Omittable(?i64) = .omit,
     width: jconfig.Omittable(?i64) = .omit,
+    placeholder: jconfig.Omittable([]const u8) = .omit,
+    placeholder_version: jconfig.Omittable(i64) = .omit,
     content_type: jconfig.Omittable([]const u8) = .omit,
+    flags: jconfig.Omittable(Flags) = .omit,
+    content_scan_metadata: jconfig.Omittable(ContentScanMetadata) = .omit,
     attachment_id: jconfig.Omittable(model.Snowflake) = .omit,
+
+    pub const Flags = packed struct(u64) {
+        is_animated: bool = false,
+        _padding: u63 = 0,
+
+        const Mixin = model.PackedFlagsMixin(@This());
+        pub const format = Mixin.format;
+        pub const formatNumber = Mixin.formatNumber;
+        pub const jsonStringify = Mixin.jsonStringify;
+        pub const jsonParse = Mixin.jsonParse;
+        pub const jsonParseFromValue = Mixin.jsonParseFromValue;
+    };
+
+    pub const ContentScanMetadata = struct {
+        flags: ContentScanMetadataFlags,
+    };
+    pub const ContentScanMetadataFlags = packed struct(u64) {
+        contains_explicit_content: bool = false,
+        contains_gore_content: bool = false,
+        contains_self_harm_content: bool = false,
+        _padding: u61 = 0,
+
+        const Mixin = model.PackedFlagsMixin(@This());
+        pub const format = Mixin.format;
+        pub const formatNumber = Mixin.formatNumber;
+        pub const jsonStringify = Mixin.jsonStringify;
+        pub const jsonParse = Mixin.jsonParse;
+        pub const jsonParseFromValue = Mixin.jsonParseFromValue;
+    };
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };

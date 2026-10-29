@@ -1,3 +1,9 @@
+# v0.15.3
+
+* Added [Content Scanning Flags](https://docs.discord.com/developers/change-log#content-scanning-flags-for-attachments-embeds-and-media)
+  * Message.AttachmentFlags and Embed.Flags now contain flags pertaining to why content may be marked as explicit
+  * Unfurled Media Items now inlude a `content_scan_metadata` field with similar information
+
 # v0.15.2
 
 There are no breaking changes.
