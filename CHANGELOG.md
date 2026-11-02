@@ -1,9 +1,9 @@
-# pending changes
+# v0.15.5
 
 This release contains a breaking change to a nonfunctional endpoint, and a minor breaking change
 
 * EndpointClient.searchGuildMessages now correctly returns an object instead of a `[]const model.Message`
-* `model.Snowflake` now uses the correct order in the packed struct fields
+* Minor breaking change: `model.Snowflake` now uses the correct order in the packed struct fields
 
 # v0.15.4
 
