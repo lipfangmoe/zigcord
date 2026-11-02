@@ -31,7 +31,7 @@ pub fn respond(self: *InteractionRequest, response_body: model.interaction.Inter
 pub fn followupEditOriginal(
     self: InteractionRequest,
     client: *rest.EndpointClient,
-    body: rest.EndpointClient.EditWebhookMessageFormBody,
+    body: rest.EndpointClient.EditWebhookMessageJsonBody,
 ) !rest.RestClient.Result(model.Message) {
     return try client.editOriginalInteractionResponse(self.interaction.application_id, self.interaction.token, body);
 }
@@ -48,7 +48,7 @@ pub fn followupDeleteOriginal(
 pub fn followupNewMessage(
     self: InteractionRequest,
     client: *rest.EndpointClient,
-    body: rest.EndpointClient.ExecuteWebhookFormBody,
+    body: rest.EndpointClient.EditWebhookMessageJsonBody,
 ) !rest.RestClient.Result(model.Message) {
     return try client.createFollowupMessage(self.interaction.application_id, self.interaction.token, body);
 }
@@ -58,7 +58,7 @@ pub fn followupEditNewMessage(
     self: InteractionRequest,
     client: *rest.EndpointClient,
     message_id: model.Snowflake,
-    body: rest.EndpointClient.EditWebhookMessageFormBody,
+    body: rest.EndpointClient.EditWebhookMessageJsonBody,
 ) !rest.RestClient.Result(model.Message) {
     return try client.editFollowupMessage(self.interaction.application_id, self.interaction.token, message_id, body);
 }

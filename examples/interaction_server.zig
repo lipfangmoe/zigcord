@@ -38,6 +38,7 @@ pub fn main(init: std.process.Init) !void {
     };
 
     const echo_cmd_id = try registerEchoCommand(application.id, &endpoints);
+    const deferred_echo_cmd_id = try registerDeferredEchoCommand(application.id, &endpoints);
 
     while (true) {
         var raw_arena: std.heap.ArenaAllocator = .init(gpa);
@@ -52,6 +53,8 @@ pub fn main(init: std.process.Init) !void {
             .application_command => |cmd| {
                 if (cmd.id == echo_cmd_id) {
                     try executeEchoCommand(&interaction_request, cmd);
+                } else if (cmd.id == deferred_echo_cmd_id) {
+                    try executeDeferredEchoCommand(io, &interaction_request, cmd, &endpoints);
                 } else {
                     std.log.warn("unexpected command: got command id {}, expected: {}",
                         .{cmd.id.asU64(), echo_cmd_id.asU64()});
@@ -134,6 +137,55 @@ fn executeEchoCommand(
             },
         ),
     }));
+}
+
+fn registerDeferredEchoCommand(application_id: zigcord.model.Snowflake, endpoint_client: *zigcord.EndpointClient) !zigcord.model.Snowflake {
+    const command_result = try endpoint_client.createGlobalApplicationCommand(application_id, .{
+        .name = "deferred_echo",
+        .description = "echoes your message back to you after waiting a bit!",
+        .options = .initSome(&.{.initStringOption(.{
+            .name = "text",
+            .description = "text to echo",
+            .required = .initSome(true),
+        })}),
+    });
+    defer command_result.deinit();
+
+    const command = switch (command_result.value()) {
+        .ok => |ok| ok,
+        .err => |err| {
+            std.log.err("error: {f}", .{std.json.fmt(err, .{})});
+            return error.DiscordError;
+        },
+    };
+    return command.id;
+}
+
+fn executeDeferredEchoCommand(
+    io: std.Io,
+    interaction_request: *zigcord.interaction_server.InteractionRequest,
+    command_data: zigcord.model.interaction.ApplicationCommandInteractionData,
+    endpoint_client: *zigcord.EndpointClient,
+) !void {
+    std.log.debug("received echo v2 command", .{});
+
+    const text_option = getOption("text", command_data.options.asSome() orelse return error.NoOptions) orelse return error.NoTextOption;
+    const text_value = text_option.value.asSome() orelse return error.NoTextOption;
+    const text = switch (text_value) {
+        .string => |str| str,
+        else => return error.InvalidTextOption,
+    };
+
+    try interaction_request.respond(.{.deferred_channel_message_with_source = .{}});
+
+    _ = io.sleep(.fromSeconds(2), .awake) catch {};
+
+    const followup = zigcord.EndpointClient.EditWebhookMessageJsonBody {
+        .flags = .initSome(.{ .ephemeral = true, }),
+        .content = .initSome(text),
+    };
+
+    _ = try interaction_request.followupEditOriginal(endpoint_client, followup);
 }
 
 fn handleExampleStringSelect(
