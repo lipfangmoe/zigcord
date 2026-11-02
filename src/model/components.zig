@@ -992,8 +992,8 @@ pub const UnfurledMediaItem = struct {
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
-test "discord example" {
-    const input = @embedFile("./test/discordapiinteraction.test.json");
+test "parse discord example" {
+    const input = @embedFile("./test/components_discordapidocs.test.json");
 
     const expected: []const TopLevelMessageComponent = &.{
         .initTextDisplay(.{ .content = "This is a message with components." }),
@@ -1007,12 +1007,80 @@ test "discord example" {
     try std.testing.expectEqualDeep(expected, actual.value);
 }
 
-test "media gallery example" {
-    const input = @embedFile("./test/components.test.json");
+test "stringify discord example" {
+    const expected_raw = @embedFile("./test/components_discordapidocs.test.json");
+    const expected = reparseJsonAlloc([]const TopLevelMessageComponent, std.testing.allocator, expected_raw);
+    defer std.testing.allocator.free(expected);
+
+    const input: []const TopLevelMessageComponent = &.{
+        .initTextDisplay(.{ .content = "This is a message with components." }),
+        .initActionRow(.{ .components = &.{
+            .initPrimaryButton("click_one", .{ .label = "Click me!" }),
+        } }),
+    };
+
+    const actual = try std.json.Stringify.valueAlloc(std.testing.allocator, input, .{ .whitespace = .indent_4 });
+    defer std.testing.allocator.free(actual);
+
+    try std.testing.expectEqualStrings(expected, actual);
+}
+
+test "parse media gallery example" {
+    const input = @embedFile("./test/components_mediagallery.test.json");
     try jconfig.testing.expectParsedSuccessfully(TopLevelMessageComponent, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
 }
 
-test "string select interaction data example" {
-    const input = @embedFile("./test/stringselectinteractiondata.test.json");
+test "stringify media gallery example" {
+    const expected_raw = @embedFile("./test/components_mediagallery.test.json");
+    const expected = reparseJsonAlloc(TopLevelMessageComponent, std.testing.allocator, expected_raw);
+    defer std.testing.allocator.free(expected);
+
+    const input: TopLevelMessageComponent = .initMediaGallery(.{ .id = .initSome(1), .items = &.{.{
+        .media = .{
+            .url = "https://example.com",
+            .width = .initSome(1300),
+            .proxy_url = .initSome("https://example.com"),
+            .placeholder_version = .initSome(1),
+            .placeholder = .initSome("redacted"),
+            .height = .initSome(541),
+            .flags = .initSome(.{}),
+            .content_type = .initSome("image/jpeg"),
+            .content_scan_metadata = .initSome(.{ .flags = .{} }),
+            .attachment_id = .initSome(.fromU64(0)),
+        },
+        .description = .initSome(null),
+        .spoiler = .initSome(false),
+    }} });
+
+    const actual = try std.json.Stringify.valueAlloc(std.testing.allocator, input, .{ .whitespace = .indent_4 });
+    defer std.testing.allocator.free(actual);
+
+    try std.testing.expectEqualStrings(expected, actual);
+}
+
+test "parse string select interaction data example" {
+    const input = @embedFile("./test/components_stringselectinteractiondata.test.json");
     try jconfig.testing.expectParsedSuccessfully(StringSelect.MessageInteractionData, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
+}
+
+test "stringify string select interaction data example" {
+    const expected_raw = @embedFile("./test/components_stringselectinteractiondata.test.json");
+    const expected = reparseJsonAlloc(TopLevelMessageComponent.InteractionData, std.testing.allocator, expected_raw);
+    defer std.testing.allocator.free(expected);
+
+    const input: TopLevelMessageComponent.InteractionData = .{
+        .string_select = .{ .id = 3, .component_type = .string_select, .custom_id = "string_select", .values = &.{"cool"} },
+    };
+
+    const actual = try std.json.Stringify.valueAlloc(std.testing.allocator, input, .{ .whitespace = .indent_4 });
+    defer std.testing.allocator.free(actual);
+
+    try std.testing.expectEqualStrings(expected, actual);
+}
+
+fn reparseJsonAlloc(comptime T: type, gpa: std.mem.Allocator, str: []const u8) []const u8 {
+    const json_value = std.json.parseFromSlice(T, gpa, str, .{ .ignore_unknown_fields = true }) catch unreachable;
+    defer json_value.deinit();
+
+    return gpa.print("{f}", .{std.json.fmt(json_value.value, .{ .whitespace = .indent_4 })}) catch unreachable;
 }
