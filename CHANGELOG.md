@@ -1,4 +1,4 @@
-# untagged pending changes
+# v0.15.6
 
 This release contains a breaking change to a previously nonfunctional feature
 
