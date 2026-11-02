@@ -248,6 +248,7 @@ pub const searchGuildMembers = guild.searchGuildMembers;
 pub const SearchGuildMembersParams = guild.SearchGuildMembersParams;
 pub const searchGuildMessages = guild.searchGuildMessages;
 pub const SearchGuildMessagesQueryParams = guild.SearchGuildMessagesQueryParams;
+pub const SearchGuildMessagesResponse = guild.SearchGuildMessagesResponse;
 pub const guild_scheduled_event = @import("./endpoints/guild_scheduled_event.zig");
 pub const createGuildScheduledEvent = guild_scheduled_event.createGuildScheduledEvent;
 pub const CreateGuildScheduledEventBody = guild_scheduled_event.CreateGuildScheduledEventBody;
