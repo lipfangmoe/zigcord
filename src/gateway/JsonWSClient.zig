@@ -59,7 +59,7 @@ pub fn initWithUri(io: std.Io, allocator: std.mem.Allocator, auth: rest.Authoriz
     errdefer allocator.destroy(ws_client);
     const ws_conn = try allocator.create(ws.Connection);
     errdefer allocator.destroy(ws_conn);
-    var client = JsonWSClient{
+    var client: JsonWSClient = .{
         .io = io,
         .allocator = allocator,
         .sequence = null,

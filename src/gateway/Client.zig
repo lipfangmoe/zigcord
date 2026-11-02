@@ -31,7 +31,7 @@ pub fn init(io: std.Io, allocator: std.mem.Allocator, token: []const u8, intents
 
     json_ws_client.authenticate(token, intents) catch return error.AuthError;
 
-    return Client{
+    return .{
         .io = io,
         .allocator = allocator,
         .token = token,
@@ -114,7 +114,7 @@ pub fn readEvent(self: *Client) error{ Canceled, Disconnected, JsonError, Respon
         return try self.readEvent();
     }
 
-    return ReadEvent{
+    return .{
         .event = json_parsed_value.value.d,
         .json_parsed_value = json_parsed_value,
     };
@@ -141,15 +141,18 @@ pub fn reinit(self: *Client) ReinitError!void {
         return error.NotResumable;
     };
 
-    {
-        var json_ws_client = JsonWSClient.initWithUri(self.io, self.allocator, .{ .bot = self.token }, ready_event.event.resume_gateway_url) catch return error.AuthError;
-        errdefer json_ws_client.deinit();
-        json_ws_client.@"resume"(self.token, sequence, ready_event) catch return error.AuthError;
+    self.json_ws_client.ready_event = null;
+    self.json_ws_client.deinit();
 
-        self.json_ws_client.ready_event = null;
-        self.json_ws_client.deinit();
-        self.json_ws_client.* = json_ws_client;
-    }
+    self.json_ws_client.* = JsonWSClient.initWithUri(
+        self.io,
+        self.allocator,
+        .{ .bot = self.token },
+        ready_event.event.resume_gateway_url,
+    ) catch return error.AuthError;
+    errdefer self.json_ws_client.deinit();
+
+    self.json_ws_client.@"resume"(self.token, sequence, ready_event) catch return error.AuthError;
 }
 
 fn reconnect(self: *Client) !void {
