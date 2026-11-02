@@ -2,10 +2,10 @@ const std = @import("std");
 
 /// https://discord.com/developers/docs/reference#snowflakes
 pub const Snowflake = packed struct {
-    timestamp: u42,
-    worker: u5,
-    process_id: u5,
     increment_id: u12,
+    process_id: u5,
+    worker: u5,
+    timestamp: u42,
 
     pub fn timestampWithOffset(self: Snowflake) i64 {
         return self.timestamp + 1420070400000;
@@ -85,4 +85,13 @@ test "parse" {
     defer snowflake.deinit();
 
     try std.testing.expectEqual(Snowflake.fromU64(1234567890), snowflake.value);
+}
+
+test "snowflake parts" {
+    // testing with discord uid
+    const expected: Snowflake = .{ .timestamp = 153528515069, .worker = 1, .process_id = 0, .increment_id = 1 };
+    const actual: Snowflake = .fromU64(643945264868098049);
+
+    try std.testing.expectEqual(expected, actual);
+    try std.testing.expectEqual(1573598915069, expected.timestampWithOffset());
 }
