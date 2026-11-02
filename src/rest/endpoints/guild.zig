@@ -584,7 +584,7 @@ pub fn searchGuildMessages(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.request([]const model.Message, .GET, uri);
+    return client.rest_client.request(SearchGuildMessagesResponse, .GET, uri);
 }
 
 // BODY / QUERY CONTRACTS
