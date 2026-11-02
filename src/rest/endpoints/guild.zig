@@ -579,7 +579,7 @@ pub fn searchGuildMessages(
     client: *EndpointClient,
     guild_id: model.Snowflake,
     query: SearchGuildMessagesQueryParams,
-) !Result([]const model.Message) {
+) !Result(SearchGuildMessagesResponse) {
     const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/messages/search?{f}", .{ guild_id, query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -955,6 +955,17 @@ pub const SearchGuildMessagesQueryParams = struct {
             try writer.writeAll(@tagName(self));
         }
     };
+};
+
+pub const SearchGuildMessagesResponse = struct {
+    doing_deep_historical_index: bool,
+    documents_indexed: jconfig.Omittable(u64) = .omit,
+    total_results: u64,
+    messages: []const []const model.Message,
+    threads: jconfig.Omittable([]const model.Channel) = .omit,
+    members: jconfig.Omittable([]const model.Channel.ThreadMember) = .omit,
+
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const CreateGuildBanBody = struct {

@@ -1,3 +1,9 @@
+# pending changes
+
+This release contains a breaking change to a nonfunctional endpoint
+
+* EndpointClient.searchGuildMessages now correctly returns an object instead of a `[]const model.Message`
+
 # v0.15.4
 
 This release contains minor breaking changes.
