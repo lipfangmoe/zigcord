@@ -4,7 +4,7 @@ This release contains minor breaking changes.
 
 * Possibly fixed a segfault with reconnect logic
 * Minor breaking change: Changed interaction server responses to use JSON responses instead of Multipart responses. https://codeberg.org/lipfang/zigcord/pulls/24
-  * This likely should have been a 0.x.0 minor release instead of a 0.15.x patch release but the vibe feels like a patch since this will likely result in a pretty minimal migration
+  * To migrate, either transition to using the JSON body types, or explicitly use the `.followupXyzMultipart()` methods to respond.
 
 # v0.15.3
 

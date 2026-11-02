@@ -24,7 +24,10 @@ pub fn deinit(self: InteractionRequest) void {
 /// then use one of the .followup* methods when you're ready to respond.
 pub fn respond(self: *InteractionRequest, response_body: model.interaction.InteractionCallback) !void {
     const response_body_json = try std.json.Stringify.valueAlloc(self.arena.allocator(), response_body, .{});
-    try self.http_request.respond(response_body_json, .{ .extra_headers = &.{.{ .name = "content-type", .value = "application/json" }} });
+    try self.http_request.respond(
+        response_body_json,
+        .{ .extra_headers = &.{.{ .name = "content-type", .value = "application/json" }} },
+    );
 }
 
 /// send a followup request which edits the original message
@@ -34,6 +37,15 @@ pub fn followupEditOriginal(
     body: rest.EndpointClient.EditWebhookMessageJsonBody,
 ) !rest.RestClient.Result(model.Message) {
     return try client.editOriginalInteractionResponse(self.interaction.application_id, self.interaction.token, body);
+}
+
+/// send a followup request which edits the original message, with a form body allowing for file uploads
+pub fn followupEditOriginalMultipart(
+    self: InteractionRequest,
+    client: *rest.EndpointClient,
+    body: rest.EndpointClient.EditWebhookMessageFormBody,
+) !rest.RestClient.Result(model.Message) {
+    return try client.editOriginalInteractionResponseMultipart(self.interaction.application_id, self.interaction.token, body);
 }
 
 /// send a followup request which deletes the original message
@@ -53,6 +65,15 @@ pub fn followupNewMessage(
     return try client.createFollowupMessage(self.interaction.application_id, self.interaction.token, body);
 }
 
+/// send a followup request which sends a new message, with a form body allowing for file uploads
+pub fn followupNewMessageMultipart(
+    self: InteractionRequest,
+    client: *rest.EndpointClient,
+    body: rest.EndpointClient.ExecuteWebhookFormBody,
+) !rest.RestClient.Result(model.Message) {
+    return try client.createFollowupMessage(self.interaction.application_id, self.interaction.token, body);
+}
+
 /// send a followup request which edits a message that was previously sent with followupNewMessage()
 pub fn followupEditNewMessage(
     self: InteractionRequest,
@@ -61,4 +82,15 @@ pub fn followupEditNewMessage(
     body: rest.EndpointClient.EditWebhookMessageJsonBody,
 ) !rest.RestClient.Result(model.Message) {
     return try client.editFollowupMessage(self.interaction.application_id, self.interaction.token, message_id, body);
+}
+
+/// send a followup request which edits a message that was previously sent with followupNewMessage(),
+/// with a form body allowing for file uploads
+pub fn followupEditNewMessageMultipart(
+    self: InteractionRequest,
+    client: *rest.EndpointClient,
+    message_id: model.Snowflake,
+    body: rest.EndpointClient.EditWebhookMessageFormBody,
+) !rest.RestClient.Result(model.Message) {
+    return try client.editFollowupMessageMultipart(self.interaction.application_id, self.interaction.token, message_id, body);
 }
