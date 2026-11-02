@@ -1,6 +1,12 @@
+# untagged pending changes
+
+This release contains a breaking change to a previously nonfunctional feature
+
+* Fixed typo in `ModifyGuildMemberBody` to allow timing out of users, and changed its datatype to a `model.IsoTime`
+
 # v0.15.5
 
-This release contains a breaking change to a nonfunctional endpoint, and a minor breaking change
+This release contains a breaking change to a previously nonfunctional endpoint, and a minor breaking change
 
 * EndpointClient.searchGuildMessages now correctly returns an object instead of a `[]const model.Message`
 * Minor breaking change: `model.Snowflake` now uses the correct order in the packed struct fields

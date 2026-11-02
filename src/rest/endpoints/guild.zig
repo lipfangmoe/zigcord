@@ -684,7 +684,7 @@ pub const ModifyGuildMemberBody = struct {
     mute: Omittable(?bool) = .omit,
     deaf: Omittable(?bool) = .omit,
     channel_id: Omittable(?model.Snowflake) = .omit,
-    comunication_disabled_until: Omittable(?[]const u8) = .omit,
+    communication_disabled_until: Omittable(?model.IsoTime) = .omit,
     flags: Omittable(?model.guild.Member.Flags) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
