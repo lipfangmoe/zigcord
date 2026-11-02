@@ -2,7 +2,9 @@
 
 This release contains a breaking change to a previously nonfunctional feature
 
-* Fixed typo in `ModifyGuildMemberBody` to allow timing out of users, and changed its datatype to a `model.IsoTime`
+* minor breaking change: Fixed typo in `ModifyGuildMemberBody` to allow timing out of users, and changed its datatype to a `model.IsoTime`
+* Added `fromUnixEpochSeconds()` and `toUnixEpochSeconds()` to `model.IsoTime`
+* Added `discord_epoch` to `model.Snowflake`
 
 # v0.15.5
 

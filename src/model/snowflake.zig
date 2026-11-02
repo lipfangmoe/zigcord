@@ -7,8 +7,10 @@ pub const Snowflake = packed struct {
     worker: u5,
     timestamp: u42,
 
+    pub const discord_epoch = 1420070400000;
+
     pub fn timestampWithOffset(self: Snowflake) i64 {
-        return self.timestamp + 1420070400000;
+        return self.timestamp + discord_epoch;
     }
 
     /// a u64 bitcast to a snowflake

@@ -1,4 +1,5 @@
 const std = @import("std");
+const model = @import("../model.zig");
 const IsoTime = @This();
 
 year: u64,
@@ -41,6 +42,51 @@ pub fn format(self: IsoTime, writer: *std.Io.Writer) !void {
     if (self.zone) |zone| {
         try writer.print("{f}", .{zone});
     }
+}
+
+pub fn fromUnixEpochSeconds(ts: std.time.epoch.EpochSeconds) IsoTime {
+    const year_and_day = ts.getEpochDay().calculateYearDay();
+    const month_day = year_and_day.calculateMonthDay();
+    const day_seconds = ts.getDaySeconds();
+
+    const year = year_and_day.year;
+    const month = month_day.month;
+    const day = month_day.day_index;
+    const hour = day_seconds.getHoursIntoDay();
+    const minute = day_seconds.getMinutesIntoHour();
+    const second = day_seconds.getSecondsIntoMinute();
+
+    return .{ .year = year, .month = month.numeric(), .day = day + 1, .hour = hour, .minute = minute, .second = second, .zone = .gmt };
+}
+
+pub fn toUnixEpochSeconds(self: IsoTime) std.time.epoch.EpochSeconds {
+    const year: u64 = self.year;
+    const days_into_year: u64 = blk: {
+        var days: u64 = 0;
+        for (1..self.month) |month| {
+            days += std.time.epoch.getDaysInMonth(std.math.lossyCast(u16, self.year), @fromBackingInt(@intCast(month)));
+        }
+        days += self.day;
+        break :blk days - 1; // -1 because it should be zero-indexed
+    };
+    const hour: i64 = self.hour;
+    const minute: i64 = self.minute;
+    const second: i64 = self.second;
+    const zone = self.zone orelse .gmt;
+    const seconds_into_day: i64 = hour * std.time.s_per_hour + minute * std.time.s_per_min + second;
+
+    const total_seconds: i64 = blk: {
+        var seconds_in_prev_years: i64 = 0;
+        for (1970..year) |each_year| {
+            seconds_in_prev_years += @as(i64, std.time.epoch.getDaysInYear(std.math.lossyCast(u16, each_year))) * std.time.s_per_day;
+        }
+
+        break :blk seconds_in_prev_years + std.math.lossyCast(i64, days_into_year) * std.time.s_per_day + seconds_into_day;
+    };
+
+    const seconds_with_offset = total_seconds - zone.toMinutes() * std.time.s_per_min;
+
+    return .{ .secs = std.math.lossyCast(u64, seconds_with_offset) };
 }
 
 pub fn parse(str: []const u8) !IsoTime {
@@ -176,6 +222,20 @@ pub const Zone = union(enum) {
             .hour_and_minute_offset => |offset| try writer.print("{f}{d:0>2}:{d:0>2}", .{ offset.sign, offset.hour, offset.minute }),
         }
     }
+
+    pub fn toMinutes(self: Zone) i64 {
+        return switch (self) {
+            .gmt => 0,
+            .hour_offset => |hour| switch (hour.sign) {
+                .positive => @as(i64, hour.hour) * 60,
+                .negative => -@as(i64, hour.hour) * 60,
+            },
+            .hour_and_minute_offset => |hm_offset| switch (hm_offset.sign) {
+                .positive => @as(i64, hm_offset.hour) * 60 + hm_offset.minute,
+                .negative => -@as(i64, hm_offset.hour) * 60 - hm_offset.minute,
+            },
+        };
+    }
 };
 
 fn testStringifies(actual: IsoTime, comptime expected: []const u8) !void {
@@ -230,4 +290,22 @@ test "isotime stringify frac zone=+hour:min" {
     const structure = IsoTime{ .year = 2024, .month = 2, .day = 23, .hour = 4, .minute = 35, .second = 22, .fractional_second = 0.02054, .zone = .{ .hour_and_minute_offset = .{ .sign = .positive, .hour = 5, .minute = 6 } } };
     const str = "2024-02-23T04:35:22.020540+05:06";
     try testStringifies(structure, str);
+}
+
+test "fromUnixEpochSeconds - discord epoch" {
+    const input = model.Snowflake.discord_epoch;
+
+    const expected: IsoTime = .{ .year = 2015, .month = 1, .day = 1, .hour = 0, .minute = 0, .second = 0, .zone = .gmt };
+    const actual: IsoTime = .fromUnixEpochSeconds(.{ .secs = input / std.time.ms_per_s });
+
+    try std.testing.expectEqualDeep(expected, actual);
+}
+
+test "toUnixEpochSeconds - discord epoch" {
+    const input: IsoTime = .{ .year = 2015, .month = 1, .day = 1, .hour = 0, .minute = 0, .second = 0, .zone = .gmt };
+
+    const expected: u64 = model.Snowflake.discord_epoch / std.time.ms_per_s;
+    const actual = input.toUnixEpochSeconds();
+
+    try std.testing.expectEqualDeep(expected, actual.secs);
 }
