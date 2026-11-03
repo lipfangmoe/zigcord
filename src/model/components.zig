@@ -426,61 +426,61 @@ pub const Button = struct {
 
     pub fn initPrimaryButton(custom_id: []const u8, options: InitButtonOptions) Button {
         return .{
-            .custom_id = .initSome(custom_id),
+            .custom_id = custom_id,
             .style = .primary,
-            .label = .initNullable(options.label),
-            .emoji = .initNullable(options.emoji),
-            .disabled = .initNullable(options.disabled),
+            .label = options.label,
+            .emoji = options.emoji,
+            .disabled = options.disabled,
         };
     }
 
     pub fn initSecondaryButton(custom_id: []const u8, options: InitButtonOptions) Button {
         return .{
-            .custom_id = .initSome(custom_id),
+            .custom_id = custom_id,
             .style = .secondary,
-            .label = .initNullable(options.label),
-            .emoji = .initNullable(options.emoji),
-            .disabled = .initNullable(options.disabled),
+            .label = options.label,
+            .emoji = options.emoji,
+            .disabled = options.disabled,
         };
     }
 
     pub fn initSuccessButton(custom_id: []const u8, options: InitButtonOptions) Button {
         return .{
-            .custom_id = .initSome(custom_id),
+            .custom_id = custom_id,
             .style = .success,
-            .label = .initNullable(options.label),
-            .emoji = .initNullable(options.emoji),
-            .disabled = .initNullable(options.disabled),
+            .label = options.label,
+            .emoji = options.emoji,
+            .disabled = options.disabled,
         };
     }
 
     pub fn initDangerButton(custom_id: []const u8, options: InitButtonOptions) Button {
         return .{
-            .custom_id = .initSome(custom_id),
+            .custom_id = custom_id,
             .style = .danger,
-            .label = .initNullable(options.label),
-            .emoji = .initNullable(options.emoji),
-            .disabled = .initNullable(options.disabled),
+            .label = options.label,
+            .emoji = options.emoji,
+            .disabled = options.disabled,
         };
     }
 
     pub fn initLinkButton(url: []const u8, options: InitButtonOptions) Button {
         return .{
-            .url = .initSome(url),
+            .url = url,
             .style = .link,
-            .label = .initNullable(options.label),
-            .emoji = .initNullable(options.emoji),
-            .disabled = .initNullable(options.disabled),
+            .label = options.label,
+            .emoji = options.emoji,
+            .disabled = options.disabled,
         };
     }
 
     pub fn initPremiumButton(sku_id: model.Snowflake, options: InitButtonOptions) Button {
         return .{
-            .sku_id = .initSome(sku_id),
+            .sku_id = sku_id,
             .style = .premium,
-            .label = .initNullable(options.label),
-            .emoji = .initNullable(options.emoji),
-            .disabled = .initNullable(options.disabled),
+            .label = options.label,
+            .emoji = options.emoji,
+            .disabled = options.disabled,
         };
     }
 

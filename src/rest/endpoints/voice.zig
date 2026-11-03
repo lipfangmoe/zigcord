@@ -62,12 +62,12 @@ pub const ModifyCurrentUserVoiceStateBody = struct {
     suppress: ?bool = null,
     request_to_speak_timestamp: jconfig.Omittable(?model.IsoTime) = .omit,
 
-    pub const jsonStringify = jconfig.stringifyWithOmit;;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const ModifyUserVoiceStateBody = struct {
     channel_id: ?model.Snowflake = null,
     suppress: ?bool = null,
 
-    pub const jsonStringify = jconfig.stringifyWithOmit;;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };

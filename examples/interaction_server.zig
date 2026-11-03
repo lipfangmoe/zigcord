@@ -49,15 +49,14 @@ pub fn main(init: std.process.Init) !void {
         defer interaction_request.deinit();
         const interaction = interaction_request.interaction;
 
-        switch (interaction.data.asSome() orelse continue) {
+        switch (interaction.data orelse continue) {
             .application_command => |cmd| {
                 if (cmd.id == echo_cmd_id) {
                     try executeEchoCommand(&interaction_request, cmd);
                 } else if (cmd.id == deferred_echo_cmd_id) {
                     try executeDeferredEchoCommand(io, &interaction_request, cmd, &endpoints);
                 } else {
-                    std.log.warn("unexpected command: got command id {}, expected: {}",
-                        .{cmd.id.asU64(), echo_cmd_id.asU64()});
+                    std.log.warn("unexpected command: got command id {}, expected: {}", .{ cmd.id.asU64(), echo_cmd_id.asU64() });
                     continue;
                 }
             },
@@ -107,35 +106,33 @@ fn executeEchoCommand(
 ) !void {
     std.log.debug("received echo v2 command", .{});
 
-    const text_option = getOption("text", command_data.options.asSome() orelse return error.NoOptions) orelse return error.NoTextOption;
-    const text_value = text_option.value.asSome() orelse return error.NoTextOption;
+    const text_option = getOption("text", command_data.options orelse return error.NoOptions) orelse return error.NoTextOption;
+    const text_value = text_option.value orelse return error.NoTextOption;
     const text = switch (text_value) {
         .string => |str| str,
         else => return error.InvalidTextOption,
     };
 
     try interaction_request.respond(.initChannelMessageWithSource(.{
-        .flags = .initSome(.{ .is_components_v2 = true }),
-        .components = .initSome(
-            &.{
-                .initTextDisplay(.{ .content = text }),
-                .initActionRow(.{ .components = &.{
-                    .initStringSelect(.{
-                        .custom_id = "string_select",
-                        .options = &.{
-                            .{ .label = "Very Cool!", .value = "cool" },
-                            .{ .label = "Not cool.", .value = "not-cool" },
-                        },
-                    }),
-                } }),
-                .initActionRow(.{ .components = &.{
-                    .initPrimaryButton("modal", .{ .label = "open modal" }),
-                    .initSecondaryButton("ghost", .{ .label = "ghost message!", .emoji = .{ .partial = .{ .name = .initSome("👻") } } }),
-                    .initLinkButton("https://example.com", .{ .label = "example link" }),
-                    .initDangerButton("quit", .{ .label = "quit" }),
-                } }),
-            },
-        ),
+        .flags = .{ .is_components_v2 = true },
+        .components = &.{
+            .initTextDisplay(.{ .content = text }),
+            .initActionRow(.{ .components = &.{
+                .initStringSelect(.{
+                    .custom_id = "string_select",
+                    .options = &.{
+                        .{ .label = "Very Cool!", .value = "cool" },
+                        .{ .label = "Not cool.", .value = "not-cool" },
+                    },
+                }),
+            } }),
+            .initActionRow(.{ .components = &.{
+                .initPrimaryButton("modal", .{ .label = "open modal" }),
+                .initSecondaryButton("ghost", .{ .label = "ghost message!", .emoji = .{ .partial = .{ .name = .initSome("👻") } } }),
+                .initLinkButton("https://example.com", .{ .label = "example link" }),
+                .initDangerButton("quit", .{ .label = "quit" }),
+            } }),
+        },
     }));
 }
 
@@ -169,20 +166,20 @@ fn executeDeferredEchoCommand(
 ) !void {
     std.log.debug("received echo v2 command", .{});
 
-    const text_option = getOption("text", command_data.options.asSome() orelse return error.NoOptions) orelse return error.NoTextOption;
-    const text_value = text_option.value.asSome() orelse return error.NoTextOption;
+    const text_option = getOption("text", command_data.options orelse return error.NoOptions) orelse return error.NoTextOption;
+    const text_value = text_option.value orelse return error.NoTextOption;
     const text = switch (text_value) {
         .string => |str| str,
         else => return error.InvalidTextOption,
     };
 
-    try interaction_request.respond(.{.deferred_channel_message_with_source = .{}});
+    try interaction_request.respond(.{ .deferred_channel_message_with_source = .{} });
 
     _ = io.sleep(.fromSeconds(2), .awake) catch {};
 
-    const followup = zigcord.EndpointClient.EditWebhookMessageJsonBody {
-        .flags = .initSome(.{ .ephemeral = true, }),
+    const followup = zigcord.EndpointClient.EditWebhookMessageJsonBody{
         .content = .initSome(text),
+        .flags = .initSome(.{ .ephemeral = true }),
     };
 
     _ = try interaction_request.followupEditOriginal(endpoint_client, followup);
@@ -200,9 +197,9 @@ fn handleExampleStringSelect(
         else => return error.InvalidSelection,
     };
     if (std.mem.eql(u8, selection, "cool")) {
-        try interaction_request.respond(.initChannelMessageWithSource(.{ .content = .initSome("ur so cool ...") }));
+        try interaction_request.respond(.initChannelMessageWithSource(.{ .content = "ur so cool ..." }));
     } else if (std.mem.eql(u8, selection, "not-cool")) {
-        try interaction_request.respond(.initChannelMessageWithSource(.{ .content = .initSome("cringe!") }));
+        try interaction_request.respond(.initChannelMessageWithSource(.{ .content = "cringe!" }));
     } else {
         return error.InvalidSelection;
     }
@@ -248,23 +245,23 @@ fn handleExampleButtonClick(
         .ghost => {
             std.log.info("ghost button!", .{});
             try interaction_request.respond(.initChannelMessageWithSource(.{
-                .content = .initSome("oOoooOo spooky!"),
-                .flags = .initSome(.{ .ephemeral = true }),
+                .content = "oOoooOo spooky!",
+                .flags = .{ .ephemeral = true },
             }));
         },
         .link => {
-            const user_who_clicked = interaction_request.interaction.user.asSome() orelse return error.UserEmpty;
+            const user_who_clicked = interaction_request.interaction.user orelse return error.UserEmpty;
             const display_name = user_who_clicked.global_name orelse user_who_clicked.username;
 
             var buf: [1000]u8 = undefined;
             const message = try std.fmt.bufPrint(&buf, "yo {s} clicked the link lol", .{display_name});
             try interaction_request.respond(.initChannelMessageWithSource(.{
-                .content = .initSome(message),
+                .content = message,
             }));
         },
         .quit => {
             try interaction_request.respond(.initChannelMessageWithSource(.{
-                .content = .initSome("goodbye"),
+                .content = "goodbye",
             }));
             return error.QuitByButton;
         },
@@ -281,7 +278,7 @@ fn handleModalSubmit(
     var buf: [1000]u8 = undefined;
     const message = try std.fmt.bufPrint(&buf, "selected: {s}\nextra message: {s}", .{ select, extra });
     try interaction_request.respond(.initChannelMessageWithSource(.{
-        .content = .initSome(message),
+        .content = message,
     }));
 }
 

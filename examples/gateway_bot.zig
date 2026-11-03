@@ -35,7 +35,7 @@ pub fn main(init: std.process.Init) !void {
                 std.log.info("message created with content \"{s}\"", .{msg_event.message.content});
                 if (std.mem.eql(u8, msg_event.message.content, "fetch")) {
                     _ = try endpoint_client.createMessage(msg_event.message.channel_id, zigcord.EndpointClient.CreateMessageJsonBody{
-                        .content = .initSome("wowie"),
+                        .content = "wowie",
                     });
                 }
                 if (std.mem.eql(u8, msg_event.message.content, "done")) {

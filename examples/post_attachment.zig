@@ -35,7 +35,7 @@ pub fn main(init: std.process.Init) !void {
 
         switch (event.event orelse continue) {
             .interaction_create => |interaction| {
-                switch (interaction.data.asSome() orelse continue) {
+                switch (interaction.data orelse continue) {
                     .application_command => |cmd| {
                         if (cmd.id == postattachment_id) {
                             try executePostAttachmentCommand(&endpoint_client, interaction);
@@ -75,10 +75,10 @@ fn executePostAttachmentCommand(
     const result = try endpoint_client.createInteractionResponseMultipart(interaction.id, interaction.token, .{
         .files = &.{.fromBytes("klee.png", "image/png", file)},
         .payload_json = .initChannelMessageWithSource(.{
-            .flags = .initSome(.{ .is_components_v2 = true }),
-            .components = .initSome(&.{
-                .initMediaGallery(.{ .items = &.{.{ .media = .{ .url = "attachment://klee.png" }, .spoiler = .initSome(true) }} }),
-            }),
+            .flags = .{ .is_components_v2 = true },
+            .components = &.{
+                .initMediaGallery(.{ .items = &.{.{ .media = .{ .url = "attachment://klee.png" }, .spoiler = true }} }),
+            },
         }),
     });
 

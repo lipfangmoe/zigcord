@@ -93,19 +93,19 @@ pub const CreateGuildFromGuildTemplateBody = struct {
     name: []const u8,
     icon: ?model.DataUri = null,
 
-    pub const jsonStringify = jconfig.stringifyWithOmit;;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const CreateGuildTemplateBody = struct {
     name: []const u8,
     description: jconfig.Omittable(?[]const u8) = .omit,
 
-    pub const jsonStringify = jconfig.stringifyWithOmit;;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const ModifyGuildTemplateBody = struct {
     name: ?[]const u8 = null,
     description: jconfig.Omittable(?[]const u8) = .omit,
 
-    pub const jsonStringify = jconfig.stringifyWithOmit;;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };

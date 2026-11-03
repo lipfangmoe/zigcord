@@ -54,7 +54,12 @@ pub fn Omittable(comptime T: type) type {
 pub fn stringifyWithOmit(self: anytype, json_writer: *std.json.Stringify) std.json.Stringify.Error!void {
     try json_writer.beginObject();
 
-    const struct_info = @typeInfo(@TypeOf(self)).@"struct";
+    const struct_info = switch (@typeInfo(@TypeOf(self))) {
+        .@"struct" => |s| s,
+        .pointer => |p| @typeInfo(p.child).@"struct",
+        else => @compileError("invalid type"),
+    };
+
     inline for (struct_info.field_names, struct_info.field_types, struct_info.field_attrs) |field_name, FieldType, field_attrs| {
         const value = @field(self, field_name);
         if (comptime isOmittableField(FieldType, field_attrs)) {
@@ -100,7 +105,7 @@ pub fn writeOmittableFieldToStream(
             }
         },
         else => {
-            @compileLog("writePossiblyOmittableFieldToStream called on incompatible field `{s}: {s}`", .{ field_name, @typeName(FieldType) });
+            @compileLog("writeOmittableFieldToStream called on incompatible field `{s}: {s}`", .{ field_name, @typeName(FieldType) });
         },
     }
 }

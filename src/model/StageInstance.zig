@@ -10,7 +10,7 @@ privacy_level: PrivacyLevel,
 discoverable_disabled: ?bool = null,
 guild_scheduled_event_id: ?bool,
 
-pub const jsonStringify = jconfig.stringifyWithOmit;;
+pub const jsonStringify = jconfig.stringifyWithOmit;
 
 pub const PrivacyLevel = enum(u2) {
     public = 1,

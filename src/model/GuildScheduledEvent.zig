@@ -20,7 +20,7 @@ creator: Omittable(model.User) = .omit,
 user_count: i64,
 image: Omittable(?[]const u8) = .omit,
 
-pub const jsonStringify = jconfig.stringifyWithOmit;;
+pub const jsonStringify = jconfig.stringifyWithOmit;
 
 pub const PrivacyLevel = enum(u2) {
     guild_only = 2,
@@ -43,12 +43,12 @@ pub const EntityType = enum(u3) {
 pub const EntityMetadata = struct {
     location: Omittable([]const u8) = .omit,
 
-    pub const jsonStringify = jconfig.stringifyWithOmit;;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 pub const EventUser = struct {
     guild_scheduled_event_id: model.Snowflake,
     user: model.User,
     member: Omittable(model.guild.Member),
 
-    pub const jsonStringify = jconfig.stringifyWithOmit;;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };

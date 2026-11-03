@@ -36,7 +36,7 @@ pub fn main(init: std.process.Init) !void {
 
         switch (event.event orelse continue) {
             .interaction_create => |interaction| {
-                switch (interaction.data.asSome() orelse continue) {
+                switch (interaction.data orelse continue) {
                     .application_command => |cmd| {
                         if (cmd.id == echo_id) {
                             try executeEchoCommand(&endpoint_client, interaction, cmd);
@@ -126,14 +126,14 @@ fn executeEchoCommand(
 ) !void {
     std.log.debug("received echo command", .{});
 
-    const text_option = getOption("text", command_data.options.asSome() orelse return error.NoOptions) orelse return error.NoTextOption;
-    const text_value = text_option.value.asSome() orelse return error.NoTextOption;
+    const text_option = getOption("text", command_data.options orelse return error.NoOptions) orelse return error.NoTextOption;
+    const text_value = text_option.value orelse return error.NoTextOption;
     const text = switch (text_value) {
         .string => |str| str,
         else => return error.InvalidTextOption,
     };
 
-    const result = try endpoint_client.createInteractionResponse(interaction.id, interaction.token, .initChannelMessageWithSource(.{ .content = .initSome(text) }));
+    const result = try endpoint_client.createInteractionResponse(interaction.id, interaction.token, .initChannelMessageWithSource(.{ .content = text }));
     defer result.deinit();
     switch (result) {
         .ok => {},
@@ -152,8 +152,8 @@ fn executeEchoAutocomplete(
 ) !void {
     std.log.debug("received echo autocomplete", .{});
 
-    const text_option = getOption("text", autocomplete_data.options.asSome() orelse return error.NoOptions) orelse return error.NoTextOption;
-    const text_value = text_option.value.asSome() orelse return error.NoTextOption;
+    const text_option = getOption("text", autocomplete_data.options orelse return error.NoOptions) orelse return error.NoTextOption;
+    const text_value = text_option.value orelse return error.NoTextOption;
     const text = switch (text_value) {
         .string => |str| str,
         else => return error.InvalidTextOption,
@@ -181,35 +181,33 @@ fn executeEchoV2Command(
 ) !void {
     std.log.debug("received echo v2 command", .{});
 
-    const text_option = getOption("text", command_data.options.asSome() orelse return error.NoOptions) orelse return error.NoTextOption;
-    const text_value = text_option.value.asSome() orelse return error.NoTextOption;
+    const text_option = getOption("text", command_data.options orelse return error.NoOptions) orelse return error.NoTextOption;
+    const text_value = text_option.value orelse return error.NoTextOption;
     const text = switch (text_value) {
         .string => |str| str,
         else => return error.InvalidTextOption,
     };
 
     const result = try endpoint_client.createInteractionResponse(interaction.id, interaction.token, .initChannelMessageWithSource(.{
-        .flags = .initSome(.{ .is_components_v2 = true }),
-        .components = .initSome(
-            &.{
-                .initText(text),
-                .initActionRow(.{ .components = &.{
-                    .initStringSelect(.{
-                        .custom_id = "string_select",
-                        .options = &.{
-                            .{ .label = "Very Cool!", .value = "cool" },
-                            .{ .label = "Not cool.", .value = "not-cool" },
-                        },
-                    }),
-                } }),
-                .initActionRow(.{ .components = &.{
-                    .initPrimaryButton("modal", .{ .label = "open modal" }),
-                    .initSecondaryButton("ghost", .{ .label = "ghost message!", .emoji = .{ .partial = .{ .name = .initSome("👻") } } }),
-                    .initLinkButton("https://example.com", .{ .label = "example link" }),
-                    .initDangerButton("quit", .{ .label = "quit" }),
-                } }),
-            },
-        ),
+        .flags = .{ .is_components_v2 = true },
+        .components = &.{
+            .initText(text),
+            .initActionRow(.{ .components = &.{
+                .initStringSelect(.{
+                    .custom_id = "string_select",
+                    .options = &.{
+                        .{ .label = "Very Cool!", .value = "cool" },
+                        .{ .label = "Not cool.", .value = "not-cool" },
+                    },
+                }),
+            } }),
+            .initActionRow(.{ .components = &.{
+                .initPrimaryButton("modal", .{ .label = "open modal" }),
+                .initSecondaryButton("ghost", .{ .label = "ghost message!", .emoji = .{ .partial = .{ .name = .initSome("👻") } } }),
+                .initLinkButton("https://example.com", .{ .label = "example link" }),
+                .initDangerButton("quit", .{ .label = "quit" }),
+            } }),
+        },
     }));
     defer result.deinit();
 
@@ -232,10 +230,10 @@ fn handleExampleV2StringSelect(
         else => return error.InvalidSelection,
     };
     if (std.mem.eql(u8, selection, "cool")) {
-        const result = try endpoint_client.createInteractionResponse(interaction.id, interaction.token, .initChannelMessageWithSource(.{ .content = .initSome("ur so cool ...") }));
+        const result = try endpoint_client.createInteractionResponse(interaction.id, interaction.token, .initChannelMessageWithSource(.{ .content = "ur so cool ..." }));
         defer result.deinit();
     } else if (std.mem.eql(u8, selection, "not-cool")) {
-        const result = try endpoint_client.createInteractionResponse(interaction.id, interaction.token, .initChannelMessageWithSource(.{ .content = .initSome("cringe!") }));
+        const result = try endpoint_client.createInteractionResponse(interaction.id, interaction.token, .initChannelMessageWithSource(.{ .content = "cringe!" }));
         defer result.deinit();
     } else {
         return error.InvalidSelection;
@@ -291,8 +289,8 @@ fn handleExampleV2ButtonClick(
         .ghost => {
             std.log.info("ghost button!", .{});
             const result = try endpoint_client.createInteractionResponse(interaction.id, interaction.token, .initChannelMessageWithSource(.{
-                .content = .initSome("oOoooOo spooky!"),
-                .flags = .initSome(.{ .ephemeral = true }),
+                .content = "oOoooOo spooky!",
+                .flags = .{ .ephemeral = true },
             }));
             defer result.deinit();
 
@@ -302,13 +300,13 @@ fn handleExampleV2ButtonClick(
             }
         },
         .link => {
-            const user_who_clicked = interaction.user.asSome() orelse return error.UserEmpty;
+            const user_who_clicked = interaction.user orelse return error.UserEmpty;
             const display_name = user_who_clicked.global_name orelse user_who_clicked.username;
 
             var buf: [1000]u8 = undefined;
             const message = try std.fmt.bufPrint(&buf, "yo {s} clicked the link lol", .{display_name});
             const result = try endpoint_client.createInteractionResponse(interaction.id, interaction.token, .initChannelMessageWithSource(.{
-                .content = .initSome(message),
+                .content = message,
             }));
             defer result.deinit();
 
@@ -319,7 +317,7 @@ fn handleExampleV2ButtonClick(
         },
         .quit => {
             const result = try endpoint_client.createInteractionResponse(interaction.id, interaction.token, .initChannelMessageWithSource(.{
-                .content = .initSome("goodbye"),
+                .content = "goodbye",
             }));
             defer result.deinit();
 
@@ -343,7 +341,7 @@ fn handleModalSubmit(
     var buf: [1000]u8 = undefined;
     const message = try std.fmt.bufPrint(&buf, "selected: {s}\nextra message: {s}", .{ select, extra });
     const result = try endpoint_client.createInteractionResponse(interaction.id, interaction.token, .initChannelMessageWithSource(.{
-        .content = .initSome(message),
+        .content = message,
     }));
     defer result.deinit();
 

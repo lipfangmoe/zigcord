@@ -146,8 +146,7 @@ pub const IntegrationTypeConfigurationDict = struct {
                 },
                 else => return error.UnexpectedToken,
             };
-            const field_value: jconfig.Omittable(IntegrationTypeConfiguration) =
-                .initSome(try std.json.innerParse(IntegrationTypeConfiguration, allocator, source, options));
+            const field_value: ?IntegrationTypeConfiguration = try std.json.innerParse(IntegrationTypeConfiguration, allocator, source, options);
 
             if (std.mem.eql(u8, field_name, "0")) {
                 result.guild_install = field_value;

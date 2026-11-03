@@ -41,7 +41,7 @@ pub fn main(init: std.process.Init) !void {
 
         switch (event.event orelse continue) {
             .message_create => |msg_event| {
-                const value = try endpoint_client.createGuildSticker(msg_event.guild_id.some, .{
+                const value = try endpoint_client.createGuildSticker(msg_event.guild_id.?, .{
                     .files = try .fromFileReader("klee.png", "image/png", &file_reader),
                     .payload_json = .{
                         .name = "sticker test",

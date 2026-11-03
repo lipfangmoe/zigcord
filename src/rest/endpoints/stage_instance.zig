@@ -60,12 +60,12 @@ pub const CreateStageInstanceBody = struct {
     send_start_notification: ?bool = null,
     guild_scheduled_event_id: ?model.Snowflake = null,
 
-    pub const jsonStringify = jconfig.stringifyWithOmit;;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const ModifyStageInstanceBody = struct {
     topic: ?[]const u8 = null,
     privacy_level: ?i64 = null,
 
-    pub const jsonStringify = jconfig.stringifyWithOmit;;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };

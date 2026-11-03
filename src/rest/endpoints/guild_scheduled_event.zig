@@ -100,7 +100,7 @@ pub const CreateGuildScheduledEventBody = struct {
     scheduled_start_time: model.IsoTime,
     scheduled_end_time: model.IsoTime,
 
-    pub const jsonStringify = jconfig.stringifyWithOmit;;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const ModifyGuildScheduledEventBody = struct {
@@ -115,7 +115,7 @@ pub const ModifyGuildScheduledEventBody = struct {
     status: ?model.GuildScheduledEvent.EventStatus = null,
     image: ?model.DataUri = null,
 
-    pub const jsonStringify = jconfig.stringifyWithOmit;;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const GetGuildScheduledEventUsersQuery = struct {
