@@ -56,16 +56,16 @@ pub fn deleteStageInstance(
 pub const CreateStageInstanceBody = struct {
     channel_id: model.Snowflake,
     topic: []const u8,
-    privacy_level: jconfig.Omittable(model.StageInstance.PrivacyLevel) = .omit,
-    send_start_notification: jconfig.Omittable(bool) = .omit,
-    guild_scheduled_event_id: jconfig.Omittable(model.Snowflake) = .omit,
+    privacy_level: ?model.StageInstance.PrivacyLevel = null,
+    send_start_notification: ?bool = null,
+    guild_scheduled_event_id: ?model.Snowflake = null,
 
-    pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
+    pub const jsonStringify = jconfig.stringifyWithOmit;;
 };
 
 pub const ModifyStageInstanceBody = struct {
-    topic: jconfig.Omittable([]const u8) = .omit,
-    privacy_level: jconfig.Omittable(i64) = .omit,
+    topic: ?[]const u8 = null,
+    privacy_level: ?i64 = null,
 
-    pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
+    pub const jsonStringify = jconfig.stringifyWithOmit;;
 };

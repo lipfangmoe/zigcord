@@ -5,10 +5,10 @@ const receive_events = @import("./receive_events.zig");
 pub const Identify = struct {
     token: []const u8,
     properties: Connection,
-    compress: jconfig.Omittable(bool) = .omit,
-    large_threshold: jconfig.Omittable(i64) = .omit,
-    shard: jconfig.Omittable([2]i64) = .omit,
-    presence: jconfig.Omittable(receive_events.PresenceUpdate) = .omit,
+    compress: ?bool = null,
+    large_threshold: ?i64 = null,
+    shard: ?[2]i64 = null,
+    presence: ?receive_events.PresenceUpdate = null,
     intents: model.Intents,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
@@ -30,11 +30,11 @@ pub const Heartbeat = ?i64;
 
 pub const RequestGuildMembers = struct {
     guild_id: model.Snowflake,
-    query: jconfig.Omittable([]const u8) = .omit,
+    query: ?[]const u8 = null,
     limit: i64,
-    presences: jconfig.Omittable(bool) = .omit,
-    user_ids: jconfig.Omittable([]const model.Snowflake) = .omit,
-    nonce: jconfig.Omittable([]const u8) = .omit,
+    presences: ?bool = null,
+    user_ids: ?[]const model.Snowflake = null,
+    nonce: ?[]const u8 = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };

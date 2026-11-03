@@ -114,7 +114,7 @@ pub const CreateGuildEmojiBody = struct {
 };
 
 pub const ModifyGuildEmojiBody = struct {
-    name: jconfig.Omittable([]const u8) = .omit,
+    name: ?[]const u8 = null,
     roles: jconfig.Omittable(?[]const model.Snowflake) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
@@ -135,7 +135,7 @@ pub const AuthoredEmoji = struct {
 };
 
 pub const ModifyApplicationEmojiBody = struct {
-    name: jconfig.Omittable([]const u8) = .omit,
+    name: ?[]const u8 = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };

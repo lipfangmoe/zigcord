@@ -404,7 +404,7 @@ pub const LabelChildComponent = union(Type) {
 };
 
 pub const ActionRow = struct {
-    id: jconfig.Omittable(u64) = .omit,
+    id: ?u64 = null,
     type: AnyComponentType = .action_row,
     components: []const ActionRowChildComponent,
 
@@ -412,15 +412,15 @@ pub const ActionRow = struct {
 };
 
 pub const Button = struct {
-    id: jconfig.Omittable(u64) = .omit,
+    id: ?u64 = null,
     type: AnyComponentType = .button,
-    custom_id: jconfig.Omittable([]const u8) = .omit,
+    custom_id: ?[]const u8 = null,
     style: ButtonStyle,
-    label: jconfig.Omittable([]const u8) = .omit,
-    emoji: jconfig.Omittable(jconfig.Partial(model.Emoji)) = .omit,
-    sku_id: jconfig.Omittable(model.Snowflake) = .omit,
-    url: jconfig.Omittable([]const u8) = .omit,
-    disabled: jconfig.Omittable(bool) = .omit,
+    label: ?[]const u8 = null,
+    emoji: ?jconfig.Partial(model.Emoji) = null,
+    sku_id: ?model.Snowflake = null,
+    url: ?[]const u8 = null,
+    disabled: ?bool = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 
@@ -510,15 +510,15 @@ pub const Button = struct {
 };
 
 pub const ChannelSelect = struct {
-    id: jconfig.Omittable(u64) = .omit,
+    id: ?u64 = null,
     type: AnyComponentType = .channel_select,
     custom_id: []const u8,
-    channel_types: jconfig.Omittable([]const model.Channel.Type) = .omit,
-    placeholder: jconfig.Omittable([]const u8) = .omit,
-    default_values: jconfig.Omittable(DefaultValue) = .omit,
-    min_values: jconfig.Omittable(i64) = .omit,
-    max_values: jconfig.Omittable(i64) = .omit,
-    disabled: jconfig.Omittable(bool) = .omit,
+    channel_types: ?[]const model.Channel.Type = null,
+    placeholder: ?[]const u8 = null,
+    default_values: ?DefaultValue = null,
+    min_values: ?i64 = null,
+    max_values: ?i64 = null,
+    disabled: ?bool = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 
@@ -539,30 +539,30 @@ pub const ChannelSelect = struct {
         id: u64,
         custom_id: []const u8,
         values: []const model.Snowflake,
-        resolved: jconfig.Omittable(model.interaction.ResolvedData) = .omit,
+        resolved: ?model.interaction.ResolvedData = null,
 
         pub const jsonStringify = jconfig.stringifyWithOmit;
     };
 };
 
 pub const StringSelect = struct {
-    id: jconfig.Omittable(u64) = .omit,
+    id: ?u64 = null,
     type: AnyComponentType = .string_select,
     custom_id: []const u8,
     options: []const Option,
-    placeholder: jconfig.Omittable([]const u8) = .omit,
-    min_values: jconfig.Omittable(i64) = .omit,
-    max_values: jconfig.Omittable(i64) = .omit,
-    disabled: jconfig.Omittable(bool) = .omit,
+    placeholder: ?[]const u8 = null,
+    min_values: ?i64 = null,
+    max_values: ?i64 = null,
+    disabled: ?bool = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 
     pub const Option = struct {
         label: []const u8,
         value: []const u8,
-        description: jconfig.Omittable([]const u8) = .omit,
-        emoji: jconfig.Omittable(model.Emoji) = .omit,
-        default: jconfig.Omittable(bool) = .omit,
+        description: ?[]const u8 = null,
+        emoji: ?model.Emoji = null,
+        default: ?bool = null,
 
         pub const jsonStringify = jconfig.stringifyWithOmit;
     };
@@ -583,15 +583,15 @@ pub const StringSelect = struct {
 };
 
 pub const TextInput = struct {
-    id: jconfig.Omittable(u64) = .omit,
+    id: ?u64 = null,
     type: AnyComponentType = .text_input,
     custom_id: []const u8,
     style: Style,
-    min_length: jconfig.Omittable(u12) = .omit,
-    max_length: jconfig.Omittable(u12) = .omit,
-    required: jconfig.Omittable(bool) = .omit,
-    value: jconfig.Omittable([]const u8) = .omit,
-    placeholder: jconfig.Omittable([]const u8) = .omit,
+    min_length: ?u12 = null,
+    max_length: ?u12 = null,
+    required: ?bool = null,
+    value: ?[]const u8 = null,
+    placeholder: ?[]const u8 = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 
@@ -611,14 +611,14 @@ pub const TextInput = struct {
 };
 
 pub const UserSelect = struct {
-    id: jconfig.Omittable(u64) = .omit,
+    id: ?u64 = null,
     type: AnyComponentType = .user_select,
     custom_id: []const u8,
-    placeholder: jconfig.Omittable([]const u8) = .omit,
-    default_values: jconfig.Omittable(DefaultValue) = .omit,
-    min_values: jconfig.Omittable(i64) = .omit,
-    max_values: jconfig.Omittable(i64) = .omit,
-    disabled: jconfig.Omittable(bool) = .omit,
+    placeholder: ?[]const u8 = null,
+    default_values: ?DefaultValue = null,
+    min_values: ?i64 = null,
+    max_values: ?i64 = null,
+    disabled: ?bool = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 
@@ -639,21 +639,21 @@ pub const UserSelect = struct {
         id: u64,
         custom_id: []const u8,
         values: []const model.Snowflake,
-        resolved: jconfig.Omittable(model.interaction.ResolvedData) = .omit,
+        resolved: ?model.interaction.ResolvedData = null,
 
         pub const jsonStringify = jconfig.stringifyWithOmit;
     };
 };
 
 pub const RoleSelect = struct {
-    id: jconfig.Omittable(u64) = .omit,
+    id: ?u64 = null,
     type: AnyComponentType = .role_select,
     custom_id: []const u8,
-    placeholder: jconfig.Omittable([]const u8) = .omit,
-    default_values: jconfig.Omittable(DefaultValue) = .omit,
-    min_values: jconfig.Omittable(i64) = .omit,
-    max_values: jconfig.Omittable(i64) = .omit,
-    disabled: jconfig.Omittable(bool) = .omit,
+    placeholder: ?[]const u8 = null,
+    default_values: ?DefaultValue = null,
+    min_values: ?i64 = null,
+    max_values: ?i64 = null,
+    disabled: ?bool = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 
@@ -674,21 +674,21 @@ pub const RoleSelect = struct {
         id: u64,
         custom_id: []const u8,
         values: []const model.Snowflake,
-        resolved: jconfig.Omittable(model.interaction.ResolvedData) = .omit,
+        resolved: ?model.interaction.ResolvedData = null,
 
         pub const jsonStringify = jconfig.stringifyWithOmit;
     };
 };
 
 pub const MentionableSelect = struct {
-    id: jconfig.Omittable(u64) = .omit,
+    id: ?u64 = null,
     type: AnyComponentType = .mentionable_select,
     custom_id: []const u8,
-    placeholder: jconfig.Omittable([]const u8) = .omit,
-    default_values: jconfig.Omittable(DefaultValue) = .omit,
-    min_values: jconfig.Omittable(i64) = .omit,
-    max_values: jconfig.Omittable(i64) = .omit,
-    disabled: jconfig.Omittable(bool) = .omit,
+    placeholder: ?[]const u8 = null,
+    default_values: ?DefaultValue = null,
+    min_values: ?i64 = null,
+    max_values: ?i64 = null,
+    disabled: ?bool = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 
@@ -709,7 +709,7 @@ pub const MentionableSelect = struct {
         id: u64,
         custom_id: []const u8,
         values: []const model.Snowflake,
-        resolved: jconfig.Omittable(model.interaction.ResolvedData) = .omit,
+        resolved: ?model.interaction.ResolvedData = null,
 
         pub const jsonStringify = jconfig.stringifyWithOmit;
     };
@@ -717,7 +717,7 @@ pub const MentionableSelect = struct {
 
 /// Message.Flag.is_components_v2 must be set to use this
 pub const Section = struct {
-    id: jconfig.Omittable(u64) = .omit,
+    id: ?u64 = null,
     type: AnyComponentType = .section,
     components: []const SectionChildComponent,
     accessory: SectionAccessoryComponent,
@@ -753,7 +753,7 @@ pub const Section = struct {
 
 /// Message.Flag.is_components_v2 must be set to use this
 pub const TextDisplay = struct {
-    id: jconfig.Omittable(u64) = .omit,
+    id: ?u64 = null,
     type: AnyComponentType = .text_display,
     content: []const u8,
 
@@ -767,11 +767,11 @@ pub const TextDisplay = struct {
 
 /// Message.Flag.is_components_v2 must be set to use this
 pub const Thumbnail = struct {
-    id: jconfig.Omittable(u64) = .omit,
+    id: ?u64 = null,
     type: AnyComponentType = .thumbnail,
     media: UnfurledMediaItem,
     description: jconfig.Omittable(?[]const u8) = .omit,
-    spoiler: jconfig.Omittable(bool) = .omit,
+    spoiler: ?bool = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 
@@ -782,7 +782,7 @@ pub const Thumbnail = struct {
 
 /// Message.Flag.is_components_v2 must be set to use this
 pub const MediaGallery = struct {
-    id: jconfig.Omittable(u64) = .omit,
+    id: ?u64 = null,
     type: AnyComponentType = .media_gallery,
     items: []const Item,
 
@@ -791,7 +791,7 @@ pub const MediaGallery = struct {
     pub const Item = struct {
         media: UnfurledMediaItem,
         description: jconfig.Omittable(?[]const u8) = .omit,
-        spoiler: jconfig.Omittable(bool) = .omit,
+        spoiler: ?bool = null,
 
         pub const jsonStringify = jconfig.stringifyWithOmit;
     };
@@ -799,20 +799,20 @@ pub const MediaGallery = struct {
 
 /// Message.Flag.is_components_v2 must be set to use this
 pub const File = struct {
-    id: jconfig.Omittable(u64) = .omit,
+    id: ?u64 = null,
     type: AnyComponentType = .file,
     file: UnfurledMediaItem,
-    spoiler: jconfig.Omittable(bool) = .omit,
+    spoiler: ?bool = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 /// Message.Flag.is_components_v2 must be set to use this
 pub const Separator = struct {
-    id: jconfig.Omittable(u64) = .omit,
+    id: ?u64 = null,
     type: AnyComponentType = .separator,
-    divider: jconfig.Omittable(bool) = .omit,
-    spacing: jconfig.Omittable(Spacing) = .omit,
+    divider: ?bool = null,
+    spacing: ?Spacing = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 
@@ -826,20 +826,20 @@ pub const Separator = struct {
 
 /// Message.Flag.is_components_v2 must be set to use this
 pub const Container = struct {
-    id: jconfig.Omittable(u64) = .omit,
+    id: ?u64 = null,
     type: AnyComponentType = .container,
     components: []const ContainerChildComponent,
     accent_color: jconfig.Omittable(?i64) = .omit,
-    spoiler: jconfig.Omittable(bool) = .omit,
+    spoiler: ?bool = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const Label = struct {
-    id: jconfig.Omittable(u64) = .omit,
+    id: ?u64 = null,
     type: AnyComponentType = .label,
     label: []const u8,
-    description: jconfig.Omittable([]const u8) = .omit,
+    description: ?[]const u8 = null,
     /// must be one of text_input, string_select, user_select, role_select, mentionable_select, channel_select, file_upload.
     component: LabelChildComponent,
 
@@ -860,13 +860,13 @@ pub const Label = struct {
 };
 
 pub const FileUpload = struct {
-    id: jconfig.Omittable(u64) = .omit,
+    id: ?u64 = null,
     type: AnyComponentType = .file_upload,
     custom_id: []const u8,
-    min_values: jconfig.Omittable(i64) = .omit,
-    max_values: jconfig.Omittable(i64) = .omit,
-    required: jconfig.Omittable(bool) = .omit,
-    file_types: jconfig.Omittable([]const []const u8) = .omit,
+    min_values: ?i64 = null,
+    max_values: ?i64 = null,
+    required: ?bool = null,
+    file_types: ?[]const []const u8 = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 
@@ -879,19 +879,19 @@ pub const FileUpload = struct {
 };
 
 pub const RadioGroup = struct {
-    id: jconfig.Omittable(u64) = .omit,
+    id: ?u64 = null,
     type: AnyComponentType = .radio_group,
     custom_id: []const u8,
     options: []const Option,
-    required: jconfig.Omittable(bool) = .omit,
+    required: ?bool = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 
     pub const Option = struct {
         value: []const u8,
         label: []const u8,
-        description: jconfig.Omittable([]const u8) = .omit,
-        default: jconfig.Omittable(bool) = .omit,
+        description: ?[]const u8 = null,
+        default: ?bool = null,
 
         pub const jsonStringify = jconfig.stringifyWithOmit;
     };
@@ -905,21 +905,21 @@ pub const RadioGroup = struct {
 };
 
 pub const CheckboxGroup = struct {
-    id: jconfig.Omittable(u64) = .omit,
+    id: ?u64 = null,
     type: AnyComponentType = .checkbox_group,
     custom_id: []const u8,
     options: []const Option,
-    min_values: jconfig.Omittable(i64) = .omit,
-    max_values: jconfig.Omittable(i64) = .omit,
-    required: jconfig.Omittable(bool) = .omit,
+    min_values: ?i64 = null,
+    max_values: ?i64 = null,
+    required: ?bool = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 
     pub const Option = struct {
         value: []const u8,
         label: []const u8,
-        description: jconfig.Omittable([]const u8) = .omit,
-        default: jconfig.Omittable(bool) = .omit,
+        description: ?[]const u8 = null,
+        default: ?bool = null,
 
         pub const jsonStringify = jconfig.stringifyWithOmit;
     };
@@ -933,10 +933,10 @@ pub const CheckboxGroup = struct {
 };
 
 pub const Checkbox = struct {
-    id: jconfig.Omittable(u64) = .omit,
+    id: ?u64 = null,
     type: AnyComponentType = .checkbox,
     custom_id: []const u8,
-    default: jconfig.Omittable(bool) = .omit,
+    default: ?bool = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 
@@ -950,15 +950,15 @@ pub const Checkbox = struct {
 
 pub const UnfurledMediaItem = struct {
     url: []const u8,
-    proxy_url: jconfig.Omittable([]const u8) = .omit,
+    proxy_url: ?[]const u8 = null,
     height: jconfig.Omittable(?i64) = .omit,
     width: jconfig.Omittable(?i64) = .omit,
-    placeholder: jconfig.Omittable([]const u8) = .omit,
-    placeholder_version: jconfig.Omittable(i64) = .omit,
-    content_type: jconfig.Omittable([]const u8) = .omit,
-    flags: jconfig.Omittable(Flags) = .omit,
-    content_scan_metadata: jconfig.Omittable(ContentScanMetadata) = .omit,
-    attachment_id: jconfig.Omittable(model.Snowflake) = .omit,
+    placeholder: ?[]const u8 = null,
+    placeholder_version: ?i64 = null,
+    content_type: ?[]const u8 = null,
+    flags: ?Flags = null,
+    content_scan_metadata: ?ContentScanMetadata = null,
+    attachment_id: ?model.Snowflake = null,
 
     pub const Flags = packed struct(u64) {
         is_animated: bool = false,

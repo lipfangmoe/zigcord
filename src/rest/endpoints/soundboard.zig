@@ -78,9 +78,9 @@ pub fn deleteGuildSoundboardSound(
 
 pub const SendSoundboardSoundBody = struct {
     sound_id: model.Snowflake,
-    source_guild_id: jconfig.Omittable(model.Snowflake) = .omit,
+    source_guild_id: ?model.Snowflake = null,
 
-    pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
+    pub const jsonStringify = jconfig.stringifyWithOmit;;
 };
 
 pub const CreateGuildSoundboardSoundBody = struct {
@@ -90,14 +90,14 @@ pub const CreateGuildSoundboardSoundBody = struct {
     emoji_id: jconfig.Omittable(?model.Snowflake) = .omit,
     emoji_name: jconfig.Omittable(?[]const u8) = .omit,
 
-    pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
+    pub const jsonStringify = jconfig.stringifyWithOmit;;
 };
 
 pub const ModifyGuildSoundboardSoundBody = struct {
-    name: jconfig.Omittable([]const u8) = .omit,
+    name: ?[]const u8 = null,
     volume: jconfig.Omittable(?f64) = .omit,
     emoji_id: jconfig.Omittable(?model.Snowflake) = .omit,
     emoji_name: jconfig.Omittable(?[]const u8) = .omit,
 
-    pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
+    pub const jsonStringify = jconfig.stringifyWithOmit;;
 };

@@ -113,7 +113,7 @@ pub fn updateCurrentUserApplicationRoleConnection(
 }
 
 pub const ModifyCurrentUserBody = struct {
-    username: jconfig.Omittable([]const u8) = .omit,
+    username: ?[]const u8 = null,
     avatar: jconfig.Omittable(?model.DataUri) = .omit,
     banner: jconfig.Omittable(?model.DataUri) = .omit,
 
@@ -142,7 +142,7 @@ pub const CreateGroupDmBody = struct {
 pub const UpdateCurrentUserApplicationRoleConnectionBody = struct {
     platform_name: jconfig.Omittable(?[]const u8) = .omit,
     platform_username: jconfig.Omittable(?[]const u8) = .omit,
-    metadata: jconfig.Omittable(std.json.ArrayHashMap([]const u8)) = .omit,
+    metadata: ?std.json.ArrayHashMap([]const u8) = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };

@@ -51,64 +51,57 @@ pub fn Omittable(comptime T: type) type {
     };
 }
 
-pub fn OmittableFieldsMixin(comptime T: type) type {
-    return struct {
-        pub fn jsonStringify(self: T, json_writer: *std.json.Stringify) @typeInfo(@TypeOf(json_writer)).pointer.child.Error!void {
-            return stringifyWithOmit(self, json_writer);
-        }
-    };
-}
-
-/// Utility function to enable `Omittable` to work on structs.
-///
-/// Intended usage: add a declaration in your container as `pub const jsonStringify = stringifyWithOmit`.
-pub fn stringifyWithOmit(self: anytype, json_writer: *std.json.Stringify) @typeInfo(@TypeOf(json_writer)).pointer.child.Error!void {
-    const struct_info: std.builtin.Type.Struct = comptime blk: {
-        const self_typeinfo = @typeInfo(@TypeOf(self));
-        switch (self_typeinfo) {
-            .pointer => |ptr| {
-                if (@typeInfo(ptr.child) != .@"struct") {
-                    @compileError("stringifyWithOmit may only be called on structs and pointers to structs. Found \"" ++ @typeName(@TypeOf(self)) ++ "\"");
-                }
-                break :blk @typeInfo(ptr.child).@"struct";
-            },
-            .@"struct" => |strct| {
-                break :blk strct;
-            },
-            else => @compileError("stringifyWithOmit may only be called on structs and pointers to structs. Found \"" ++ @typeName(@TypeOf(self)) ++ "\""),
-        }
-    };
-
+pub fn stringifyWithOmit(self: anytype, json_writer: *std.json.Stringify) std.json.Stringify.Error!void {
     try json_writer.beginObject();
 
-    inline for (struct_info.field_names, struct_info.field_types) |field_name, FieldType| {
+    const struct_info = @typeInfo(@TypeOf(self)).@"struct";
+    inline for (struct_info.field_names, struct_info.field_types, struct_info.field_attrs) |field_name, FieldType, field_attrs| {
         const value = @field(self, field_name);
-        try writePossiblyOmittableFieldToStream(field_name, FieldType, value, json_writer);
+        if (comptime isOmittableField(FieldType, field_attrs)) {
+            try writeOmittableFieldToStream(field_name, FieldType, value, json_writer);
+        } else {
+            try json_writer.objectField(field_name);
+            try json_writer.write(value);
+        }
     }
 
     try json_writer.endObject();
 }
 
-pub fn writePossiblyOmittableFieldToStream(comptime field_name: []const u8, comptime FieldType: type, value: anytype, json_writer: *std.json.Stringify) !void {
-    const is_omittable = comptime blk: {
-        if (@typeInfo(FieldType) != .@"union") {
-            break :blk false;
-        }
-        const field_names = std.meta.fieldNames(FieldType);
-        break :blk field_names.len == 2 and std.mem.eql(u8, field_names[0], "some") and std.mem.eql(u8, field_names[1], "omit");
+pub fn isOmittableField(comptime FieldType: type, comptime field_attrs: std.lang.Type.Struct.FieldAttributes) bool {
+    return switch (@typeInfo(FieldType)) {
+        .@"union" => |u| std.mem.eql(u8, u.field_names[0], "some") and std.mem.eql(u8, u.field_names[1], "none"),
+        .optional => field_attrs.default_value_ptr != null,
+        else => false,
     };
+}
 
-    if (is_omittable) {
-        switch (value) {
-            .some => |some| {
+/// assumes `isOmittableField` returned true
+pub fn writeOmittableFieldToStream(
+    comptime field_name: []const u8,
+    comptime FieldType: type,
+    value: anytype,
+    json_writer: *std.json.Stringify,
+) !void {
+    switch (@typeInfo(FieldType)) {
+        .@"union" => {
+            switch (value) {
+                .some => |some| {
+                    try json_writer.objectField(field_name);
+                    try json_writer.write(some);
+                },
+                .omit => {},
+            }
+        },
+        .optional => {
+            if (value) |some| {
                 try json_writer.objectField(field_name);
                 try json_writer.write(some);
-            },
-            .omit => {},
-        }
-    } else {
-        try json_writer.objectField(field_name);
-        try json_writer.write(value);
+            }
+        },
+        else => {
+            @compileLog("writePossiblyOmittableFieldToStream called on incompatible field `{s}: {s}`", .{ field_name, @typeName(FieldType) });
+        },
     }
 }
 

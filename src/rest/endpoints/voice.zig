@@ -58,16 +58,16 @@ pub fn modifyUserVoiceState(
 }
 
 pub const ModifyCurrentUserVoiceStateBody = struct {
-    channel_id: jconfig.Omittable(model.Snowflake) = .omit,
-    suppress: jconfig.Omittable(bool) = .omit,
+    channel_id: ?model.Snowflake = null,
+    suppress: ?bool = null,
     request_to_speak_timestamp: jconfig.Omittable(?model.IsoTime) = .omit,
 
-    pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
+    pub const jsonStringify = jconfig.stringifyWithOmit;;
 };
 
 pub const ModifyUserVoiceStateBody = struct {
-    channel_id: jconfig.Omittable(model.Snowflake) = .omit,
-    suppress: jconfig.Omittable(bool) = .omit,
+    channel_id: ?model.Snowflake = null,
+    suppress: ?bool = null,
 
-    pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
+    pub const jsonStringify = jconfig.stringifyWithOmit;;
 };

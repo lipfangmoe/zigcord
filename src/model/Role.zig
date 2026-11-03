@@ -27,17 +27,16 @@ managed: bool,
 /// true if this role is mentionable by everyone
 mentionable: bool,
 /// the tags which this role has. for some reason it is plural although it seems that it should be singular?
-tags: jconfig.Omittable(Tags) = .omit,
+tags: ?Tags = null,
 /// role flags as a bitfield
 flags: Flags,
 
 pub const jsonStringify = jconfig.stringifyWithOmit;
-
 pub const Tags = struct {
-    bot_id: jconfig.Omittable(model.Snowflake) = .omit,
-    integration_id: jconfig.Omittable(model.Snowflake) = .omit,
+    bot_id: ?model.Snowflake = null,
+    integration_id: ?model.Snowflake = null,
     premium_subscriber: jconfig.Omittable(?u0) = .omit,
-    subscription_listing_id: jconfig.Omittable(model.Snowflake) = .omit,
+    subscription_listing_id: ?model.Snowflake = null,
     available_for_purchase: jconfig.Omittable(?u0) = .omit,
     guild_connections: jconfig.Omittable(?u0) = .omit,
 

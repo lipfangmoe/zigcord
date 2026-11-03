@@ -2,16 +2,16 @@ const jconfig = @import("jconfig");
 const model = @import("../model.zig");
 
 pub const VoiceState = struct {
-    guild_id: jconfig.Omittable(model.Snowflake) = .omit,
+    guild_id: ?model.Snowflake = null,
     channel_id: ?model.Snowflake,
     user_id: model.Snowflake,
-    member: jconfig.Omittable(model.guild.Member) = .omit,
+    member: ?model.guild.Member = null,
     session_id: []const u8,
     deaf: bool,
     mute: bool,
     self_deaf: bool,
     self_mute: bool,
-    self_stream: jconfig.Omittable(bool) = .omit,
+    self_stream: ?bool = null,
     self_video: bool,
     suppress: bool,
     request_to_speak_timestamp: ?model.IsoTime,

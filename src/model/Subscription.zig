@@ -11,9 +11,9 @@ current_period_start: model.IsoTime,
 current_period_end: model.IsoTime,
 status: Status,
 canceled_at: ?model.IsoTime,
-country: jconfig.Omittable([]const u8) = .omit,
+country: ?[]const u8 = null,
 
-pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
+pub const jsonStringify = jconfig.stringifyWithOmit;
 
 pub const Status = enum(u8) {
     active = 0,

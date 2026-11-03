@@ -7,15 +7,14 @@ const Emoji = @This();
 
 id: ?Snowflake,
 name: ?[]const u8,
-roles: jconfig.Omittable([]Snowflake) = .omit,
-user: jconfig.Omittable(User) = .omit,
-require_colons: jconfig.Omittable(bool) = .omit,
-managed: jconfig.Omittable(bool) = .omit,
-animated: jconfig.Omittable(bool) = .omit,
-available: jconfig.Omittable(bool) = .omit,
+roles: ?[]Snowflake = null,
+user: ?User = null,
+require_colons: ?bool = null,
+managed: ?bool = null,
+animated: ?bool = null,
+available: ?bool = null,
 
 pub const jsonStringify = jconfig.stringifyWithOmit;
-
 pub fn fromUnicode(emoji: []const u8) Emoji {
     return Emoji{ .id = null, .name = emoji };
 }

@@ -8,17 +8,16 @@ id: Snowflake,
 type: Type,
 guild_id: jconfig.Omittable(?Snowflake) = .omit,
 channel_id: ?Snowflake,
-user: jconfig.Omittable(User) = .omit,
+user: ?User = null,
 name: ?[]const u8,
 avatar: ?[]const u8, // avatar hash
-token: jconfig.Omittable([]const u8) = .omit,
+token: ?[]const u8 = null,
 application_id: ?Snowflake,
-source_guild: jconfig.Omittable(guild.PartialGuild) = .omit,
-source_channel: jconfig.Omittable(jconfig.Partial(Channel)) = .omit,
-url: jconfig.Omittable([]const u8) = .omit,
+source_guild: ?guild.PartialGuild = null,
+source_channel: ?jconfig.Partial(Channel) = null,
+url: ?[]const u8 = null,
 
 pub const jsonStringify = jconfig.stringifyWithOmit;
-
 pub const Type = enum(u2) {
     incoming = 1,
     channel_follower = 2,

@@ -1,7 +1,9 @@
 const std = @import("std");
 const logger = @import("shared").logger;
 
-const writePossiblyOmittableFieldToStream = @import("./omit.zig").writePossiblyOmittableFieldToStream;
+const omit = @import("./omit.zig");
+const isOmittableField = omit.isOmittableField;
+const writeOmittableFieldToStream = omit.writeOmittableFieldToStream;
 
 /// For `struct{ field1: struct{ foo: i64 }, field2: struct{ bar: u64 }, pub usingnamespace InlineFieldJsonMixin(@This(), "field1"); }`,
 /// returns a mixin which will JSON stringify and parse the struct into a `struct{ foo: i64, field2: struct{ bar: u64 }}`
@@ -53,7 +55,7 @@ pub fn InlineSingleStructFieldMixin(comptime T: type, comptime inline_field: []c
             try jw.beginObject();
             const wrapper_type_info = @typeInfo(T).@"struct";
 
-            inline for (wrapper_type_info.field_names, wrapper_type_info.field_types) |wrapper_field_name, WrapperFieldType| {
+            inline for (wrapper_type_info.field_names, wrapper_type_info.field_types, wrapper_type_info.field_attrs) |wrapper_field_name, WrapperFieldType, wrapper_field_attrs| {
                 const wrapper_field_value = @field(self, wrapper_field_name);
                 if (comptime std.mem.eql(u8, wrapper_field_name, inline_field)) {
                     if (comptime std.meta.hasMethod(WrapperFieldType, "jsonStringify")) {
@@ -65,12 +67,16 @@ pub fn InlineSingleStructFieldMixin(comptime T: type, comptime inline_field: []c
                     }
 
                     const inlining_field_type_info = @typeInfo(WrapperFieldType).@"struct";
-                    inline for (inlining_field_type_info.field_names, inlining_field_type_info.field_types) |inlining_field_name, InliningFieldType| {
+                    inline for (inlining_field_type_info.field_names, inlining_field_type_info.field_types, inlining_field_type_info.field_attrs) |inlining_field_name, InliningFieldType, inlining_field_type_attrs| {
                         const inner_field_value = @field(wrapper_field_value, inlining_field_name);
-                        try writePossiblyOmittableFieldToStream(inlining_field_name, InliningFieldType, inner_field_value, jw);
+                        if (isOmittableField(InliningFieldType, inlining_field_type_attrs)) {
+                            try writeOmittableFieldToStream(inlining_field_name, InliningFieldType, inner_field_value, jw);
+                        }
                     }
                 } else {
-                    try writePossiblyOmittableFieldToStream(wrapper_field_name, WrapperFieldType, wrapper_field_value, jw);
+                    if (isOmittableField(WrapperFieldType, wrapper_field_attrs)) {
+                        try writeOmittableFieldToStream(wrapper_field_name, WrapperFieldType, wrapper_field_value, jw);
+                    }
                 }
             }
             try jw.endObject();

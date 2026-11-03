@@ -4,12 +4,11 @@ const jconfig = @import("jconfig");
 type: Type,
 key: []const u8,
 name: []const u8,
-name_localizations: jconfig.Omittable(std.json.ArrayHashMap([]const u8)) = .omit,
+name_localizations: ?std.json.ArrayHashMap([]const u8) = null,
 description: []const u8,
-description_localizations: jconfig.Omittable(std.json.ArrayHashMap([]const u8)) = .omit,
+description_localizations: ?std.json.ArrayHashMap([]const u8) = null,
 
 pub const jsonStringify = jconfig.stringifyWithOmit;
-
 const Type = enum(u8) {
     integer_less_than_or_equal = 1,
     integer_greater_than_or_equal,

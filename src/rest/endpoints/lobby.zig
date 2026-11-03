@@ -194,56 +194,56 @@ pub fn createLobbyChannelInviteForUser(
 }
 
 pub const CreateLobbyBody = struct {
-    metadata: jconfig.Omittable(std.json.ArrayHashMap([]const u8)) = .omit,
-    members: jconfig.Omittable([]const model.Lobby.LobbyMember) = .omit,
-    idle_timeout_seconds: jconfig.Omittable(u32) = .omit,
+    metadata: ?std.json.ArrayHashMap([]const u8) = null,
+    members: ?[]const model.Lobby.LobbyMember = null,
+    idle_timeout_seconds: ?u32 = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const CreateOrJoinLobbyBody = struct {
     secret: []const u8,
-    metadata: jconfig.Omittable(std.json.ArrayHashMap([]const u8)) = .omit,
-    members: jconfig.Omittable([]const model.Lobby.LobbyMember) = .omit,
-    idle_timeout_seconds: jconfig.Omittable(u32) = .omit,
+    metadata: ?std.json.ArrayHashMap([]const u8) = null,
+    members: ?[]const model.Lobby.LobbyMember = null,
+    idle_timeout_seconds: ?u32 = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const ModifyLobbyBody = struct {
-    metadata: jconfig.Omittable(std.json.ArrayHashMap([]const u8)) = .omit,
-    members: jconfig.Omittable([]const model.Lobby.LobbyMember) = .omit,
-    idle_timeout_seconds: jconfig.Omittable(u32) = .omit,
+    metadata: ?std.json.ArrayHashMap([]const u8) = null,
+    members: ?[]const model.Lobby.LobbyMember = null,
+    idle_timeout_seconds: ?u32 = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const AddAMemberToALobbyBody = struct {
-    metadata: jconfig.Omittable(std.json.ArrayHashMap([]const u8)) = .omit,
-    flags: jconfig.Omittable(model.Lobby.LobbyMember.Flags) = .omit,
+    metadata: ?std.json.ArrayHashMap([]const u8) = null,
+    flags: ?model.Lobby.LobbyMember.Flags = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const BulkUpdateLobbyMember = struct {
     id: model.Snowflake,
-    metadata: jconfig.Omittable(std.json.ArrayHashMap([]const u8)) = .omit,
-    flags: jconfig.Omittable(model.Lobby.LobbyMember.Flags) = .omit,
-    remove_member: jconfig.Omittable(bool) = .omit,
+    metadata: ?std.json.ArrayHashMap([]const u8) = null,
+    flags: ?model.Lobby.LobbyMember.Flags = null,
+    remove_member: ?bool = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const LinkChannelToLobbyBody = struct {
-    channel_id: jconfig.Omittable(model.Snowflake) = .omit,
+    channel_id: ?model.Snowflake = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const SendLobbyMessageBody = struct {
     content: []const u8,
-    metadata: jconfig.Omittable(std.json.ArrayHashMap([]const u8)) = .omit,
-    flags: jconfig.Omittable(model.Message.Flags) = .omit,
+    metadata: ?std.json.ArrayHashMap([]const u8) = null,
+    flags: ?model.Message.Flags = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };

@@ -84,8 +84,8 @@ pub fn deleteApplicationIdentity(
 }
 
 pub const UpdateApplicationIdentityProfileBody = struct {
-    username: jconfig.Omittable([]const u8) = .omit,
-    data: jconfig.Omittable(model.ApplicationIdentity.ProfileData) = .omit,
+    username: ?[]const u8 = null,
+    data: ?model.ApplicationIdentity.ProfileData = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
@@ -99,7 +99,7 @@ pub const GetApplicationIdentitiesByExternalIdQuery = struct {
 };
 
 pub const DeleteApplicationidentityBody = struct {
-    provider_id: jconfig.Omittable([]const u8) = .omit,
+    provider_id: ?[]const u8 = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };

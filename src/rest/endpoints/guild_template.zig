@@ -91,21 +91,21 @@ pub fn deleteGuildTemplate(
 
 pub const CreateGuildFromGuildTemplateBody = struct {
     name: []const u8,
-    icon: jconfig.Omittable(model.DataUri) = .omit,
+    icon: ?model.DataUri = null,
 
-    pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
+    pub const jsonStringify = jconfig.stringifyWithOmit;;
 };
 
 pub const CreateGuildTemplateBody = struct {
     name: []const u8,
     description: jconfig.Omittable(?[]const u8) = .omit,
 
-    pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
+    pub const jsonStringify = jconfig.stringifyWithOmit;;
 };
 
 pub const ModifyGuildTemplateBody = struct {
-    name: jconfig.Omittable([]const u8) = .omit,
+    name: ?[]const u8 = null,
     description: jconfig.Omittable(?[]const u8) = .omit,
 
-    pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
+    pub const jsonStringify = jconfig.stringifyWithOmit;;
 };

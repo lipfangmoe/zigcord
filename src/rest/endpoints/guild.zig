@@ -959,17 +959,17 @@ pub const SearchGuildMessagesQueryParams = struct {
 
 pub const SearchGuildMessagesResponse = struct {
     doing_deep_historical_index: bool,
-    documents_indexed: jconfig.Omittable(u64) = .omit,
+    documents_indexed: ?u64 = null,
     total_results: u64,
     messages: []const []const model.Message,
-    threads: jconfig.Omittable([]const model.Channel) = .omit,
-    members: jconfig.Omittable([]const model.Channel.ThreadMember) = .omit,
+    threads: ?[]const model.Channel = null,
+    members: ?[]const model.Channel.ThreadMember = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const CreateGuildBanBody = struct {
-    delete_message_seconds: jconfig.Omittable(u64) = .omit,
+    delete_message_seconds: ?u64 = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };

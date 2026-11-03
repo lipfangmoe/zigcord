@@ -16,34 +16,33 @@ tts: bool,
 mention_everyone: bool,
 mentions: []const model.User,
 mention_roles: []const model.Snowflake,
-mention_channels: jconfig.Omittable([]const ChannelMention) = .omit,
+mention_channels: ?[]const ChannelMention = null,
 attachments: []const Attachment,
 embeds: []const Embed,
-reactions: jconfig.Omittable([]const Reaction) = .omit,
-nonce: jconfig.Omittable(Nonce) = .omit,
+reactions: ?[]const Reaction = null,
+nonce: ?Nonce = null,
 pinned: bool,
-webhook_id: jconfig.Omittable(Snowflake) = .omit,
+webhook_id: ?Snowflake = null,
 type: Type,
-activity: jconfig.Omittable(Activity) = .omit,
-application: jconfig.Omittable(jconfig.Partial(model.Application)) = .omit,
-application_id: jconfig.Omittable(Snowflake) = .omit,
-flags: jconfig.Omittable(Flags) = .omit,
-message_reference: jconfig.Omittable(Reference) = .omit,
-message_snapshots: jconfig.Omittable(std.json.Value) = .omit, // TODO - can't use jconfig.Partial(?*const Message) because i get the compile error "struct 'model.Message' depends on itself"
+activity: ?Activity = null,
+application: ?jconfig.Partial(model.Application) = null,
+application_id: ?Snowflake = null,
+flags: ?Flags = null,
+message_reference: ?Reference = null,
+message_snapshots: ?std.json.Value = null, // TODO - can't use jconfig.Partial(?*const Message) because i get the compile error "struct 'model.Message' depends on itself"
 referenced_message: jconfig.Omittable(?*const Message) = .omit,
-interaction_metadata: jconfig.Omittable(InteractionMetadata) = .omit,
-thread: jconfig.Omittable(model.Channel) = .omit,
-components: jconfig.Omittable([]const model.components.TopLevelMessageComponent) = .omit,
-sticker_items: jconfig.Omittable([]const model.Sticker.Item) = .omit,
-stickers: jconfig.Omittable([]const model.Sticker) = .omit,
-position: jconfig.Omittable(i64) = .omit,
-role_subscription_data: jconfig.Omittable(RoleSubscriptionData) = .omit,
-resolved: jconfig.Omittable(model.interaction.ResolvedData) = .omit,
-poll: jconfig.Omittable(model.Poll) = .omit,
-call: jconfig.Omittable(Call) = .omit,
+interaction_metadata: ?InteractionMetadata = null,
+thread: ?model.Channel = null,
+components: ?[]const model.components.TopLevelMessageComponent = null,
+sticker_items: ?[]const model.Sticker.Item = null,
+stickers: ?[]const model.Sticker = null,
+position: ?i64 = null,
+role_subscription_data: ?RoleSubscriptionData = null,
+resolved: ?model.interaction.ResolvedData = null,
+poll: ?model.Poll = null,
+call: ?Call = null,
 
 pub const jsonStringify = jconfig.stringifyWithOmit;
-
 pub fn jsonParse(alloc: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !Message {
     return try jsonParseFromValue(
         alloc,
@@ -111,17 +110,17 @@ pub const MessageAuthor = union(enum) {
 pub const Attachment = struct {
     id: Snowflake,
     filename: []const u8,
-    description: jconfig.Omittable([]const u8) = .omit,
-    content_type: jconfig.Omittable([]const u8) = .omit,
+    description: ?[]const u8 = null,
+    content_type: ?[]const u8 = null,
     size: u64,
     url: []const u8,
     proxy_url: []const u8,
     height: jconfig.Omittable(?i64) = .omit,
     width: jconfig.Omittable(?i64) = .omit,
-    ephemeral: jconfig.Omittable(bool) = .omit,
-    duration_secs: jconfig.Omittable(f64) = .omit,
-    waveform: jconfig.Omittable([]const u8) = .omit,
-    flags: jconfig.Omittable(AttachmentFlags) = .omit,
+    ephemeral: ?bool = null,
+    duration_secs: ?f64 = null,
+    waveform: ?[]const u8 = null,
+    flags: ?AttachmentFlags = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
@@ -153,21 +152,21 @@ pub const ChannelMention = struct {
 };
 
 pub const Embed = struct {
-    title: jconfig.Omittable([]const u8) = .omit,
-    type: jconfig.Omittable(EmbedType) = .omit,
-    description: jconfig.Omittable([]const u8) = .omit,
-    url: jconfig.Omittable([]const u8) = .omit,
-    timestamp: jconfig.Omittable(model.IsoTime) = .omit,
-    color: jconfig.Omittable(i64) = .omit,
-    footer: jconfig.Omittable(Footer) = .omit,
-    image: jconfig.Omittable(Media) = .omit,
-    thumbnail: jconfig.Omittable(Media) = .omit,
-    video: jconfig.Omittable(Media) = .omit,
-    provider: jconfig.Omittable(Provider) = .omit,
-    author: jconfig.Omittable(Author) = .omit,
-    fields: jconfig.Omittable([]const Field) = .omit,
-    components: jconfig.Omittable([]const model.components.TopLevelMessageComponent) = .omit,
-    flags: jconfig.Omittable(EmbedFlags) = .omit,
+    title: ?[]const u8 = null,
+    type: ?EmbedType = null,
+    description: ?[]const u8 = null,
+    url: ?[]const u8 = null,
+    timestamp: ?model.IsoTime = null,
+    color: ?i64 = null,
+    footer: ?Footer = null,
+    image: ?Media = null,
+    thumbnail: ?Media = null,
+    video: ?Media = null,
+    provider: ?Provider = null,
+    author: ?Author = null,
+    fields: ?[]const Field = null,
+    components: ?[]const model.components.TopLevelMessageComponent = null,
+    flags: ?EmbedFlags = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 
@@ -186,33 +185,33 @@ pub const Embed = struct {
 
     pub const Footer = struct {
         text: []const u8,
-        icon_url: jconfig.Omittable([]const u8) = .omit,
-        proxy_icon_url: jconfig.Omittable([]const u8) = .omit,
+        icon_url: ?[]const u8 = null,
+        proxy_icon_url: ?[]const u8 = null,
 
         pub const jsonStringify = jconfig.stringifyWithOmit;
     };
 
     pub const Media = struct {
-        url: jconfig.Omittable([]const u8) = .omit,
-        proxy_url: jconfig.Omittable([]const u8) = .omit,
-        height: jconfig.Omittable(i64) = .omit,
-        width: jconfig.Omittable(i64) = .omit,
+        url: ?[]const u8 = null,
+        proxy_url: ?[]const u8 = null,
+        height: ?i64 = null,
+        width: ?i64 = null,
 
         pub const jsonStringify = jconfig.stringifyWithOmit;
     };
 
     pub const Provider = struct {
-        name: jconfig.Omittable([]const u8) = .omit,
-        url: jconfig.Omittable([]const u8) = .omit,
+        name: ?[]const u8 = null,
+        url: ?[]const u8 = null,
 
         pub const jsonStringify = jconfig.stringifyWithOmit;
     };
 
     pub const Author = struct {
         name: []const u8,
-        url: jconfig.Omittable([]const u8) = .omit,
-        icon_url: jconfig.Omittable([]const u8) = .omit,
-        proxy_icon_url: jconfig.Omittable([]const u8) = .omit,
+        url: ?[]const u8 = null,
+        icon_url: ?[]const u8 = null,
+        proxy_icon_url: ?[]const u8 = null,
 
         pub const jsonStringify = jconfig.stringifyWithOmit;
     };
@@ -220,7 +219,7 @@ pub const Embed = struct {
     pub const Field = struct {
         name: []const u8,
         value: []const u8,
-        @"inline": jconfig.Omittable(bool) = .omit,
+        @"inline": ?bool = null,
 
         pub const jsonStringify = jconfig.stringifyWithOmit;
     };
@@ -334,7 +333,7 @@ pub const Type = enum(u8) {
 
 pub const Activity = struct {
     type: ActivityType,
-    party_id: jconfig.Omittable([]const u8) = .omit,
+    party_id: ?[]const u8 = null,
 
     pub const ActivityType = enum(u8) {
         join = 1,
@@ -348,11 +347,11 @@ pub const Activity = struct {
 };
 
 pub const Reference = struct {
-    type: jconfig.Omittable(Reference.Type) = .omit,
-    message_id: jconfig.Omittable(Snowflake) = .omit,
-    channel_id: jconfig.Omittable(Snowflake) = .omit,
-    guild_id: jconfig.Omittable(Snowflake) = .omit,
-    fail_if_not_exists: jconfig.Omittable(bool) = .omit,
+    type: ?Reference.Type = null,
+    message_id: ?Snowflake = null,
+    channel_id: ?Snowflake = null,
+    guild_id: ?Snowflake = null,
+    fail_if_not_exists: ?bool = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 
@@ -397,8 +396,8 @@ pub const InteractionMetadata = struct {
     id: Snowflake,
     type: model.interaction.InteractionType,
     authorizing_integration_owners: std.json.ArrayHashMap(model.Snowflake),
-    original_response_message_id: jconfig.Omittable(Snowflake) = .omit,
-    interacted_message_id: jconfig.Omittable(Snowflake) = .omit,
+    original_response_message_id: ?Snowflake = null,
+    interacted_message_id: ?Snowflake = null,
     triggering_interaction_metadata: jconfig.Omittable(?*const InteractionMetadata) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;

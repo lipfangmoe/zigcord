@@ -44,7 +44,6 @@ newly_created: Omittable(bool) = .omit,
 app_permissions: Omittable(model.Permissions) = .omit,
 
 pub const jsonStringify = jconfig.stringifyWithOmit;
-
 pub const Type = enum(u8) {
     guild_text = 0,
     dm = 1,

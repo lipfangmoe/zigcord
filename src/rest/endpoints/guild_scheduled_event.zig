@@ -93,29 +93,29 @@ pub const WithUserCountQuery = struct {
 };
 
 pub const CreateGuildScheduledEventBody = struct {
-    channel_id: jconfig.Omittable(model.Snowflake) = .omit,
-    entity_metadata: jconfig.Omittable(model.GuildScheduledEvent.EntityMetadata) = .omit,
+    channel_id: ?model.Snowflake = null,
+    entity_metadata: ?model.GuildScheduledEvent.EntityMetadata = null,
     name: []const u8,
     privacy_level: model.GuildScheduledEvent.PrivacyLevel,
     scheduled_start_time: model.IsoTime,
     scheduled_end_time: model.IsoTime,
 
-    pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
+    pub const jsonStringify = jconfig.stringifyWithOmit;;
 };
 
 pub const ModifyGuildScheduledEventBody = struct {
     channel_id: jconfig.Omittable(?model.Snowflake) = .omit,
     entity_metadata: jconfig.Omittable(?model.GuildScheduledEvent.EntityMetadata) = .omit,
-    name: jconfig.Omittable([]const u8) = .omit,
-    privacy_level: jconfig.Omittable(model.GuildScheduledEvent.PrivacyLevel) = .omit,
-    scheduled_start_time: jconfig.Omittable(model.IsoTime) = .omit,
-    scheduled_end_time: jconfig.Omittable(model.IsoTime) = .omit,
+    name: ?[]const u8 = null,
+    privacy_level: ?model.GuildScheduledEvent.PrivacyLevel = null,
+    scheduled_start_time: ?model.IsoTime = null,
+    scheduled_end_time: ?model.IsoTime = null,
     description: jconfig.Omittable(?[]const u8) = .omit,
-    entity_type: jconfig.Omittable(model.GuildScheduledEvent.EntityType) = .omit,
-    status: jconfig.Omittable(model.GuildScheduledEvent.EventStatus) = .omit,
-    image: jconfig.Omittable(model.DataUri) = .omit,
+    entity_type: ?model.GuildScheduledEvent.EntityType = null,
+    status: ?model.GuildScheduledEvent.EventStatus = null,
+    image: ?model.DataUri = null,
 
-    pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
+    pub const jsonStringify = jconfig.stringifyWithOmit;;
 };
 
 pub const GetGuildScheduledEventUsersQuery = struct {

@@ -10,19 +10,18 @@ answers: []const Answer,
 expiry: ?model.IsoTime,
 allow_multiselect: bool,
 layout_type: i64,
-results: jconfig.Omittable(Results) = .omit,
+results: ?Results = null,
 
 pub const jsonStringify = jconfig.stringifyWithOmit;
-
 pub const Media = struct {
-    text: jconfig.Omittable([]const u8) = .omit,
-    emoji: jconfig.Omittable(jconfig.Partial(model.Emoji)) = .omit,
+    text: ?[]const u8 = null,
+    emoji: ?jconfig.Partial(model.Emoji) = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const Answer = struct {
-    answer_id: jconfig.Omittable(i64) = .omit,
+    answer_id: ?i64 = null,
     poll_media: Media,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;

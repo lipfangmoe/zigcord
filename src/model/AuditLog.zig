@@ -14,29 +14,29 @@ webhooks: []const model.Webhook,
 
 pub const Entry = struct {
     target_id: ?[]const u8,
-    changes: jconfig.Omittable([]const std.json.Value) = .omit,
+    changes: ?[]const std.json.Value = null,
     user_id: ?model.Snowflake,
     id: model.Snowflake,
     action_type: Event,
-    options: jconfig.Omittable(OptionalInfo) = .omit,
-    reason: jconfig.Omittable([]const u8) = .omit,
+    options: ?OptionalInfo = null,
+    reason: ?[]const u8 = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 
     pub const OptionalInfo = struct {
-        application_id: jconfig.Omittable(model.Snowflake) = .omit,
-        auto_moderation_rule_name: jconfig.Omittable([]const u8) = .omit,
-        auto_moderation_rule_trigger_type: jconfig.Omittable([]const u8) = .omit,
-        channel_id: jconfig.Omittable(model.Snowflake) = .omit,
-        count: jconfig.Omittable([]const u8) = .omit,
-        delete_member_days: jconfig.Omittable([]const u8) = .omit,
-        id: jconfig.Omittable(model.Snowflake) = .omit,
-        members_removed: jconfig.Omittable([]const u8) = .omit,
-        message_id: jconfig.Omittable(model.Snowflake) = .omit,
-        role_name: jconfig.Omittable([]const u8) = .omit,
-        type: jconfig.Omittable([]const u8) = .omit,
-        integration_type: jconfig.Omittable([]const u8) = .omit,
-        status: jconfig.Omittable([]const u8) = .omit,
+        application_id: ?model.Snowflake = null,
+        auto_moderation_rule_name: ?[]const u8 = null,
+        auto_moderation_rule_trigger_type: ?[]const u8 = null,
+        channel_id: ?model.Snowflake = null,
+        count: ?[]const u8 = null,
+        delete_member_days: ?[]const u8 = null,
+        id: ?model.Snowflake = null,
+        members_removed: ?[]const u8 = null,
+        message_id: ?model.Snowflake = null,
+        role_name: ?[]const u8 = null,
+        type: ?[]const u8 = null,
+        integration_type: ?[]const u8 = null,
+        status: ?[]const u8 = null,
 
         pub const jsonStringify = jconfig.stringifyWithOmit;
     };

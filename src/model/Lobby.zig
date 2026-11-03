@@ -8,7 +8,7 @@ id: model.Snowflake,
 application_id: model.Snowflake,
 metadata: ?std.json.ArrayHashMap([]const u8),
 members: []const LobbyMember,
-linked_Channel: jconfig.Omittable(model.Channel) = .omit,
+linked_Channel: ?model.Channel = null,
 
 pub const LobbyMember = struct {
     id: model.Snowflake,

@@ -2,11 +2,10 @@ const std = @import("std");
 const jconfig = @import("jconfig");
 
 provider_type: []const u8,
-provider_id: jconfig.Omittable([]const u8) = .omit,
+provider_id: ?[]const u8 = null,
 provider_issued_user_id: []const u8,
 
 pub const jsonStringify = jconfig.stringifyWithOmit;
-
 pub const Profile = struct {
     username: ?[]const u8,
     metadata: ?std.json.ArrayHashMap(std.json.Value),
@@ -19,24 +18,24 @@ pub const ProfileData = struct {
 };
 
 pub const PrimaryProfileData = struct {
-    season: jconfig.Omittable([]const u8) = .omit,
-    rank_name: jconfig.Omittable([]const u8) = .omit,
-    rank_image: jconfig.Omittable(MediaValue) = .omit,
-    highest_rank: jconfig.Omittable([]const u8) = .omit,
-    highest_rank_image: jconfig.Omittable(MediaValue) = .omit,
-    featured_played_character: jconfig.Omittable([]const u8) = .omit,
-    featured_played_character_image: jconfig.Omittable(MediaValue) = .omit,
-    playtime_hours: jconfig.Omittable(u64) = .omit,
-    total_wins: jconfig.Omittable(u64) = .omit,
-    current_period_wins: jconfig.Omittable(u64) = .omit,
-    total_games: jconfig.Omittable(u64) = .omit,
-    current_period_games: jconfig.Omittable(u64) = .omit,
-    total_kills: jconfig.Omittable(u64) = .omit,
-    current_period_kills: jconfig.Omittable(u64) = .omit,
-    total_assists: jconfig.Omittable(u64) = .omit,
-    current_period_assists: jconfig.Omittable(u64) = .omit,
-    total_deaths: jconfig.Omittable(u64) = .omit,
-    current_period_deaths: jconfig.Omittable(u64) = .omit,
+    season: ?[]const u8 = null,
+    rank_name: ?[]const u8 = null,
+    rank_image: ?MediaValue = null,
+    highest_rank: ?[]const u8 = null,
+    highest_rank_image: ?MediaValue = null,
+    featured_played_character: ?[]const u8 = null,
+    featured_played_character_image: ?MediaValue = null,
+    playtime_hours: ?u64 = null,
+    total_wins: ?u64 = null,
+    current_period_wins: ?u64 = null,
+    total_games: ?u64 = null,
+    current_period_games: ?u64 = null,
+    total_kills: ?u64 = null,
+    current_period_kills: ?u64 = null,
+    total_assists: ?u64 = null,
+    current_period_assists: ?u64 = null,
+    total_deaths: ?u64 = null,
+    current_period_deaths: ?u64 = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };

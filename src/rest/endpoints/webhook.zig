@@ -310,9 +310,9 @@ pub const CreateWebhookBody = struct {
 };
 
 pub const ModifyWebhookBody = struct {
-    name: jconfig.Omittable([]const u8) = .omit,
+    name: ?[]const u8 = null,
     avatar: jconfig.Omittable(?model.DataUri) = .omit,
-    channel_id: jconfig.Omittable(model.Snowflake) = .omit,
+    channel_id: ?model.Snowflake = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };

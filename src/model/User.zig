@@ -43,7 +43,7 @@ collectibles: Omittable(?Collectibles) = .omit,
 /// The user's primary guild (guild tag)
 primary_guild: Omittable(?PrimaryGuild) = .omit,
 
-pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
+pub const jsonStringify = jconfig.stringifyWithOmit;
 
 pub const Flags = packed struct(u64) {
     /// discord employee, 1 << 0

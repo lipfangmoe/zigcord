@@ -20,22 +20,22 @@ pub const Interaction = struct {
     id: Snowflake,
     application_id: Snowflake,
     type: InteractionType,
-    data: jconfig.Omittable(InteractionData) = .omit,
-    guild: jconfig.Omittable(guild.PartialGuild) = .omit,
-    guild_id: jconfig.Omittable(Snowflake) = .omit,
-    channel: jconfig.Omittable(jconfig.Partial(Channel)) = .omit,
-    channel_id: jconfig.Omittable(Snowflake) = .omit,
-    member: jconfig.Omittable(guild.Member) = .omit,
-    user: jconfig.Omittable(User) = .omit,
+    data: ?InteractionData = null,
+    guild: ?guild.PartialGuild = null,
+    guild_id: ?Snowflake = null,
+    channel: ?jconfig.Partial(Channel) = null,
+    channel_id: ?Snowflake = null,
+    member: ?guild.Member = null,
+    user: ?User = null,
     token: []const u8,
     version: i64,
-    message: jconfig.Omittable(Message) = .omit,
+    message: ?Message = null,
     app_permissions: Permissions,
-    locale: jconfig.Omittable([]const u8) = .omit,
-    guild_locale: jconfig.Omittable([]const u8) = .omit,
+    locale: ?[]const u8 = null,
+    guild_locale: ?[]const u8 = null,
     entitlements: []const Entitlement,
     authorizing_integration_owners: std.json.ArrayHashMap(Snowflake),
-    context: jconfig.Omittable(Context) = .omit,
+    context: ?Context = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
     pub fn jsonParseFromValue(allocator: std.mem.Allocator, source: std.json.Value, options: std.json.ParseOptions) std.json.ParseFromValueError!Interaction {
@@ -66,14 +66,14 @@ pub const Interaction = struct {
                     const data_type_name = @tagName(interaction_type);
                     const DataT = @FieldType(InteractionData, data_type_name);
                     if (DataT == void) {
-                        interaction.data = .omit;
+                        interaction.data = null;
                     } else {
-                        interaction.data = .initSome(@unionInit(InteractionData, data_type_name, try std.json.innerParseFromValue(DataT, allocator, data_value, options)));
+                        interaction.data = @unionInit(InteractionData, data_type_name, try std.json.innerParseFromValue(DataT, allocator, data_value, options));
                     }
                 },
             }
         } else {
-            interaction.data = .omit;
+            interaction.data = null;
         }
 
         return interaction;
@@ -110,10 +110,10 @@ pub const ApplicationCommandInteractionData = struct {
     id: Snowflake,
     name: []const u8,
     type: command.ApplicationCommandType,
-    resolved: jconfig.Omittable(ResolvedData) = .omit,
-    options: jconfig.Omittable([]const ApplicationCommandInteractionDataOption) = .omit,
-    guild_id: jconfig.Omittable(Snowflake) = .omit,
-    target_id: jconfig.Omittable(Snowflake) = .omit,
+    resolved: ?ResolvedData = null,
+    options: ?[]const ApplicationCommandInteractionDataOption = null,
+    guild_id: ?Snowflake = null,
+    target_id: ?Snowflake = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
@@ -121,9 +121,9 @@ pub const ApplicationCommandInteractionData = struct {
 pub const ApplicationCommandInteractionDataOption = struct {
     name: []const u8,
     type: command_option.ApplicationCommandOptionType,
-    value: jconfig.Omittable(Value) = .omit,
-    options: jconfig.Omittable([]const ApplicationCommandInteractionDataOption) = .omit,
-    focused: jconfig.Omittable(bool) = .omit,
+    value: ?Value = null,
+    options: ?[]const ApplicationCommandInteractionDataOption = null,
+    focused: ?bool = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 
@@ -143,18 +143,18 @@ pub const ApplicationCommandInteractionDataOption = struct {
 pub const ModalSubmitData = struct {
     custom_id: []const u8,
     components: []const components.TopLevelModalComponent.InteractionData,
-    resolved: jconfig.Omittable(ResolvedData) = .omit,
+    resolved: ?ResolvedData = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const ResolvedData = struct {
-    users: jconfig.Omittable(std.json.ArrayHashMap(User)) = .omit,
-    members: jconfig.Omittable(std.json.ArrayHashMap(InteractionMember)) = .omit,
-    roles: jconfig.Omittable(std.json.ArrayHashMap(Role)) = .omit,
-    channels: jconfig.Omittable(std.json.ArrayHashMap(Channel)) = .omit,
-    messages: jconfig.Omittable(std.json.ArrayHashMap(Message)) = .omit,
-    attachments: jconfig.Omittable(std.json.ArrayHashMap(Message.Attachment)) = .omit,
+    users: ?std.json.ArrayHashMap(User) = null,
+    members: ?std.json.ArrayHashMap(InteractionMember) = null,
+    roles: ?std.json.ArrayHashMap(Role) = null,
+    channels: ?std.json.ArrayHashMap(Channel) = null,
+    messages: ?std.json.ArrayHashMap(Message) = null,
+    attachments: ?std.json.ArrayHashMap(Message.Attachment) = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
@@ -166,8 +166,8 @@ pub const InteractionMember = struct {
     joined_at: IsoTime,
     premium_since: jconfig.Omittable(?IsoTime) = .omit,
     flags: guild.Member.Flags,
-    pending: jconfig.Omittable(bool) = .omit,
-    permissions: jconfig.Omittable([]const u8) = .omit,
+    pending: ?bool = null,
+    permissions: ?[]const u8 = null,
     communication_disabled_until: jconfig.Omittable(?IsoTime) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
@@ -260,56 +260,56 @@ pub const InteractionCallbackPong = struct {
 
 pub const ChannelMessageWithSource = struct {
     type: InteractionCallback.Type = .channel_message_with_source,
-    tts: jconfig.Omittable(bool) = .omit,
-    content: jconfig.Omittable([]const u8) = .omit,
-    embeds: jconfig.Omittable([]const Message.Embed) = .omit,
-    allowed_mentions: jconfig.Omittable(Message.AllowedMentions) = .omit,
-    flags: jconfig.Omittable(Message.Flags) = .omit,
-    components: jconfig.Omittable([]const components.TopLevelMessageComponent) = .omit,
-    attachments: jconfig.Omittable([]const PartialAttachment) = .omit,
-    poll: jconfig.Omittable(Poll) = .omit,
+    tts: ?bool = null,
+    content: ?[]const u8 = null,
+    embeds: ?[]const Message.Embed = null,
+    allowed_mentions: ?Message.AllowedMentions = null,
+    flags: ?Message.Flags = null,
+    components: ?[]const components.TopLevelMessageComponent = null,
+    attachments: ?[]const PartialAttachment = null,
+    poll: ?Poll = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const DeferredChannelMessageWithSource = struct {
     type: InteractionCallback.Type = .deferred_channel_message_with_source,
-    tts: jconfig.Omittable(bool) = .omit,
-    content: jconfig.Omittable([]const u8) = .omit,
-    embeds: jconfig.Omittable([]const Message.Embed) = .omit,
-    allowed_mentions: jconfig.Omittable(Message.AllowedMentions) = .omit,
-    flags: jconfig.Omittable(Message.Flags) = .omit,
-    components: jconfig.Omittable([]components.TopLevelMessageComponent) = .omit,
-    attachments: jconfig.Omittable([]const PartialAttachment) = .omit,
-    poll: jconfig.Omittable(Poll) = .omit,
+    tts: ?bool = null,
+    content: ?[]const u8 = null,
+    embeds: ?[]const Message.Embed = null,
+    allowed_mentions: ?Message.AllowedMentions = null,
+    flags: ?Message.Flags = null,
+    components: ?[]components.TopLevelMessageComponent = null,
+    attachments: ?[]const PartialAttachment = null,
+    poll: ?Poll = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const DeferredUpdateMessage = struct {
     type: InteractionCallback.Type = .deferred_update_message,
-    tts: jconfig.Omittable(bool) = .omit,
-    content: jconfig.Omittable([]const u8) = .omit,
-    embeds: jconfig.Omittable([]const Message.Embed) = .omit,
-    allowed_mentions: jconfig.Omittable(Message.AllowedMentions) = .omit,
-    flags: jconfig.Omittable(Message.Flags) = .omit,
-    components: jconfig.Omittable([]const components.TopLevelMessageComponent) = .omit,
-    attachments: jconfig.Omittable([]const PartialAttachment) = .omit,
-    poll: jconfig.Omittable(Poll) = .omit,
+    tts: ?bool = null,
+    content: ?[]const u8 = null,
+    embeds: ?[]const Message.Embed = null,
+    allowed_mentions: ?Message.AllowedMentions = null,
+    flags: ?Message.Flags = null,
+    components: ?[]const components.TopLevelMessageComponent = null,
+    attachments: ?[]const PartialAttachment = null,
+    poll: ?Poll = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const UpdateMessage = struct {
     type: InteractionCallback.Type = .update_message,
-    tts: jconfig.Omittable(bool) = .omit,
-    content: jconfig.Omittable([]const u8) = .omit,
-    embeds: jconfig.Omittable([]const Message.Embed) = .omit,
-    allowed_mentions: jconfig.Omittable(Message.AllowedMentions) = .omit,
-    flags: jconfig.Omittable(Message.Flags) = .omit,
-    components: jconfig.Omittable([]const components.TopLevelMessageComponent) = .omit,
-    attachments: jconfig.Omittable([]const PartialAttachment) = .omit,
-    poll: jconfig.Omittable(Poll) = .omit,
+    tts: ?bool = null,
+    content: ?[]const u8 = null,
+    embeds: ?[]const Message.Embed = null,
+    allowed_mentions: ?Message.AllowedMentions = null,
+    flags: ?Message.Flags = null,
+    components: ?[]const components.TopLevelMessageComponent = null,
+    attachments: ?[]const PartialAttachment = null,
+    poll: ?Poll = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
@@ -347,18 +347,18 @@ pub const InteractionCallbackAutocompleteDouble = struct {
 };
 
 pub const PartialAttachment = struct {
-    filename: jconfig.Omittable([]const u8) = .omit,
-    description: jconfig.Omittable([]const u8) = .omit,
-    content_type: jconfig.Omittable([]const u8) = .omit,
-    size: jconfig.Omittable(u64) = .omit,
-    url: jconfig.Omittable([]const u8) = .omit,
-    proxy_url: jconfig.Omittable([]const u8) = .omit,
+    filename: ?[]const u8 = null,
+    description: ?[]const u8 = null,
+    content_type: ?[]const u8 = null,
+    size: ?u64 = null,
+    url: ?[]const u8 = null,
+    proxy_url: ?[]const u8 = null,
     height: jconfig.Omittable(?i64) = .omit,
     width: jconfig.Omittable(?i64) = .omit,
-    ephemeral: jconfig.Omittable(bool) = .omit,
-    duration_secs: jconfig.Omittable(f64) = .omit,
-    waveform: jconfig.Omittable([]const u8) = .omit,
-    flags: jconfig.Omittable(Message.AttachmentFlags) = .omit,
+    ephemeral: ?bool = null,
+    duration_secs: ?f64 = null,
+    waveform: ?[]const u8 = null,
+    flags: ?Message.AttachmentFlags = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };

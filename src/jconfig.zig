@@ -10,7 +10,7 @@ const std = @import("std");
 //
 //     type: MyUnionType,
 //     data: MyUnion,
-//     some_omittable: jconfig.Omittable(i64) = .omit,
+//     some_omittable: ?i64 = null,
 //
 //     pub usingnamespace jconfig.Mixin(@This());
 //
@@ -42,7 +42,6 @@ pub const InlineUnionMixin = @import("./jconfig/inline_union.zig").InlineUnionJs
 pub const DiscriminatedUnionMixin = @import("./jconfig/discriminated_union.zig").DiscriminatedUnionMixin;
 pub const Omittable = @import("./jconfig/omit.zig").Omittable;
 pub const stringifyWithOmit = @import("./jconfig/omit.zig").stringifyWithOmit;
-pub const OmittableFieldsMixin = @import("./jconfig/omit.zig").OmittableFieldsMixin;
 pub const Partial = @import("./jconfig/partial.zig").Partial;
 pub const stringifyEnumAsInt = @import("./jconfig/enums.zig").stringifyEnumAsInt;
 pub const InlineSingleStructFieldMixin = @import("./jconfig/inline_single_struct_field.zig").InlineSingleStructFieldMixin;

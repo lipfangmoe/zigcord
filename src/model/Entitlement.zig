@@ -5,16 +5,15 @@ const model = @import("../model.zig");
 id: model.Snowflake,
 sku_id: model.Snowflake,
 application_id: model.Snowflake,
-user_id: jconfig.Omittable(model.Snowflake) = .omit,
+user_id: ?model.Snowflake = null,
 type: Type,
 deleted: bool,
 starts_at: ?model.IsoTime,
 ends_at: ?model.IsoTime,
-guild_id: jconfig.Omittable(model.Snowflake) = .omit,
-consumed: jconfig.Omittable(bool) = .omit,
+guild_id: ?model.Snowflake = null,
+consumed: ?bool = null,
 
 pub const jsonStringify = jconfig.stringifyWithOmit;
-
 pub const Type = enum(u8) {
     purchase = 1,
     premium_subscription = 2,

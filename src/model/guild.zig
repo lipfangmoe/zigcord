@@ -49,13 +49,13 @@ pub const AvailableGuild = struct {
     splash: ?[]const u8,
     discovery_splash: ?[]const u8,
     /// true if the authenticated user is the owner of the guild
-    owner: jconfig.Omittable(bool) = .omit,
+    owner: ?bool = null,
     owner_id: Snowflake,
-    permissions: jconfig.Omittable([]const u8) = .omit,
+    permissions: ?[]const u8 = null,
     region: jconfig.Omittable(?[]const u8) = .omit,
     afk_channel_id: ?Snowflake,
     afk_timeout: i64,
-    widget_enabled: jconfig.Omittable(bool) = .omit,
+    widget_enabled: ?bool = null,
     widget_channel_id: jconfig.Omittable(?Snowflake) = .omit,
     verification_level: VerificationLevel,
     default_message_notifications: MessageNotificationLevel,
@@ -70,21 +70,21 @@ pub const AvailableGuild = struct {
     system_channel_flags: SystemChannelFlags,
     rules_channel_id: ?Snowflake,
     max_presences: jconfig.Omittable(?i64) = .omit,
-    max_members: jconfig.Omittable(i64) = .omit,
+    max_members: ?i64 = null,
     vanity_url_code: ?[]const u8,
     description: ?[]const u8,
     banner: ?[]const u8,
     premium_tier: PremiumTier,
-    premium_subscription_count: jconfig.Omittable(i64) = .omit,
+    premium_subscription_count: ?i64 = null,
     preferred_locale: []const u8,
     public_updates_channel_id: ?Snowflake,
-    max_video_channel_users: jconfig.Omittable(i64) = .omit,
-    max_stage_video_channel_users: jconfig.Omittable(i64) = .omit,
-    approximate_member_count: jconfig.Omittable(i64) = .omit,
-    approximate_presence_count: jconfig.Omittable(i64) = .omit,
-    welcome_screen: jconfig.Omittable(WelcomeScreen) = .omit,
+    max_video_channel_users: ?i64 = null,
+    max_stage_video_channel_users: ?i64 = null,
+    approximate_member_count: ?i64 = null,
+    approximate_presence_count: ?i64 = null,
+    welcome_screen: ?WelcomeScreen = null,
     nsfw_level: NsfwLevel,
-    stickers: jconfig.Omittable([]const model.Sticker) = .omit,
+    stickers: ?[]const model.Sticker = null,
     premium_progress_bar_enabled: bool,
     safety_alerts_channel_id: ?Snowflake,
 
@@ -92,8 +92,8 @@ pub const AvailableGuild = struct {
 };
 
 pub const UnavailableGuild = struct {
-    id: jconfig.Omittable(model.Snowflake) = .omit,
-    unavailable: jconfig.Omittable(bool) = .omit,
+    id: ?model.Snowflake = null,
+    unavailable: ?bool = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
@@ -231,13 +231,13 @@ pub const Onboarding = struct {
         id: Snowflake,
         channel_ids: []const Snowflake,
         role_ids: []const Snowflake,
-        emoji: jconfig.Omittable(model.Emoji) = .omit,
-        emoji_id: jconfig.Omittable(Snowflake) = .omit,
-        emoji_animated: jconfig.Omittable(bool) = .omit,
+        emoji: ?model.Emoji = null,
+        emoji_id: ?Snowflake = null,
+        emoji_animated: ?bool = null,
         title: []const u8,
         description: ?[]const u8,
 
-        pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
+        pub const jsonStringify = jconfig.stringifyWithOmit;
     };
 
     pub const Mode = enum(u1) {
@@ -267,18 +267,18 @@ pub const Integration = struct {
     name: []const u8,
     type: []const u8,
     enabled: bool,
-    syncing: jconfig.Omittable(bool) = .omit,
-    role_id: jconfig.Omittable(model.Snowflake) = .omit,
-    enable_emoticons: jconfig.Omittable(bool) = .omit,
-    expire_behavior: jconfig.Omittable(ExpireBehavior) = .omit,
-    expire_grace_period: jconfig.Omittable(i64) = .omit,
-    user: jconfig.Omittable(model.User) = .omit,
-    account: jconfig.Omittable(Account) = .omit,
-    synced_at: jconfig.Omittable([]const u8) = .omit,
-    subscriber_count: jconfig.Omittable(i64) = .omit,
-    revoked: jconfig.Omittable(bool) = .omit,
-    application: jconfig.Omittable(model.Application) = .omit,
-    scopes: jconfig.Omittable([]const []const u8) = .omit,
+    syncing: ?bool = null,
+    role_id: ?model.Snowflake = null,
+    enable_emoticons: ?bool = null,
+    expire_behavior: ?ExpireBehavior = null,
+    expire_grace_period: ?i64 = null,
+    user: ?model.User = null,
+    account: ?Account = null,
+    synced_at: ?[]const u8 = null,
+    subscriber_count: ?i64 = null,
+    revoked: ?bool = null,
+    application: ?model.Application = null,
+    scopes: ?[]const []const u8 = null,
 
     pub const ExpireBehavior = enum(u1) {
         remove_role = 0,
@@ -293,7 +293,7 @@ pub const Integration = struct {
 
 pub const Member = struct {
     /// the user this guild member represents
-    user: jconfig.Omittable(model.User) = .omit,
+    user: ?model.User = null,
     /// this user's guild nickname
     nick: jconfig.Omittable(?[]const u8) = .omit,
     /// the member's guild avatar hash
@@ -313,9 +313,9 @@ pub const Member = struct {
     /// guild member flags represented as a bit set, defaults to 0
     flags: Flags,
     /// whether the user has not yet passed the guild's Membership Screening requirements
-    pending: jconfig.Omittable(bool) = .omit,
+    pending: ?bool = null,
     /// total permissions of the member in the channel, including overwrites, returned when in the interaction object
-    permissions: jconfig.Omittable(model.Permissions) = .omit,
+    permissions: ?model.Permissions = null,
     /// when the user's timeout will expire and the user will be able to communicate in the guild again, null or a time in the past if the user is not timed out
     communication_disabled_until: jconfig.Omittable(?model.IsoTime) = .omit,
     /// data for the member's guild avatar decoration

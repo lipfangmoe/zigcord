@@ -196,7 +196,7 @@ test "multipart single upload" {
     const jconfig = @import("jconfig");
     const FooPayload = struct {
         bar: []const u8,
-        baz: jconfig.Omittable(u64) = .omit,
+        baz: ?u64 = null,
 
         pub const jsonStringify = jconfig.stringifyWithOmit;
     };
@@ -227,7 +227,7 @@ test "multipart multi upload" {
     const jconfig = @import("jconfig");
     const FooPayload = struct {
         bar: []const u8,
-        baz: jconfig.Omittable(u64) = .omit,
+        baz: ?u64 = null,
 
         pub const jsonStringify = jconfig.stringifyWithOmit;
     };
@@ -267,7 +267,7 @@ test "multipart optional single upload - present" {
     const jconfig = @import("jconfig");
     const FooPayload = struct {
         bar: []const u8,
-        baz: jconfig.Omittable(u64) = .omit,
+        baz: ?u64 = null,
 
         pub const jsonStringify = jconfig.stringifyWithOmit;
     };
@@ -298,7 +298,7 @@ test "multipart optional single upload - null" {
     const jconfig = @import("jconfig");
     const FooPayload = struct {
         bar: []const u8,
-        baz: jconfig.Omittable(u64) = .omit,
+        baz: ?u64 = null,
 
         pub const jsonStringify = jconfig.stringifyWithOmit;
     };
@@ -323,7 +323,7 @@ test "multipart optional multi upload" {
     const jconfig = @import("jconfig");
     const FooPayload = struct {
         bar: []const u8,
-        baz: jconfig.Omittable(u64) = .omit,
+        baz: ?u64 = null,
 
         pub const jsonStringify = jconfig.stringifyWithOmit;
     };

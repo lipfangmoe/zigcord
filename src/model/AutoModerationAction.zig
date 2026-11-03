@@ -2,10 +2,9 @@ const jconfig = @import("jconfig");
 const model = @import("../model.zig");
 
 type: Type,
-metadata: jconfig.Omittable(Metadata) = .omit,
+metadata: ?Metadata = null,
 
 pub const jsonStringify = jconfig.stringifyWithOmit;
-
 pub const Type = enum(u8) {
     block_message = 1,
     send_alert_message = 2,
@@ -14,9 +13,9 @@ pub const Type = enum(u8) {
 };
 
 pub const Metadata = struct {
-    channel_id: jconfig.Omittable(model.Snowflake) = .omit,
-    duration_seconds: jconfig.Omittable(i64) = .omit,
-    custom_message: jconfig.Omittable([]const u8) = .omit,
+    channel_id: ?model.Snowflake = null,
+    duration_seconds: ?i64 = null,
+    custom_message: ?[]const u8 = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };

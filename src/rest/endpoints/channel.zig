@@ -656,14 +656,14 @@ pub fn listJoinedPrivateArchivedThreads(client: *EndpointClient, channel_id: Sno
 
 pub const ModifyChannelBody = union(enum) {
     group_dm: struct {
-        name: jconfig.Omittable([]const u8) = .omit,
-        icon: jconfig.Omittable([]const u8) = .omit,
+        name: ?[]const u8 = null,
+        icon: ?[]const u8 = null,
 
         pub const jsonStringify = jconfig.stringifyWithOmit;
     },
     guild: struct {
-        name: jconfig.Omittable([]const u8) = .omit,
-        type: jconfig.Omittable(Channel.Type) = .omit,
+        name: ?[]const u8 = null,
+        type: ?Channel.Type = null,
         position: jconfig.Omittable(?i64) = .omit,
         topic: jconfig.Omittable(?[]const u8) = .omit,
         nsfw: jconfig.Omittable(?bool) = .omit,
@@ -675,24 +675,24 @@ pub const ModifyChannelBody = union(enum) {
         rtc_region: jconfig.Omittable(?[]const u8) = .omit,
         video_quality_mode: jconfig.Omittable(?Channel.VideoQualityMode) = .omit,
         default_auto_archive_duration: jconfig.Omittable(?i64) = .omit,
-        flags: jconfig.Omittable(Channel.Flags) = .omit,
-        available_tags: jconfig.Omittable([]const Channel.Tag) = .omit,
+        flags: ?Channel.Flags = null,
+        available_tags: ?[]const Channel.Tag = null,
         default_reaction_emoji: jconfig.Omittable(?Channel.DefaultReaction) = .omit,
-        default_thread_rate_limit_per_user: jconfig.Omittable(i64) = .omit,
+        default_thread_rate_limit_per_user: ?i64 = null,
         default_sort_order: jconfig.Omittable(?i64) = .omit,
-        default_forum_layout: jconfig.Omittable(i64) = .omit,
+        default_forum_layout: ?i64 = null,
 
         pub const jsonStringify = jconfig.stringifyWithOmit;
     },
     thread: struct {
-        name: jconfig.Omittable([]const u8) = .omit,
-        archived: jconfig.Omittable(bool) = .omit,
-        auto_archive_duration: jconfig.Omittable(i64) = .omit,
-        locked: jconfig.Omittable(bool) = .omit,
-        invitable: jconfig.Omittable(bool) = .omit,
+        name: ?[]const u8 = null,
+        archived: ?bool = null,
+        auto_archive_duration: ?i64 = null,
+        locked: ?bool = null,
+        invitable: ?bool = null,
         rate_limit_per_user: jconfig.Omittable(?i64) = .omit,
-        flags: jconfig.Omittable(Channel.Flags) = .omit,
-        applied_tags: jconfig.Omittable([]const Snowflake) = .omit,
+        flags: ?Channel.Flags = null,
+        applied_tags: ?[]const Snowflake = null,
 
         pub const jsonStringify = jconfig.stringifyWithOmit;
     },
@@ -704,7 +704,7 @@ pub const ModifyChannelBody = union(enum) {
 };
 
 pub const SetVoiceChannelStatusBody = struct {
-    status: jconfig.Omittable([]const u8) = .omit,
+    status: ?[]const u8 = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
@@ -721,18 +721,20 @@ pub const GetChannelMessagesQuery = struct {
 };
 
 pub const CreateMessageJsonBody = struct {
-    content: jconfig.Omittable([]const u8) = .omit,
-    nonce: jconfig.Omittable(Nonce) = .omit,
-    tts: jconfig.Omittable(bool) = .omit,
-    embeds: jconfig.Omittable([]const model.Message.Embed) = .omit,
-    allowed_mentions: jconfig.Omittable(model.Message.AllowedMentions) = .omit,
-    message_reference: jconfig.Omittable(model.Message.Reference) = .omit,
-    components: jconfig.Omittable([]const model.components.TopLevelMessageComponent) = .omit,
-    sticker_ids: jconfig.Omittable([]const Snowflake) = .omit,
-    attachments: jconfig.Omittable([]const PartialAttachmentRequest) = .omit,
-    flags: jconfig.Omittable(model.Message.Flags) = .omit,
-    enforce_nonce: jconfig.Omittable(bool) = .omit,
-    poll: jconfig.Omittable(model.Poll) = .omit,
+    content: ?[]const u8 = null,
+    nonce: ?Nonce = null,
+    tts: ?bool = null,
+    embeds: ?[]const model.Message.Embed = null,
+    allowed_mentions: ?model.Message.AllowedMentions = null,
+    message_reference: ?model.Message.Reference = null,
+    components: ?[]const model.components.TopLevelMessageComponent = null,
+    sticker_ids: ?[]const Snowflake = null,
+    attachments: ?[]const PartialAttachmentRequest = null,
+    flags: ?model.Message.Flags = null,
+    enforce_nonce: ?bool = null,
+    poll: ?model.Poll = null,
+
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 
     pub const Nonce = union(enum) {
         int: u64,
@@ -743,8 +745,6 @@ pub const CreateMessageJsonBody = struct {
         pub const jsonParse = Mixin.jsonParse;
         pub const jsonParseFromValue = Mixin.jsonParseFromValue;
     };
-
-    pub const jsonStringify = jconfig.OmittableFieldsMixin(@This()).jsonStringify;
 
     /// Creates a text-only message
     pub fn initTextOnly(message: []const u8) CreateMessageJsonBody {
@@ -878,24 +878,24 @@ pub const EditMessageFormPayload = struct {
 
 pub const AttachmentRequest = struct {
     id: Snowflake,
-    filename: jconfig.Omittable([]const u8) = .omit,
-    title: jconfig.Omittable([]const u8) = .omit,
-    description: jconfig.Omittable([]const u8) = .omit,
-    duration_secs: jconfig.Omittable(f64) = .omit,
-    waveform: jconfig.Omittable([]const u8) = .omit,
-    is_spoiler: jconfig.Omittable(bool) = .omit,
+    filename: ?[]const u8 = null,
+    title: ?[]const u8 = null,
+    description: ?[]const u8 = null,
+    duration_secs: ?f64 = null,
+    waveform: ?[]const u8 = null,
+    is_spoiler: ?bool = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const PartialAttachmentRequest = struct {
-    id: jconfig.Omittable(Snowflake) = .omit,
-    filename: jconfig.Omittable([]const u8) = .omit,
-    title: jconfig.Omittable([]const u8) = .omit,
-    description: jconfig.Omittable([]const u8) = .omit,
-    duration_secs: jconfig.Omittable(f64) = .omit,
-    waveform: jconfig.Omittable([]const u8) = .omit,
-    is_spoiler: jconfig.Omittable(bool) = .omit,
+    id: ?Snowflake = null,
+    filename: ?[]const u8 = null,
+    title: ?[]const u8 = null,
+    description: ?[]const u8 = null,
+    duration_secs: ?f64 = null,
+    waveform: ?[]const u8 = null,
+    is_spoiler: ?bool = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
@@ -914,15 +914,15 @@ pub const EditChannelPermissions = struct {
 };
 
 pub const CreateChannelInviteJsonBody = struct {
-    max_age: jconfig.Omittable(i64) = .omit,
-    max_uses: jconfig.Omittable(i64) = .omit,
-    temporary: jconfig.Omittable(bool) = .omit,
-    unique: jconfig.Omittable(bool) = .omit,
-    target_type: jconfig.Omittable(i64) = .omit,
-    target_user_id: jconfig.Omittable(Snowflake) = .omit,
-    target_user_ids: jconfig.Omittable([]const Snowflake) = .omit,
-    target_application_id: jconfig.Omittable(Snowflake) = .omit,
-    role_ids: jconfig.Omittable(Snowflake) = .omit,
+    max_age: ?i64 = null,
+    max_uses: ?i64 = null,
+    temporary: ?bool = null,
+    unique: ?bool = null,
+    target_type: ?i64 = null,
+    target_user_id: ?Snowflake = null,
+    target_user_ids: ?[]const Snowflake = null,
+    target_application_id: ?Snowflake = null,
+    role_ids: ?Snowflake = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
@@ -942,7 +942,7 @@ pub const CreateChannelInviteFormPayload = struct {
 
 pub const StartThreadFromMessage = struct {
     name: []const u8,
-    auto_archive_duration: jconfig.Omittable(i64) = .omit,
+    auto_archive_duration: ?i64 = null,
     rate_limit_per_user: jconfig.Omittable(?i64) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
@@ -950,9 +950,9 @@ pub const StartThreadFromMessage = struct {
 
 pub const StartThreadWithoutMessage = struct {
     name: []const u8,
-    auto_archive_duration: jconfig.Omittable(i64) = .omit,
+    auto_archive_duration: ?i64 = null,
     type: Channel.Type,
-    invitable: jconfig.Omittable(bool) = .omit,
+    invitable: ?bool = null,
     rate_limit_per_user: jconfig.Omittable(?i64) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
@@ -967,13 +967,13 @@ pub const StartThreadInForumOrMediaChannelJsonBody = struct {
     files: jconfig.Omittable(?[]const *std.Io.Reader) = .omit,
 
     pub const ForumAndMediaThreadMessage = struct {
-        content: jconfig.Omittable([]const u8) = .omit,
-        embeds: jconfig.Omittable([]const model.Message.Embed) = .omit,
-        allowed_mentions: jconfig.Omittable([]const model.Message.AllowedMentions) = .omit,
-        components: jconfig.Omittable([]const model.components.TopLevelMessageComponent) = .omit,
-        sticker_ids: jconfig.Omittable([]const Snowflake) = .omit,
-        attachments: jconfig.Omittable([]const PartialAttachmentRequest) = .omit,
-        flags: jconfig.Omittable(model.Message.Flags) = .omit,
+        content: ?[]const u8 = null,
+        embeds: ?[]const model.Message.Embed = null,
+        allowed_mentions: ?[]const model.Message.AllowedMentions = null,
+        components: ?[]const model.components.TopLevelMessageComponent = null,
+        sticker_ids: ?[]const Snowflake = null,
+        attachments: ?[]const PartialAttachmentRequest = null,
+        flags: ?model.Message.Flags = null,
 
         pub const jsonStringify = jconfig.stringifyWithOmit;
     };
@@ -988,13 +988,13 @@ pub const StartThreadInForumOrMediaChannelFormPayload = struct {
     applied_tags: ?[]const Snowflake = null,
 
     pub const ForumAndMediaThreadMessage = struct {
-        content: jconfig.Omittable([]const u8) = .omit,
-        embeds: jconfig.Omittable([]const model.Message.Embed) = .omit,
-        allowed_mentions: jconfig.Omittable([]const model.Message.AllowedMentions) = .omit,
-        components: jconfig.Omittable([]const model.components.TopLevelMessageComponent) = .omit,
-        sticker_ids: jconfig.Omittable([]const Snowflake) = .omit,
-        attachments: jconfig.Omittable([]const PartialAttachmentRequest) = .omit,
-        flags: jconfig.Omittable(model.Message.Flags) = .omit,
+        content: ?[]const u8 = null,
+        embeds: ?[]const model.Message.Embed = null,
+        allowed_mentions: ?[]const model.Message.AllowedMentions = null,
+        components: ?[]const model.components.TopLevelMessageComponent = null,
+        sticker_ids: ?[]const Snowflake = null,
+        attachments: ?[]const PartialAttachmentRequest = null,
+        flags: ?model.Message.Flags = null,
 
         pub const jsonStringify = jconfig.stringifyWithOmit;
     };

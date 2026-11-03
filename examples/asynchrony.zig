@@ -72,7 +72,7 @@ pub fn main(init: std.process.Init) !void {
 }
 
 fn sendMessage(endpoint_client: *zigcord.EndpointClient, channel_id: zigcord.model.Snowflake, content: []const u8) bool {
-    const lmao = endpoint_client.createMessage(channel_id, .{ .content = .initSome(content) }) catch |err| {
+    const lmao = endpoint_client.createMessage(channel_id, .{ .content = content }) catch |err| {
         std.log.err("error {} while printing [{s}]", .{ err, content });
         return false;
     };

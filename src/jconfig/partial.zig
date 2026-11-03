@@ -14,10 +14,7 @@ pub fn Partial(comptime T: type) type {
         partial: PartialType,
 
         const Self = @This();
-
-        pub fn jsonStringify(self: Self, json_writer: *std.json.Stringify) !void {
-            try omit.stringifyWithOmit(self.partial, json_writer);
-        }
+        pub const jsonStringify = omit.stringifyWithOmit;
 
         pub fn jsonParse(allocator: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !Self {
             return Self{ .partial = try std.json.innerParse(PartialType, allocator, source, options) };

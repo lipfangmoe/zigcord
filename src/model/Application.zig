@@ -8,37 +8,36 @@ id: model.Snowflake,
 name: []const u8,
 icon: ?[]const u8,
 description: []const u8,
-rpc_origins: jconfig.Omittable([]const []const u8) = .omit,
+rpc_origins: ?[]const []const u8 = null,
 bot_public: bool,
 bot_require_code_grant: bool,
-bot: jconfig.Omittable(jconfig.Partial(model.User)) = .omit,
-terms_of_service_url: jconfig.Omittable([]const u8) = .omit,
-privacy_policy_url: jconfig.Omittable([]const u8) = .omit,
-owner: jconfig.Omittable(jconfig.Partial(model.User)) = .omit,
+bot: ?jconfig.Partial(model.User) = null,
+terms_of_service_url: ?[]const u8 = null,
+privacy_policy_url: ?[]const u8 = null,
+owner: ?jconfig.Partial(model.User) = null,
 verify_key: []const u8,
 team: ?Team,
-guild_id: jconfig.Omittable([]const u8) = .omit,
-guild: jconfig.Omittable(model.guild.PartialGuild) = .omit,
-primary_sku_id: jconfig.Omittable(model.Snowflake) = .omit,
-slug: jconfig.Omittable([]const u8) = .omit,
-cover_image: jconfig.Omittable([]const u8) = .omit,
-flags: jconfig.Omittable(Flags) = .omit,
-flags_new: jconfig.Omittable(Flags) = .omit,
-approximate_guild_count: jconfig.Omittable(i64) = .omit,
-approximate_user_install_count: jconfig.Omittable(i64) = .omit,
-redirect_uris: jconfig.Omittable([]const []const u8) = .omit,
+guild_id: ?[]const u8 = null,
+guild: ?model.guild.PartialGuild = null,
+primary_sku_id: ?model.Snowflake = null,
+slug: ?[]const u8 = null,
+cover_image: ?[]const u8 = null,
+flags: ?Flags = null,
+flags_new: ?Flags = null,
+approximate_guild_count: ?i64 = null,
+approximate_user_install_count: ?i64 = null,
+redirect_uris: ?[]const []const u8 = null,
 interactions_endpoint_url: jconfig.Omittable(?[]const u8) = .omit,
 role_connections_verification_url: jconfig.Omittable(?[]const u8) = .omit,
 event_webhooks_url: jconfig.Omittable(?[]const u8) = .omit,
-event_webhooks_status: jconfig.Omittable(ApplicationEventWebhookStatus) = .omit,
-event_webhooks_types: jconfig.Omittable([]const u8) = .omit,
-tags: jconfig.Omittable([]const []const u8) = .omit,
-install_params: jconfig.Omittable(InstallParams) = .omit,
-integration_types_config: jconfig.Omittable(IntegrationTypeConfigurationDict) = .omit,
-custom_install_url: jconfig.Omittable([]const u8) = .omit,
+event_webhooks_status: ?ApplicationEventWebhookStatus = null,
+event_webhooks_types: ?[]const u8 = null,
+tags: ?[]const []const u8 = null,
+install_params: ?InstallParams = null,
+integration_types_config: ?IntegrationTypeConfigurationDict = null,
+custom_install_url: ?[]const u8 = null,
 
 pub const jsonStringify = jconfig.stringifyWithOmit;
-
 pub const Team = struct {
     icon: ?[]const u8,
     id: model.Snowflake,
@@ -52,7 +51,7 @@ pub const TeamMember = struct {
     team_id: model.Snowflake,
     user: jconfig.Partial(model.User),
     role: []const u8,
-    permissions: jconfig.Omittable([]const []const u8) = .omit,
+    permissions: ?[]const []const u8 = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 
@@ -125,8 +124,8 @@ pub const IntegrationType = enum {
 };
 
 pub const IntegrationTypeConfigurationDict = struct {
-    guild_install: jconfig.Omittable(IntegrationTypeConfiguration) = .omit,
-    user_install: jconfig.Omittable(IntegrationTypeConfiguration) = .omit,
+    guild_install: ?IntegrationTypeConfiguration = null,
+    user_install: ?IntegrationTypeConfiguration = null,
 
     pub fn jsonParse(allocator: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !IntegrationTypeConfigurationDict {
         const obj_token = try source.nextAlloc(allocator, options.allocate orelse .alloc_if_needed);
@@ -176,11 +175,11 @@ pub const IntegrationTypeConfigurationDict = struct {
 
     pub fn jsonStringify(self: IntegrationTypeConfigurationDict, jw: *std.json.Stringify) !void {
         try jw.beginObject();
-        if (self.guild_install.asSome()) |config| {
+        if (self.guild_install) |config| {
             try jw.objectField("0");
             try jw.write(config);
         }
-        if (self.user_install.asSome()) |config| {
+        if (self.user_install) |config| {
             try jw.objectField("1");
             try jw.write(config);
         }

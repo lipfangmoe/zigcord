@@ -25,7 +25,6 @@ flags: Omittable(Flags) = .omit,
 roles: Omittable(PartialRole) = .omit,
 
 pub const jsonStringify = jconfig.stringifyWithOmit;
-
 pub const Type = enum(u2) {
     guild = 0,
     group_dm = 1,
