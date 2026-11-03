@@ -1,3 +1,16 @@
+# pending changes
+
+This release contains *major* breaking changes
+
+* Added `rest.Result(T).valueOkLog("...")`
+  * this converts a `rest.Result(T)` into a `!T`, allowing you to have more detailed log output
+  while still taking advantage of zig's error handling features.
+* `Omittable()` union is (mostly) no more
+  * omittable props are now represented as `prop: ?sometype = null`
+  * nullable props remain represented as `prop: ?sometype`
+  * should add a custom `jsonStringify` override which allows
+  * props which are omittable *and* nullable are still represented as `prop: Omittable(?sometype) = .omit`
+
 # v0.15.6
 
 This release contains a breaking change to a previously nonfunctional feature

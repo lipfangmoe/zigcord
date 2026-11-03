@@ -456,12 +456,24 @@ pub fn Result(T: type) type {
             };
         }
 
-        /// similar to `self.value()`, but returns the actual value without being wrapped in a union type.
-        /// an error is returned if the union is in the error state.
+        /// converts the Result into an error union, returning the unwrapped value if its ok,
+        /// and otherwise returns `error.DiscordError`
         pub fn valueOk(self: Result(T)) error{DiscordError}!T {
             return switch (self) {
                 .ok => |ok| ok.value,
                 .err => error.DiscordError,
+            };
+        }
+
+        /// similar to `valueOk()`, but logs additional information on error.
+        pub fn valueOkLog(self: Result(T), context: []const u8) error{DiscordError}!T {
+            return switch (self) {
+                .ok => |ok| ok.value,
+                .err => |discord_err| {
+                    const error_code = std.enums.tagName(ErrorCode, discord_err.value.code);
+                    shared.logger.err("{s}: {s}\n{f}", .{ context, error_code, discord_err });
+                    return error.DiscordError;
+                },
             };
         }
 
