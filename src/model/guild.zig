@@ -280,9 +280,39 @@ pub const Integration = struct {
     application: ?model.Application = null,
     scopes: ?[]const []const u8 = null,
 
+    pub const jsonStringify = jconfig.stringifyWithOmit;
+
+    // there are many cases of "partial integration", this is a shared type for that.
+    pub const Partial = struct {
+        id: ?model.Snowflake = null,
+        name: ?[]const u8 = null,
+        type: ?[]const u8 = null,
+        enabled: ?bool = null,
+        syncing: ?bool = null,
+        role_id: ?model.Snowflake = null,
+        enable_emoticons: ?bool = null,
+        expire_behavior: ?ExpireBehavior = null,
+        expire_grace_period: ?i64 = null,
+        user: ?model.User = null,
+        account: ?Account = null,
+        synced_at: ?[]const u8 = null,
+        subscriber_count: ?i64 = null,
+        revoked: ?bool = null,
+        application: ?model.Application = null,
+        scopes: ?[]const []const u8 = null,
+
+        pub const jsonStringify = jconfig.stringifyWithOmit;
+
+        test "is partial integration" {
+            try jconfig.testing.expectIsPartialOf(Integration.Partial, Integration);
+        }
+    };
+
     pub const ExpireBehavior = enum(u1) {
         remove_role = 0,
         kick = 1,
+
+        pub const jsonStringify = jconfig.stringifyEnumAsInt;
     };
 
     pub const Account = struct {
