@@ -2,7 +2,6 @@
 
 This release contains *major* breaking changes, with the general goal being to reduce the verbosity of zigcord
 
-  while still taking advantage of zig's error handling features.
 * `Omittable()` is no longer used in many cases
   * omittable props are now represented as `prop: ?sometype = null`
   * nullable props remain represented as `prop: ?sometype`
