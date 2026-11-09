@@ -123,21 +123,21 @@ pub const SubcommandOptionBuilder = struct {
     channel_types: ?[]const Channel.Type = null,
 
     fn build(self: @This()) ApplicationCommandOption {
-        return ApplicationCommandOption{
+        return .{
             .type = .subcommand,
             .name = self.name,
             .name_localizations = self.name_localizations,
             .description = self.description,
             .description_localizations = self.description_localizations,
             .required = self.required,
-            .choices = .omit,
+            .choices = null,
             .options = self.options,
             .channel_types = self.channel_types,
-            .min_value = .omit,
-            .max_value = .omit,
-            .min_length = .omit,
-            .max_length = .omit,
-            .autocomplete = .omit,
+            .min_value = null,
+            .max_value = null,
+            .min_length = null,
+            .max_length = null,
+            .autocomplete = null,
         };
     }
 };
@@ -152,21 +152,21 @@ pub const SubcommandGroupOptionBuilder = struct {
     channel_types: ?[]const Channel.Type = null,
 
     fn build(self: @This()) ApplicationCommandOption {
-        return ApplicationCommandOption{
+        return .{
             .type = .subcommand_group,
             .name = self.name,
             .name_localizations = self.name_localizations,
             .description = self.description,
             .description_localizations = self.description_localizations,
             .required = self.required,
-            .choices = .omit,
+            .choices = null,
             .options = self.options,
             .channel_types = self.channel_types,
-            .min_value = .omit,
-            .max_value = .omit,
-            .min_length = .omit,
-            .max_length = .omit,
-            .autocomplete = .omit,
+            .min_value = null,
+            .max_value = null,
+            .min_length = null,
+            .max_length = null,
+            .autocomplete = null,
         };
     }
 };
@@ -223,13 +223,13 @@ pub const IntegerOptionBuilder = struct {
             .description = self.description,
             .description_localizations = self.description_localizations,
             .required = self.required,
-            .choices = if (self.choices == .some) .initSome(.{ .integer = self.choices.some }) else .omit,
-            .options = .omit,
+            .choices = if (self.choices) |choices| .{ .integer = choices } else null,
+            .options = null,
             .channel_types = self.channel_types,
-            .min_value = .omit,
-            .max_value = .omit,
-            .min_length = .omit,
-            .max_length = .omit,
+            .min_value = null,
+            .max_value = null,
+            .min_length = null,
+            .max_length = null,
             .autocomplete = self.autocomplete,
         };
     }
@@ -255,13 +255,13 @@ pub const NumberOptionBuilder = struct {
             .description = self.description,
             .description_localizations = self.description_localizations,
             .required = self.required,
-            .choices = if (self.choices == .some) .initSome(.{ .double = self.choices.some }) else .omit,
-            .options = .omit,
+            .choices = if (self.choices) |choices| .{ .double = choices } else null,
+            .options = null,
             .channel_types = self.channel_types,
-            .min_value = .omit,
-            .max_value = .omit,
-            .min_length = .omit,
-            .max_length = .omit,
+            .min_value = null,
+            .max_value = null,
+            .min_length = null,
+            .max_length = null,
             .autocomplete = self.autocomplete,
         };
     }
@@ -284,13 +284,13 @@ pub const AttachmentOptionBuilder = struct {
             .description = self.description,
             .description_localizations = self.description_localizations,
             .required = self.required,
-            .choices = if (self.choices == .some) .initSome(.{ .double = self.choices.some }) else .omit,
-            .options = .omit,
+            .choices = null,
+            .options = null,
             .channel_types = self.channel_types,
-            .min_value = .omit,
-            .max_value = .omit,
-            .min_length = .omit,
-            .max_length = .omit,
+            .min_value = null,
+            .max_value = null,
+            .min_length = null,
+            .max_length = null,
             .autocomplete = self.autocomplete,
             .file_types = self.file_types,
         };
@@ -314,14 +314,14 @@ pub fn GenericOptionBuilder(optType: ApplicationCommandOptionType) type {
                 .description = self.description,
                 .description_localizations = self.description_localizations,
                 .required = self.required,
-                .choices = .omit,
-                .options = .omit,
+                .choices = null,
+                .options = null,
                 .channel_types = self.channel_types,
-                .min_value = .omit,
-                .max_value = .omit,
-                .min_length = .omit,
-                .max_length = .omit,
-                .autocomplete = .omit,
+                .min_value = null,
+                .max_value = null,
+                .min_length = null,
+                .max_length = null,
+                .autocomplete = null,
             };
         }
     };
