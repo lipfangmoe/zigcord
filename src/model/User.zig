@@ -1,8 +1,6 @@
 const std = @import("std");
 const jconfig = @import("jconfig");
 const model = @import("../model.zig");
-const Omittable = jconfig.Omittable;
-const Partial = jconfig.Partial;
 const User = @This();
 
 /// This user's snowflake
@@ -16,32 +14,32 @@ global_name: ?[]const u8,
 /// This user's avatar hash. See https://discord.com/developers/docs/reference#image-formatting
 avatar: ?[]const u8,
 /// true if this user is a bot.
-bot: Omittable(bool) = .omit,
+bot: ?bool = null,
 /// true if this user is a system user (ie, part of the urgent message system, whatever that is)
-system: Omittable(bool) = .omit,
+system: ?bool = null,
 /// true if this user has MFA enabled
-mfa_enabled: Omittable(bool) = .omit,
+mfa_enabled: ?bool = null,
 /// This user's banner hash. See https://discord.com/developers/docs/reference#image-formatting
-banner: Omittable(?[]const u8) = .omit,
+banner: jconfig.Omittable(?[]const u8) = .omit,
 /// This user's banner color encoded as an integer.
-accent_color: Omittable(?i64) = .omit,
+accent_color: jconfig.Omittable(?i64) = .omit,
 /// The user's chosen language. See https://discord.com/developers/docs/reference#locales
-locale: Omittable([]const u8) = .omit,
+locale: ?[]const u8 = null,
 /// true if this user's email is verified.
-verified: Omittable(bool) = .omit,
+verified: ?bool = null,
 /// The user's email
-email: Omittable(?[]const u8) = .omit,
+email: jconfig.Omittable(?[]const u8) = .omit,
 /// The user's account flags
-flags: Omittable(Flags) = .omit,
+flags: ?Flags = null,
 /// What kind of nitro this user has
-premium_type: Omittable(NitroType) = .omit,
+premium_type: ?NitroType = null,
 /// The user's public flags
-public_flags: Omittable(Flags) = .omit,
+public_flags: ?Flags = null,
 /// The user's avatar decoration data.
-avatar_decoration_data: Omittable(?AvatarDecorationData) = .omit,
-collectibles: Omittable(?Collectibles) = .omit,
+avatar_decoration_data: jconfig.Omittable(?AvatarDecorationData) = .omit,
+collectibles: jconfig.Omittable(?Collectibles) = .omit,
 /// The user's primary guild (guild tag)
-primary_guild: Omittable(?PrimaryGuild) = .omit,
+primary_guild: jconfig.Omittable(?PrimaryGuild) = .omit,
 
 pub const jsonStringify = jconfig.stringifyWithOmit;
 
@@ -104,6 +102,8 @@ pub const NitroType = enum(u8) {
     nitro_classic,
     nitro,
     nitro_basic,
+
+    pub const jsonStringify = jconfig.stringifyEnumAsInt;
 };
 
 pub const AvatarDecorationData = struct {
@@ -115,8 +115,8 @@ pub const Connection = struct {
     id: []const u8,
     name: []const u8,
     type: []const u8,
-    revoked: Omittable(bool) = .omit,
-    integrations: Omittable([]const Partial(model.guild.Integration)) = .omit,
+    revoked: ?bool = null,
+    integrations: []const model.guild.Integration.Partial = null,
     verified: bool,
     friend_sync: bool,
     show_activity: bool,
@@ -134,15 +134,15 @@ pub const Connection = struct {
 };
 
 pub const ApplicationRoleConnection = struct {
-    platform_name: Omittable([]const u8) = .omit,
-    platform_username: Omittable([]const u8) = .omit,
+    platform_name: ?[]const u8 = null,
+    platform_username: ?[]const u8 = null,
     metadata: std.json.ArrayHashMap([]const u8),
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const Collectibles = struct {
-    nameplate: Omittable(Nameplate) = .omit,
+    nameplate: ?Nameplate = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
