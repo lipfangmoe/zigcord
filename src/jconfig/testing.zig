@@ -1,4 +1,5 @@
 const std = @import("std");
+const Omittable = @import("./omit.zig").Omittable;
 
 pub fn expectParsedSuccessfully(comptime T: type, allocator: std.mem.Allocator, input: []const u8, options: std.json.ParseOptions) !void {
     var reader: std.Io.Reader = .fixed(input);
@@ -41,10 +42,68 @@ pub fn expectIsPartialOf(comptime PartialT: type, comptime BaseT: type) !void {
     const base_info = @typeInfo(BaseT).@"struct";
 
     if (partial_info.field_names.len != base_info.field_names.len) {
-        std.debug.print("Type {s} is not a partial type of {s}\n", .{ @typeName(PartialT), @typeName(BaseT) });
-        std.debug.print("  Unequal number of fields:\n    {s}: {d}\n    {s}: {d}", .{ @typeName(PartialT), partial_info.field_names.len, @typeName(BaseT), base_info.field_names.len });
-        return error.
+        printWhyUnequalLen(PartialT, BaseT);
+        return error.UnmatchingFields;
     }
 
-    for (partial_info.field_names, partial_info.field_types, partial_info.field_attrs) |partial_field_name, PartialFieldType, partial_field_attrs| {}
+    for (
+        partial_info.field_names,
+        partial_info.field_types,
+        base_info.field_names,
+        base_info.field_types,
+    ) |partial_field_name, PartialFieldType, base_field_name, BaseFieldType| {
+        if (!std.mem.eql(u8, partial_field_name, base_field_name)) {
+            std.debug.print("Type {s} is not a partial type of {s}\n", .{ @typeName(PartialT), @typeName(BaseT) });
+            std.debug.print("  Fields do not match:\n    {s}: {s}\n    {s}: {s}", .{ @typeName(PartialT), partial_field_name, @typeName(BaseT), base_field_name });
+
+            return error.UnmatchingField;
+        }
+
+        if (PartialFieldType != BaseFieldType and PartialFieldType != ?BaseFieldType and PartialFieldType != Omittable(BaseFieldType)) {
+            std.debug.print("Type {s} is not a partial type of {s}\n", .{ @typeName(PartialT), @typeName(BaseT) });
+            std.debug.print("  Field Types for field `{s}` do not match:\n    {s}: {s}\n    {s}: {s}", .{ base_field_name, @typeName(PartialT), @typeName(PartialFieldType), @typeName(BaseT), @typeName(BaseFieldType) });
+
+            return error.UnmatchingFieldType;
+        }
+    }
+}
+
+fn printWhyUnequalLen(comptime PartialT: type, comptime BaseT: type) void {
+    const partial_info = @typeInfo(PartialT).@"struct";
+    const base_info = @typeInfo(BaseT).@"struct";
+
+    const partial_field_name_set: std.StaticStringMap(void) = .initComptime(partial_info.field_names);
+    const base_field_name_set: std.StaticStringMap(void) = .initComptime(base_info.field_names);
+
+    if (partial_field_name_set.kvs.len > base_field_name_set.kvs.len) {
+        std.debug.print("Type {s} is not a partial type of {s}\n", .{ @typeName(PartialT), @typeName(BaseT) });
+        std.debug.print("  Partial Type {s} contains the following extra fields: ", .{@typeName(PartialT)});
+        var first = true;
+        for (partial_field_name_set.keys()) |field_name| {
+            if (!base_field_name_set.has(field_name)) {
+                if (!first) {
+                    std.debug.print(", ", .{});
+                }
+                std.debug.print("{s}", .{field_name});
+                first = false;
+            }
+        }
+        std.debug.print("\n", .{});
+    }
+    if (base_field_name_set.kvs.len > partial_field_name_set.kvs.len) {
+        std.debug.print("Type {s} is not a partial type of {s}\n", .{ @typeName(PartialT), @typeName(BaseT) });
+        std.debug.print("  Partial Type {s} is missing the following fields: ", .{@typeName(PartialT)});
+        var first = true;
+        for (base_field_name_set.keys()) |field_name| {
+            if (!partial_field_name_set.has(field_name)) {
+                if (!first) {
+                    std.debug.print(", ", .{});
+                }
+                std.debug.print("{s}", .{field_name});
+                first = false;
+            }
+        }
+        std.debug.print("\n", .{});
+        return error.UnmatchingFieldNames;
+    }
 }
