@@ -203,7 +203,7 @@ fn executeEchoV2Command(
             } }),
             .initActionRow(.{ .components = &.{
                 .initPrimaryButton("modal", .{ .label = "open modal" }),
-                .initSecondaryButton("ghost", .{ .label = "ghost message!", .emoji = .{ .partial = .{ .name = .initSome("👻") } } }),
+                .initSecondaryButton("ghost", .{ .label = "ghost message!", .emoji = .{ .name = .initSome("👻") } }),
                 .initLinkButton("https://example.com", .{ .label = "example link" }),
                 .initDangerButton("quit", .{ .label = "quit" }),
             } }),
