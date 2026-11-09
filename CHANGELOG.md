@@ -6,7 +6,6 @@ This release contains *major* breaking changes, with the general goal being to r
 * `Omittable()` is no longer used in many cases
   * omittable props are now represented as `prop: ?sometype = null`
   * nullable props remain represented as `prop: ?sometype`
-  * should add a custom `jsonStringify` override which allows
   * props which are omittable *and* nullable continue to be represented as `prop: Omittable(?sometype) = .omit`
 * `Partial(T)` no longer exists
   * this wrapper type was extremely clunky and not welcome
