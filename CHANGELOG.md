@@ -13,6 +13,7 @@ This release contains *major* breaking changes, with the general goal being to r
   * refactored such that usages of `Partial(T)` are now replaced by creating a `T.Partial` struct
 * Added `rest.Result(T).expectOk("...")`
   * this converts a `rest.Result(T)` into a `!T`, granting an easy way to log when discord encounters an error
+* Fixed issue with forwarded messages ("message snapshots") having an incorrect structure
 
 # v0.15.6
 
