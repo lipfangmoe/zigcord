@@ -45,10 +45,10 @@ pub fn main(init: std.process.Init) !void {
                     const channel_id = msg_event.message.channel_id;
                     std.log.info("racing!", .{});
 
-                    try select.concurrent(.a, sendMessage, .{ &endpoint_client, channel_id, "a wins" });
-                    try select.concurrent(.b, sendMessage, .{ &endpoint_client, channel_id, "b wins" });
-                    try select.concurrent(.c, sendMessage, .{ &endpoint_client, channel_id, "c wins" });
-                    try select.concurrent(.d, sendMessage, .{ &endpoint_client, channel_id, "d wins" });
+                    try select.concurrent(.a, sendMessage, .{ io, &endpoint_client, channel_id, "a wins" });
+                    try select.concurrent(.b, sendMessage, .{ io, &endpoint_client, channel_id, "b wins" });
+                    try select.concurrent(.c, sendMessage, .{ io, &endpoint_client, channel_id, "c wins" });
+                    try select.concurrent(.d, sendMessage, .{ io, &endpoint_client, channel_id, "d wins" });
 
                     while (true) {
                         const winner = try select.await();
@@ -71,7 +71,12 @@ pub fn main(init: std.process.Init) !void {
     }
 }
 
-fn sendMessage(endpoint_client: *zigcord.EndpointClient, channel_id: zigcord.model.Snowflake, content: []const u8) bool {
+fn sendMessage(io: std.Io, endpoint_client: *zigcord.EndpointClient, channel_id: zigcord.model.Snowflake, content: []const u8) bool {
+    const rand: std.Random.IoSource = .{ .io = io };
+    const sleep_ms = rand.interface().intRangeLessThanBiased(i64, 0, 5000);
+
+    io.sleep(.fromMilliseconds(sleep_ms), .awake) catch return false;
+
     const lmao = endpoint_client.createMessage(channel_id, .{ .content = content }) catch |err| {
         std.log.err("error {} while printing [{s}]", .{ err, content });
         return false;
