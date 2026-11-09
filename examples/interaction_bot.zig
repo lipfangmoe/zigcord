@@ -78,12 +78,12 @@ fn registerEchoCommand(application_id: zigcord.model.Snowflake, endpoint_client:
     const command_result = try endpoint_client.createGlobalApplicationCommand(application_id, .{
         .name = "echo",
         .description = "echoes your message back to you",
-        .options = .initSome(&.{.initStringOption(.{
+        .options = &.{.initStringOption(.{
             .name = "text",
             .description = "text to echo",
-            .required = .initSome(true),
-            .autocomplete = .initSome(true),
-        })}),
+            .required = true,
+            .autocomplete = true,
+        })},
     });
     defer command_result.deinit();
 
@@ -101,11 +101,11 @@ fn registerEchoV2Command(application_id: zigcord.model.Snowflake, endpoint_clien
     const command_result = try endpoint_client.createGlobalApplicationCommand(application_id, .{
         .name = "echov2",
         .description = "echoes your message back to you, with cool components!",
-        .options = .initSome(&.{.initStringOption(.{
+        .options = &.{.initStringOption(.{
             .name = "text",
             .description = "text to echo",
-            .required = .initSome(true),
-        })}),
+            .required = true,
+        })},
     });
     defer command_result.deinit();
     const command = try command_result.expectOk("error while creating echo v2 command");

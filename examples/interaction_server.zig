@@ -78,11 +78,11 @@ fn registerEchoCommand(application_id: zigcord.model.Snowflake, endpoint_client:
     const command_result = try endpoint_client.createGlobalApplicationCommand(application_id, .{
         .name = "echov2",
         .description = "echoes your message back to you, with cool components!",
-        .options = .initSome(&.{.initStringOption(.{
+        .options = &.{.initStringOption(.{
             .name = "text",
             .description = "text to echo",
-            .required = .initSome(true),
-        })}),
+            .required = true,
+        })},
     });
     defer command_result.deinit();
     const command = try command_result.expectOk("error registering echo command");
@@ -130,11 +130,11 @@ fn registerDeferredEchoCommand(application_id: zigcord.model.Snowflake, endpoint
     const command_result = try endpoint_client.createGlobalApplicationCommand(application_id, .{
         .name = "deferred_echo",
         .description = "echoes your message back to you after waiting a bit!",
-        .options = .initSome(&.{.initStringOption(.{
+        .options = &.{.initStringOption(.{
             .name = "text",
             .description = "text to echo",
-            .required = .initSome(true),
-        })}),
+            .required = true,
+        })},
     });
     defer command_result.deinit();
     const command = try command_result.expectOk("register deferred echo command error");
