@@ -11,6 +11,7 @@ This release contains *major* breaking changes, with the general goal being to r
 * `Partial(T)` no longer exists
   * this wrapper type was extremely clunky and not welcome
   * refactored such that usages of `Partial(T)` are now replaced by creating a `T.Partial` struct
+  * this means that when defining partials, you can now define them just like a normal struct (instead of the old system of `.{ .partial = .{ ... }}`)
 * Added `rest.Result(T).expectOk("...")`
   * this converts a `rest.Result(T)` into a `!T`, granting an easy way to log when discord encounters an error
 * Fixed issue with forwarded messages ("message snapshots") having an incorrect structure
