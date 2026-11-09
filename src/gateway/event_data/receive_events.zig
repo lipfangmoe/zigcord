@@ -148,7 +148,7 @@ pub const GuildCreate = model.guild.MaybeAvailable(struct {
     large: bool,
     unavailable: ?bool = null,
     member_count: i64,
-    voice_states: []const jconfig.Partial(model.voice.VoiceState),
+    voice_states: []const model.voice.VoiceState,
     members: []const model.guild.Member,
     channels: []const model.Channel,
     threads: []const model.Channel,
@@ -459,10 +459,12 @@ pub const MessageReactionRemoveEmoji = struct {
 
 pub const PresenceUpdate = struct {
     user: model.User,
-    guild_id: model.Snowflake,
-    status: Status,
-    activities: []const model.Activity,
-    client_status: ClientStatus,
+    guild_id: ?model.Snowflake = null,
+    status: ?Status = null,
+    activities: ?[]const model.Activity = null,
+    client_status: ?ClientStatus = null,
+
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 
     pub const Status = enum {
         idle,

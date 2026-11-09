@@ -35,3 +35,16 @@ pub fn expectParsedSuccessfully(comptime T: type, allocator: std.mem.Allocator, 
     };
     defer parsed.deinit();
 }
+
+pub fn expectIsPartialOf(comptime PartialT: type, comptime BaseT: type) !void {
+    const partial_info = @typeInfo(PartialT).@"struct";
+    const base_info = @typeInfo(BaseT).@"struct";
+
+    if (partial_info.field_names.len != base_info.field_names.len) {
+        std.debug.print("Type {s} is not a partial type of {s}\n", .{ @typeName(PartialT), @typeName(BaseT) });
+        std.debug.print("  Unequal number of fields:\n    {s}: {d}\n    {s}: {d}", .{ @typeName(PartialT), partial_info.field_names.len, @typeName(BaseT), base_info.field_names.len });
+        return error.
+    }
+
+    for (partial_info.field_names, partial_info.field_types, partial_info.field_attrs) |partial_field_name, PartialFieldType, partial_field_attrs| {}
+}
