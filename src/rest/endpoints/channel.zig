@@ -748,27 +748,27 @@ pub const CreateMessageJsonBody = struct {
 
     /// Creates a text-only message
     pub fn initTextOnly(message: []const u8) CreateMessageJsonBody {
-        return CreateMessageJsonBody{ .content = .initSome(message) };
+        return .{ .content = message };
     }
 
     pub fn initMessageWithEmbeds(message: ?[]const u8, embeds: []const model.Message.Embed) CreateMessageJsonBody {
-        return CreateMessageJsonBody{ .content = .initNullable(message), .embeds = .initSome(embeds) };
+        return .{ .content = message, .embeds = embeds };
     }
 
     pub fn initMessageWithStickers(message: ?[]const u8, sticker_ids: []const Snowflake) CreateMessageJsonBody {
-        return CreateMessageJsonBody{ .content = .initNullable(message), .sticker_ids = .initSome(sticker_ids) };
+        return .{ .content = message, .sticker_ids = sticker_ids };
     }
 
     pub fn initMessageWithComponents(message: ?[]const u8, components: []const model.components.TopLevelMessageComponent) CreateMessageJsonBody {
-        return CreateMessageJsonBody{ .content = .initNullable(message), .components = .initSome(components) };
+        return .{ .content = message, .components = components };
     }
 
     pub fn initMessageWithComponentsV2(components: []const model.components.TopLevelMessageComponent) CreateMessageJsonBody {
-        return CreateMessageJsonBody{ .components = .initSome(components), .flags = .initSome(model.Message.Flags{ .is_components_v2 = true }) };
+        return .{ .components = components, .flags = .{ .is_components_v2 = true } };
     }
 
     pub fn initMessageWithPoll(message: ?[]const u8, poll: model.Poll) CreateMessageJsonBody {
-        return CreateMessageJsonBody{ .content = .initNullable(message), .poll = .initSome(poll) };
+        return .{ .content = message, .poll = poll };
     }
 };
 
@@ -789,7 +789,7 @@ pub const CreateMessageFormPayload = struct {
 
     /// Creates a text-only message
     pub fn initTextOnly(message: []const u8) CreateMessageFormBody {
-        return CreateMessageFormBody{ .content = message };
+        return .{ .content = message };
     }
 
     /// Creates a text message with a file upload. The length of `files` and `attachments` must be equal.
@@ -799,27 +799,27 @@ pub const CreateMessageFormPayload = struct {
         attachments: []const PartialAttachmentRequest,
     ) CreateMessageFormBody {
         std.debug.assert(files.len == attachments.len);
-        return CreateMessageFormBody{ .content = message, .files = files, .attachments = attachments };
+        return .{ .content = message, .files = files, .attachments = attachments };
     }
 
     pub fn initMessageWithEmbeds(message: ?[]const u8, embeds: []const model.Message.Embed) CreateMessageFormBody {
-        return CreateMessageFormBody{ .content = message, .embeds = embeds };
+        return .{ .content = message, .embeds = embeds };
     }
 
     pub fn initMessageWithStickers(message: ?[]const u8, sticker_ids: []const Snowflake) CreateMessageFormBody {
-        return CreateMessageFormBody{ .content = message, .sticker_ids = sticker_ids };
+        return .{ .content = message, .sticker_ids = sticker_ids };
     }
 
     pub fn initMessageWithComponents(message: ?[]const u8, components: []const model.components.TopLevelMessageComponent) CreateMessageFormBody {
-        return CreateMessageFormBody{ .content = message, .components = components };
+        return .{ .content = message, .components = components };
     }
 
     pub fn initMessageWithComponentsV2(components: []const model.components.TopLevelMessageComponent) CreateMessageFormBody {
-        return CreateMessageFormBody{ .components = components, .flags = model.Message.Flags{ .is_components_v2 = true } };
+        return .{ .components = components, .flags = model.Message.Flags{ .is_components_v2 = true } };
     }
 
     pub fn initMessageWithPoll(message: ?[]const u8, poll: model.Poll) CreateMessageFormBody {
-        return CreateMessageFormBody{ .content = message, .poll = poll };
+        return .{ .content = message, .poll = poll };
     }
 };
 

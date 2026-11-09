@@ -17,11 +17,11 @@ pub fn main(init: std.process.Init) !void {
     var endpoint_client = zigcord.EndpointClient.init(io, allocator, .{ .bot = token });
     defer endpoint_client.deinit();
 
-    var gateway_client = try zigcord.gateway.Client.init(
+    var gateway_client: zigcord.gateway.Client = try .init(
         io,
         allocator,
         token,
-        zigcord.model.Intents{ .guild_messages = true, .message_content = true },
+        .{ .guild_messages = true, .message_content = true },
     );
     defer gateway_client.deinit();
     std.log.info("authenticated as user {f}", .{gateway_client.json_ws_client.ready_event.?.event.user.id});
@@ -34,9 +34,7 @@ pub fn main(init: std.process.Init) !void {
             .message_create => |msg_event| {
                 std.log.info("message created with content \"{s}\"", .{msg_event.message.content});
                 if (std.mem.eql(u8, msg_event.message.content, "fetch")) {
-                    const response = try endpoint_client.createMessage(msg_event.message.channel_id, zigcord.EndpointClient.CreateMessageJsonBody{
-                        .content = "wowie",
-                    });
+                    const response = try endpoint_client.createMessage(msg_event.message.channel_id, .initTextOnly("wowie"));
                     defer response.deinit();
                     _ = try response.expectOk("error while creating message");
                 }
