@@ -75,7 +75,7 @@ pub fn stringifyWithOmit(self: anytype, json_writer: *std.json.Stringify) std.js
 
 pub fn isOmittableField(comptime FieldType: type, comptime field_attrs: std.lang.Type.Struct.FieldAttributes) bool {
     return switch (@typeInfo(FieldType)) {
-        .@"union" => |u| std.mem.eql(u8, u.field_names[0], "some") and std.mem.eql(u8, u.field_names[1], "none"),
+        .@"union" => |u| std.mem.eql(u8, u.field_names[0], "some") and std.mem.eql(u8, u.field_names[1], "omit"),
         .optional => field_attrs.default_value_ptr != null,
         else => false,
     };

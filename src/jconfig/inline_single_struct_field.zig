@@ -68,14 +68,20 @@ pub fn InlineSingleStructFieldMixin(comptime T: type, comptime inline_field: []c
 
                     const inlining_field_type_info = @typeInfo(WrapperFieldType).@"struct";
                     inline for (inlining_field_type_info.field_names, inlining_field_type_info.field_types, inlining_field_type_info.field_attrs) |inlining_field_name, InliningFieldType, inlining_field_type_attrs| {
-                        const inner_field_value = @field(wrapper_field_value, inlining_field_name);
+                        const inlining_field_value = @field(wrapper_field_value, inlining_field_name);
                         if (comptime isOmittableField(InliningFieldType, inlining_field_type_attrs)) {
-                            try writeOmittableFieldToStream(inlining_field_name, InliningFieldType, inner_field_value, jw);
+                            try writeOmittableFieldToStream(inlining_field_name, InliningFieldType, inlining_field_value, jw);
+                        } else {
+                            try jw.objectField(inlining_field_name);
+                            try jw.write(inlining_field_value);
                         }
                     }
                 } else {
                     if (comptime isOmittableField(WrapperFieldType, wrapper_field_attrs)) {
                         try writeOmittableFieldToStream(wrapper_field_name, WrapperFieldType, wrapper_field_value, jw);
+                    } else {
+                        try jw.objectField(wrapper_field_name);
+                        try jw.write(wrapper_field_value);
                     }
                 }
             }
