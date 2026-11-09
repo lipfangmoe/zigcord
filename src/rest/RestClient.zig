@@ -466,12 +466,12 @@ pub fn Result(T: type) type {
         }
 
         /// similar to `valueOk()`, but logs additional information on error.
-        pub fn valueOkLog(self: Result(T), context: []const u8) error{DiscordError}!T {
+        pub fn expectOk(self: Result(T), context_on_error: []const u8) error{DiscordError}!T {
             return switch (self) {
                 .ok => |ok| ok.value,
                 .err => |discord_err| {
-                    const error_code = std.enums.tagName(ErrorCode, discord_err.value.code);
-                    shared.logger.err("{s}: {s}\n{f}", .{ context, error_code, discord_err });
+                    const error_code = @backingInt(discord_err.value.code);
+                    shared.logger.err("{s}: {d} ({s})\n{f}", .{ context_on_error, error_code, discord_err.value.message, discord_err });
                     return error.DiscordError;
                 },
             };
