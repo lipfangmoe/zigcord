@@ -14,14 +14,14 @@ pub fn main(init: std.process.Init) !void {
         std.process.exit(1);
     };
 
-    var endpoint_client = zigcord.EndpointClient.init(io, allocator, .{ .bot = token });
+    var endpoint_client: zigcord.EndpointClient = .init(io, allocator, .{ .bot = token });
     defer endpoint_client.deinit();
 
-    var gateway_client = try zigcord.gateway.Client.init(
+    var gateway_client: zigcord.GatewayClient = try .init(
         io,
         allocator,
         token,
-        zigcord.model.Intents{ .guild_messages = true, .message_content = true },
+        .{ .guild_messages = true, .message_content = true },
     );
     defer gateway_client.deinit();
     const app_id = gateway_client.getReadyEvent().application.id;
@@ -108,14 +108,8 @@ fn registerEchoV2Command(application_id: zigcord.model.Snowflake, endpoint_clien
         })}),
     });
     defer command_result.deinit();
+    const command = try command_result.expectOk("error while creating echo v2 command");
 
-    const command = switch (command_result.value()) {
-        .ok => |ok| ok,
-        .err => |err| {
-            std.log.err("error: {f}", .{std.json.fmt(err, .{})});
-            return error.DiscordError;
-        },
-    };
     return command.id;
 }
 
@@ -135,10 +129,7 @@ fn executeEchoCommand(
 
     const result = try endpoint_client.createInteractionResponse(interaction.id, interaction.token, .initChannelMessageWithSource(.{ .content = text }));
     defer result.deinit();
-    switch (result) {
-        .ok => {},
-        .err => |err| std.log.err("{f}", .{err}),
-    }
+    _ = try result.expectOk("error while creating echo command interaction response");
 
     std.log.debug("echoed {s}", .{text});
 }
@@ -172,6 +163,7 @@ fn executeEchoAutocomplete(
 
     const result = try endpoint_client.createInteractionResponse(interaction.id, interaction.token, .initApplicationCommandAutocompleteResultString(.{ .choices = filtered_echoes.items }));
     defer result.deinit();
+    _ = try result.expectOk("error while creating echo autocomplete response");
 }
 
 fn executeEchoV2Command(
@@ -211,10 +203,9 @@ fn executeEchoV2Command(
     }));
     defer result.deinit();
 
-    switch (result.value()) {
-        .ok => std.log.debug("echoed {s} with cool buttons", .{text}),
-        .err => |err| std.log.err("error! {f}", .{err}),
-    }
+    _ = try result.expectOk("error while creating echov2 interaction response");
+
+    std.log.debug("echoed {s} with cool buttons", .{text});
 }
 
 fn handleExampleV2StringSelect(
@@ -232,9 +223,11 @@ fn handleExampleV2StringSelect(
     if (std.mem.eql(u8, selection, "cool")) {
         const result = try endpoint_client.createInteractionResponse(interaction.id, interaction.token, .initChannelMessageWithSource(.{ .content = "ur so cool ..." }));
         defer result.deinit();
+        _ = try result.expectOk("error while creating cool stringselect response");
     } else if (std.mem.eql(u8, selection, "not-cool")) {
         const result = try endpoint_client.createInteractionResponse(interaction.id, interaction.token, .initChannelMessageWithSource(.{ .content = "cringe!" }));
         defer result.deinit();
+        _ = try result.expectOk("error while creating not-cool stringselect response");
     } else {
         return error.InvalidSelection;
     }
@@ -281,10 +274,7 @@ fn handleExampleV2ButtonClick(
             );
             defer result.deinit();
 
-            switch (result.value()) {
-                .ok => {},
-                .err => |err| std.log.err("modal button error! {f}", .{err}),
-            }
+            _ = try result.expectOk("modal button error");
         },
         .ghost => {
             std.log.info("ghost button!", .{});
@@ -293,11 +283,7 @@ fn handleExampleV2ButtonClick(
                 .flags = .{ .ephemeral = true },
             }));
             defer result.deinit();
-
-            switch (result.value()) {
-                .ok => {},
-                .err => |err| std.log.err("modal button error! {f}", .{err}),
-            }
+            _ = try result.expectOk("ghost button error");
         },
         .link => {
             const user_who_clicked = interaction.user orelse return error.UserEmpty;
@@ -309,22 +295,14 @@ fn handleExampleV2ButtonClick(
                 .content = message,
             }));
             defer result.deinit();
-
-            switch (result.value()) {
-                .ok => {},
-                .err => |err| std.log.err("link button error! {f}", .{err}),
-            }
+            _ = try result.expectOk("link button error");
         },
         .quit => {
             const result = try endpoint_client.createInteractionResponse(interaction.id, interaction.token, .initChannelMessageWithSource(.{
                 .content = "goodbye",
             }));
             defer result.deinit();
-
-            switch (result.value()) {
-                .ok => {},
-                .err => |err| std.log.err("quit button error! {f}", .{err}),
-            }
+            _ = try result.expectOk("quit button error");
             return error.QuitByButton;
         },
     }
@@ -344,11 +322,7 @@ fn handleModalSubmit(
         .content = message,
     }));
     defer result.deinit();
-
-    switch (result.value()) {
-        .ok => {},
-        .err => |err| std.log.err("modal submit error! {f}", .{err}),
-    }
+    _ = try result.expectOk("modal submit error");
 }
 
 fn getOption(option_name: []const u8, options: []const zigcord.model.interaction.ApplicationCommandInteractionDataOption) ?zigcord.model.interaction.ApplicationCommandInteractionDataOption {

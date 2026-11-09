@@ -17,11 +17,11 @@ pub fn main(init: std.process.Init) !void {
     var endpoint_client: zigcord.EndpointClient = .init(io, allocator, .{ .bot = token });
     defer endpoint_client.deinit();
 
-    var gateway_client: zigcord.gateway.Client = try .init(
+    var gateway_client: zigcord.GatewayClient = try .init(
         io,
         allocator,
         token,
-        zigcord.model.Intents{ .guild_messages = true, .message_content = true },
+        .{ .guild_messages = true, .message_content = true },
     );
     defer gateway_client.deinit();
     std.log.info("authenticated as user {f}", .{gateway_client.json_ws_client.ready_event.?.event.user.id});
@@ -33,10 +33,14 @@ pub fn main(init: std.process.Init) !void {
         switch (event.event orelse continue) {
             .message_create => |msg_event| {
                 if (std.mem.eql(u8, msg_event.message.content, "done")) {
-                    _ = try endpoint_client.createReaction(msg_event.message.channel_id, msg_event.message.id, .{ .unicode = "\u{1F44B}" }); // wave emoji
+                    const reaction_result = try endpoint_client.createReaction(msg_event.message.channel_id, msg_event.message.id, .{ .unicode = "\u{1F44B}" }); // wave emoji
+                    defer reaction_result.deinit();
+                    _ = try reaction_result.expectOk("error creating wave reaction");
                     return;
                 }
-                _ = try endpoint_client.createReaction(msg_event.message.channel_id, msg_event.message.id, .{ .unicode = "\u{1F44D}" }); // thumbs up emoji
+                const reaction_result = try endpoint_client.createReaction(msg_event.message.channel_id, msg_event.message.id, .{ .unicode = "\u{1F44D}" }); // thumbs up emoji
+                defer reaction_result.deinit();
+                _ = try reaction_result.expectOk("error creating thumbs up reaction");
             },
             else => continue,
         }

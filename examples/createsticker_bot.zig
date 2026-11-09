@@ -41,7 +41,7 @@ pub fn main(init: std.process.Init) !void {
 
         switch (event.event orelse continue) {
             .message_create => |msg_event| {
-                const value = try endpoint_client.createGuildSticker(msg_event.guild_id.?, .{
+                const response = try endpoint_client.createGuildSticker(msg_event.guild_id.?, .{
                     .files = try .fromFileReader("klee.png", "image/png", &file_reader),
                     .payload_json = .{
                         .name = "sticker test",
@@ -49,11 +49,9 @@ pub fn main(init: std.process.Init) !void {
                         .tags = "fun",
                     },
                 }, null);
-                defer value.deinit();
-                switch (value) {
-                    .ok => |ok| std.log.info("ok {f}", .{std.json.fmt(ok.value, .{})}),
-                    .err => |err| std.log.info("err {f}", .{std.json.fmt(err.value, .{})}),
-                }
+                defer response.deinit();
+                const value = try response.expectOk("error while creating message");
+                std.log.info("ok {f}", .{std.json.fmt(value, .{})});
                 return;
             },
             else => continue,

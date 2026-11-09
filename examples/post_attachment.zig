@@ -14,14 +14,14 @@ pub fn main(init: std.process.Init) !void {
         std.process.exit(1);
     };
 
-    var endpoint_client = zigcord.EndpointClient.init(io, allocator, .{ .bot = token });
+    var endpoint_client: zigcord.EndpointClient = .init(io, allocator, .{ .bot = token });
     defer endpoint_client.deinit();
 
-    var gateway_client = try zigcord.gateway.Client.init(
+    var gateway_client: zigcord.GatewayClient = try .init(
         io,
         allocator,
         token,
-        zigcord.model.Intents{ .guild_messages = true, .message_content = true },
+        .{ .guild_messages = true, .message_content = true },
     );
     defer gateway_client.deinit();
     const app_id = gateway_client.getReadyEvent().application.id;
@@ -55,14 +55,8 @@ fn registerPostAttachmentCommand(application_id: zigcord.model.Snowflake, endpoi
         .description = "posts an attachment",
     });
     defer command_result.deinit();
+    const command = try command_result.expectOk("error registering post-attachment command");
 
-    const command = switch (command_result.value()) {
-        .ok => |ok| ok,
-        .err => |err| {
-            std.log.err("error: {f}", .{std.json.fmt(err, .{})});
-            return error.DiscordError;
-        },
-    };
     return command.id;
 }
 
@@ -83,9 +77,5 @@ fn executePostAttachmentCommand(
     });
 
     defer result.deinit();
-
-    switch (result) {
-        .ok => {},
-        .err => |err| std.log.err("error sending request: {f}", .{err}),
-    }
+    _ = try result.expectOk("error creating interaction response");
 }

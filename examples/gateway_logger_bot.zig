@@ -9,7 +9,7 @@ pub fn main(init: std.process.Init) !void {
         std.process.exit(1);
     };
 
-    var gateway_client = try zigcord.GatewayClient.init(
+    var gateway_client: zigcord.GatewayClient = try .init(
         io,
         allocator,
         token,

@@ -29,12 +29,8 @@ pub fn main(init: std.process.Init) !void {
 
     const application_result = try endpoints.getCurrentApplication();
     defer application_result.deinit();
-    const application = switch (application_result.value()) {
-        .err => |err| {
-            std.log.err("{f}", .{err});
-            std.process.exit(1);
-        },
-        .ok => |ok| ok,
+    const application = application_result.expectOk("get current application error") catch {
+        std.process.exit(1);
     };
 
     const echo_cmd_id = try registerEchoCommand(application.id, &endpoints);
@@ -89,14 +85,8 @@ fn registerEchoCommand(application_id: zigcord.model.Snowflake, endpoint_client:
         })}),
     });
     defer command_result.deinit();
+    const command = try command_result.expectOk("error registering echo command");
 
-    const command = switch (command_result.value()) {
-        .ok => |ok| ok,
-        .err => |err| {
-            std.log.err("error: {f}", .{std.json.fmt(err, .{})});
-            return error.DiscordError;
-        },
-    };
     return command.id;
 }
 
@@ -147,14 +137,8 @@ fn registerDeferredEchoCommand(application_id: zigcord.model.Snowflake, endpoint
         })}),
     });
     defer command_result.deinit();
+    const command = try command_result.expectOk("register deferred echo command error");
 
-    const command = switch (command_result.value()) {
-        .ok => |ok| ok,
-        .err => |err| {
-            std.log.err("error: {f}", .{std.json.fmt(err, .{})});
-            return error.DiscordError;
-        },
-    };
     return command.id;
 }
 
@@ -177,12 +161,12 @@ fn executeDeferredEchoCommand(
 
     _ = io.sleep(.fromSeconds(2), .awake) catch {};
 
-    const followup = zigcord.EndpointClient.EditWebhookMessageJsonBody{
+    const response = try interaction_request.followupEditOriginal(endpoint_client, .{
         .content = .initSome(text),
         .flags = .initSome(.{ .ephemeral = true }),
-    };
-
-    _ = try interaction_request.followupEditOriginal(endpoint_client, followup);
+    });
+    defer response.deinit();
+    _ = try response.expectOk("followup edit error");
 }
 
 fn handleExampleStringSelect(

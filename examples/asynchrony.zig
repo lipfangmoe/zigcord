@@ -14,14 +14,14 @@ pub fn main(init: std.process.Init) !void {
         std.process.exit(1);
     };
 
-    var endpoint_client = zigcord.EndpointClient.init(io, allocator, .{ .bot = token });
+    var endpoint_client: zigcord.EndpointClient = .init(io, allocator, .{ .bot = token });
     defer endpoint_client.deinit();
 
-    var gateway_client = try zigcord.gateway.Client.init(
+    var gateway_client: zigcord.GatewayClient = try .init(
         io,
         allocator,
         token,
-        zigcord.model.Intents{ .guild_messages = true, .message_content = true },
+        .{ .guild_messages = true, .message_content = true },
     );
     defer gateway_client.deinit();
     std.log.info("authenticated as user {f}", .{gateway_client.json_ws_client.ready_event.?.event.user.id});
@@ -82,11 +82,5 @@ fn sendMessage(io: std.Io, endpoint_client: *zigcord.EndpointClient, channel_id:
         return false;
     };
     defer lmao.deinit();
-    switch (lmao) {
-        .ok => return true,
-        .err => |err| {
-            std.log.err("error sending '{s}': {f}", .{ content, err });
-            return false;
-        },
-    }
+    return true;
 }
