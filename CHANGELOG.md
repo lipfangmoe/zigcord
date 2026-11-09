@@ -1,15 +1,18 @@
 # pending changes
 
-This release contains *major* breaking changes
+This release contains *major* breaking changes, with the general goal being to reduce the verbosity of zigcord
 
-* Added `rest.Result(T).valueOkLog("...")`
-  * this converts a `rest.Result(T)` into a `!T`, allowing you to have more detailed log output
   while still taking advantage of zig's error handling features.
-* `Omittable()` union is (mostly) no more
+* `Omittable()` is no longer used in many cases
   * omittable props are now represented as `prop: ?sometype = null`
   * nullable props remain represented as `prop: ?sometype`
   * should add a custom `jsonStringify` override which allows
-  * props which are omittable *and* nullable are still represented as `prop: Omittable(?sometype) = .omit`
+  * props which are omittable *and* nullable continue to be represented as `prop: Omittable(?sometype) = .omit`
+* `Partial(T)` no longer exists
+  * this wrapper type was extremely clunky and not welcome
+  * refactored such that usages of `Partial(T)` are now replaced by creating a `T.Partial` struct
+* Added `rest.Result(T).valueOkLog("...")`
+  * this converts a `rest.Result(T)` into a `!T`, allowing you to have more detailed log output
 
 # v0.15.6
 

@@ -1,14 +1,13 @@
 const std = @import("std");
 const jconfig = @import("jconfig");
 const model = @import("../model.zig");
-const Omittable = jconfig.Omittable;
 
 id: model.Snowflake,
 guild_id: model.Snowflake,
 channel_id: ?model.Snowflake,
-creator_id: Omittable(?model.Snowflake) = .omit,
+creator_id: jconfig.Omittable(?model.Snowflake) = .omit,
 name: []const u8,
-description: Omittable(?[]const u8) = .omit,
+description: jconfig.Omittable(?[]const u8) = .omit,
 scheduled_start_time: model.IsoTime,
 scheduled_end_time: ?model.IsoTime,
 privacy_level: PrivacyLevel,
@@ -16,9 +15,9 @@ status: EventStatus,
 entity_type: EntityType,
 entity_id: ?model.Snowflake,
 entity_metadata: ?EntityMetadata,
-creator: Omittable(model.User) = .omit,
+creator: ?model.User = null,
 user_count: i64,
-image: Omittable(?[]const u8) = .omit,
+image: jconfig.Omittable(?[]const u8) = .omit,
 
 pub const jsonStringify = jconfig.stringifyWithOmit;
 
@@ -41,14 +40,14 @@ pub const EntityType = enum(u3) {
     external = 3,
 };
 pub const EntityMetadata = struct {
-    location: Omittable([]const u8) = .omit,
+    location: ?[]const u8 = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 pub const EventUser = struct {
     guild_scheduled_event_id: model.Snowflake,
     user: model.User,
-    member: Omittable(model.guild.Member),
+    member: ?model.guild.Member = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };

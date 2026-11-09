@@ -3,47 +3,94 @@ const model = @import("../model.zig");
 const Snowflake = model.Snowflake;
 const User = model.User;
 const Member = model.guild.Member;
-const Omittable = jconfig.Omittable;
+const Channel = @This();
 
 id: Snowflake,
 type: Type,
-guild_id: Omittable(Snowflake) = .omit,
-position: Omittable(i64) = .omit,
-permission_overwrites: Omittable([]const jconfig.Partial(PermissionOverwrite)) = .omit,
-name: Omittable(?[]const u8) = .omit,
-topic: Omittable(?[]const u8) = .omit,
-nsfw: Omittable(bool) = .omit,
-last_message_id: Omittable(?Snowflake) = .omit,
-bitrate: Omittable(i64) = .omit,
-user_limit: Omittable(i64) = .omit,
-rate_limit_per_user: Omittable(i64) = .omit,
-recipients: Omittable([]User) = .omit,
-icon: Omittable(?[]const u8) = .omit,
-owner_id: Omittable(Snowflake) = .omit,
-application_id: Omittable(?Snowflake) = .omit,
-managed: Omittable(bool) = .omit,
-parent_id: Omittable(?Snowflake) = .omit,
-last_pin_timestamp: Omittable(?model.IsoTime) = .omit,
-rtc_region: Omittable(?[]const u8) = .omit,
-video_quality_mode: Omittable(VideoQualityMode) = .omit,
-message_count: Omittable(i64) = .omit,
-member_count: Omittable(i64) = .omit,
-thread_metadata: Omittable(ThreadMetadata) = .omit,
-member: Omittable(ThreadMember) = .omit,
-default_auto_archive_duration: Omittable(i64) = .omit,
-permissions: Omittable([]const u8) = .omit,
-flags: Omittable(Flags) = .omit,
-total_message_sent: Omittable(i64) = .omit,
-available_tags: Omittable([]const Tag) = .omit,
-applied_tags: Omittable([]const Snowflake) = .omit,
-default_reaction_emoji: Omittable(?DefaultReaction) = .omit,
-default_thread_rate_limit_per_user: Omittable(i64) = .omit,
-default_sort_order: Omittable(?SortOrder) = .omit,
-default_forum_layout: Omittable(ForumLayout) = .omit,
-newly_created: Omittable(bool) = .omit,
-app_permissions: Omittable(model.Permissions) = .omit,
+guild_id: ?Snowflake = null,
+position: ?i64 = null,
+permission_overwrites: ?[]const PermissionOverwrite.Partial = null,
+name: jconfig.Omittable(?[]const u8) = .omit,
+topic: jconfig.Omittable(?[]const u8) = .omit,
+nsfw: ?bool = null,
+last_message_id: jconfig.Omittable(?Snowflake) = .omit,
+bitrate: ?i64 = null,
+user_limit: ?i64 = null,
+rate_limit_per_user: ?i64 = null,
+recipients: ?[]User = null,
+icon: jconfig.Omittable(?[]const u8) = .omit,
+owner_id: ?Snowflake = null,
+application_id: jconfig.Omittable(?Snowflake) = .omit,
+managed: ?bool = null,
+parent_id: jconfig.Omittable(?Snowflake) = .omit,
+last_pin_timestamp: jconfig.Omittable(?model.IsoTime) = .omit,
+rtc_region: jconfig.Omittable(?[]const u8) = .omit,
+video_quality_mode: ?VideoQualityMode = null,
+message_count: ?i64 = null,
+member_count: ?i64 = null,
+thread_metadata: ?ThreadMetadata = null,
+member: ?ThreadMember = null,
+default_auto_archive_duration: ?i64 = null,
+permissions: ?[]const u8 = null,
+flags: ?Flags = null,
+total_message_sent: ?i64 = null,
+available_tags: ?[]const Tag = null,
+applied_tags: ?[]const Snowflake = null,
+default_reaction_emoji: jconfig.Omittable(?DefaultReaction) = .omit,
+default_thread_rate_limit_per_user: ?i64 = null,
+default_sort_order: jconfig.Omittable(?SortOrder) = .omit,
+default_forum_layout: ?ForumLayout = null,
+newly_created: ?bool = null,
+app_permissions: ?model.Permissions = null,
 
 pub const jsonStringify = jconfig.stringifyWithOmit;
+
+pub const Partial = struct {
+    id: ?Snowflake = null,
+    type: ?Type = null,
+    guild_id: ?Snowflake = null,
+    position: ?i64 = null,
+    permission_overwrites: ?[]const PermissionOverwrite.Partial = null,
+    name: jconfig.Omittable(?[]const u8) = .omit,
+    topic: jconfig.Omittable(?[]const u8) = .omit,
+    nsfw: ?bool = null,
+    last_message_id: jconfig.Omittable(?Snowflake) = .omit,
+    bitrate: ?i64 = null,
+    user_limit: ?i64 = null,
+    rate_limit_per_user: ?i64 = null,
+    recipients: ?[]User = null,
+    icon: jconfig.Omittable(?[]const u8) = .omit,
+    owner_id: ?Snowflake = null,
+    application_id: jconfig.Omittable(?Snowflake) = .omit,
+    managed: ?bool = null,
+    parent_id: jconfig.Omittable(?Snowflake) = .omit,
+    last_pin_timestamp: jconfig.Omittable(?model.IsoTime) = .omit,
+    rtc_region: jconfig.Omittable(?[]const u8) = .omit,
+    video_quality_mode: ?VideoQualityMode = null,
+    message_count: ?i64 = null,
+    member_count: ?i64 = null,
+    thread_metadata: ?ThreadMetadata = null,
+    member: ?ThreadMember = null,
+    default_auto_archive_duration: ?i64 = null,
+    permissions: ?[]const u8 = null,
+    flags: ?Flags = null,
+    total_message_sent: ?i64 = null,
+    available_tags: ?[]const Tag = null,
+    applied_tags: ?[]const Snowflake = null,
+    default_reaction_emoji: jconfig.Omittable(?DefaultReaction) = .omit,
+    default_thread_rate_limit_per_user: ?i64 = null,
+    default_sort_order: jconfig.Omittable(?SortOrder) = .omit,
+    default_forum_layout: ?ForumLayout = null,
+    newly_created: ?bool = null,
+    app_permissions: ?model.Permissions = null,
+
+    pub const jsonStringify = jconfig.stringifyWithOmit;
+
+    test "is partial channel" {
+        try jconfig.testing.expectIsPartialOfStrict(Channel.Partial, Channel);
+    }
+};
+
 pub const Type = enum(u8) {
     guild_text = 0,
     dm = 1,
@@ -64,14 +111,29 @@ pub const Type = enum(u8) {
 
 pub const PermissionOverwrite = struct {
     id: Snowflake,
-    type: enum {
+    type: PermissionOverwrite.Type,
+    allow: []const u8,
+    deny: []const u8,
+
+    pub const Partial = struct {
+        id: ?Snowflake = null,
+        type: ?PermissionOverwrite.Type = null,
+        allow: ?[]const u8 = null,
+        deny: ?[]const u8 = null,
+
+        pub const jsonStringify = jconfig.stringifyWithOmit;
+
+        test "is partial PermissionOverwrite" {
+            try jconfig.testing.expectIsPartialOf(PermissionOverwrite.Partial, PermissionOverwrite);
+        }
+    };
+
+    pub const Type = enum {
         role,
         member,
 
         pub const jsonStringify = jconfig.stringifyEnumAsInt;
-    },
-    allow: []const u8,
-    deny: []const u8,
+    };
 };
 
 // woah, discord actually used a data structure that follows how programming languages often define enums
@@ -119,18 +181,18 @@ pub const ThreadMetadata = struct {
     auto_archive_duration: i64,
     archive_timestamp: model.IsoTime,
     locked: bool,
-    invitable: Omittable(bool) = .omit,
-    create_timestamp: Omittable(model.IsoTime) = .omit,
+    invitable: ?bool = null,
+    create_timestamp: ?model.IsoTime = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const ThreadMember = struct {
-    id: Omittable(Snowflake) = .omit,
-    user_id: Omittable(Snowflake) = .omit,
+    id: ?Snowflake = null,
+    user_id: ?Snowflake = null,
     join_timestamp: model.IsoTime,
     flags: ThreadMember.Flags,
-    member: Omittable(Member) = .omit,
+    member: ?Member = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 

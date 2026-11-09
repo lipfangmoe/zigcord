@@ -4,7 +4,7 @@ const model = @import("../model.zig");
 const Snowflake = model.Snowflake;
 
 pub const Guild = MaybeAvailable(AvailableGuild);
-pub const PartialGuild = MaybeAvailable(jconfig.Partial(AvailableGuild));
+pub const PartialGuild = MaybeAvailable(AvailableGuild.Partial);
 
 pub fn MaybeAvailable(comptime AvailableT: type) type {
     return union(enum) {
@@ -89,6 +89,58 @@ pub const AvailableGuild = struct {
     safety_alerts_channel_id: ?Snowflake,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
+
+    pub const Partial = struct {
+        id: ?Snowflake = null,
+        name: ?[]const u8 = null,
+        icon: jconfig.Omittable(?[]const u8) = .omit,
+        icon_hash: jconfig.Omittable(?[]const u8) = .omit,
+        splash: jconfig.Omittable(?[]const u8) = .omit,
+        discovery_splash: jconfig.Omittable(?[]const u8) = .omit,
+        owner: ?bool = null,
+        owner_id: ?Snowflake = null,
+        permissions: ?[]const u8 = null,
+        region: jconfig.Omittable(?[]const u8) = .omit,
+        afk_channel_id: jconfig.Omittable(?Snowflake) = .omit,
+        afk_timeout: ?i64 = null,
+        widget_enabled: ?bool = null,
+        widget_channel_id: jconfig.Omittable(?Snowflake) = .omit,
+        verification_level: ?VerificationLevel = null,
+        default_message_notifications: ?MessageNotificationLevel = null,
+        explicit_content_filter: ?ExplicitContentFilterLevel = null,
+        roles: ?[]model.Role = null,
+        emojis: ?[]model.Emoji = null,
+        features: ?[]const []const u8 = null,
+        mfa_level: ?MfaLevel = null,
+        application_id: jconfig.Omittable(?Snowflake) = .omit,
+        system_channel_id: jconfig.Omittable(?Snowflake) = .omit,
+        system_channel_flags: ?SystemChannelFlags = null,
+        rules_channel_id: jconfig.Omittable(?Snowflake) = .omit,
+        max_presences: jconfig.Omittable(?i64) = .omit,
+        max_members: ?i64 = null,
+        vanity_url_code: jconfig.Omittable(?[]const u8) = .omit,
+        description: jconfig.Omittable(?[]const u8) = .omit,
+        banner: jconfig.Omittable(?[]const u8) = .omit,
+        premium_tier: ?PremiumTier = null,
+        premium_subscription_count: ?i64 = null,
+        preferred_locale: ?[]const u8 = null,
+        public_updates_channel_id: jconfig.Omittable(?Snowflake) = .omit,
+        max_video_channel_users: ?i64 = null,
+        max_stage_video_channel_users: ?i64 = null,
+        approximate_member_count: ?i64 = null,
+        approximate_presence_count: ?i64 = null,
+        welcome_screen: ?WelcomeScreen = null,
+        nsfw_level: ?NsfwLevel = null,
+        stickers: ?[]const model.Sticker = null,
+        premium_progress_bar_enabled: ?bool = null,
+        safety_alerts_channel_id: jconfig.Omittable(?Snowflake) = .omit,
+
+        pub const jsonStringify = jconfig.stringifyWithOmit;
+
+        test "is partial guild" {
+            try jconfig.testing.expectIsPartialOf(AvailableGuild.Partial, AvailableGuild);
+        }
+    };
 };
 
 pub const UnavailableGuild = struct {
@@ -193,8 +245,8 @@ pub const Widget = struct {
     id: model.Snowflake,
     name: []const u8,
     instant_invite: ?[]const u8,
-    channels: []const jconfig.Partial(model.Channel),
-    members: []const jconfig.Partial(model.User),
+    channels: []const model.Channel.Partial,
+    members: []const model.User.Partial,
     presence_count: i64,
 };
 
@@ -352,6 +404,29 @@ pub const Member = struct {
     avatar_decoration_data: jconfig.Omittable(?model.User.AvatarDecorationData) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
+
+    pub const Partial = struct {
+        user: ?model.User = null,
+        nick: jconfig.Omittable(?[]const u8) = .omit,
+        avatar: jconfig.Omittable(?[]const u8) = .omit,
+        banner: jconfig.Omittable(?[]const u8) = .omit,
+        roles: ?[]Snowflake = null,
+        joined_at: ?model.IsoTime = null,
+        premium_since: jconfig.Omittable(?model.IsoTime) = .omit,
+        deaf: ?bool = null,
+        mute: ?bool = null,
+        flags: ?Flags = null,
+        pending: ?bool = null,
+        permissions: ?model.Permissions = null,
+        communication_disabled_until: jconfig.Omittable(?model.IsoTime) = .omit,
+        avatar_decoration_data: jconfig.Omittable(?model.User.AvatarDecorationData) = .omit,
+
+        pub const jsonStringify = jconfig.stringifyWithOmit;
+
+        test "is partial member" {
+            try jconfig.testing.expectIsPartialOfStrict(Member.Partial, Member);
+        }
+    };
 
     pub const Flags = packed struct(u64) {
         did_rejoin: bool = false,

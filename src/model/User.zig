@@ -43,6 +43,34 @@ primary_guild: jconfig.Omittable(?PrimaryGuild) = .omit,
 
 pub const jsonStringify = jconfig.stringifyWithOmit;
 
+pub const Partial = struct {
+    id: model.Snowflake,
+    username: ?[]const u8 = null,
+    discriminator: ?[]const u8 = null,
+    global_name: jconfig.Omittable(?[]const u8) = .omit,
+    avatar: jconfig.Omittable(?[]const u8) = .omit,
+    bot: ?bool = null,
+    system: ?bool = null,
+    mfa_enabled: ?(bool) = null,
+    banner: jconfig.Omittable(?[]const u8) = .omit,
+    accent_color: jconfig.Omittable(?i64) = .omit,
+    locale: ?([]const u8) = null,
+    verified: ?(bool) = null,
+    email: jconfig.Omittable(?[]const u8) = .omit,
+    flags: ?model.User.Flags = null,
+    premium_type: ?model.User.NitroType = null,
+    public_flags: ?model.User.Flags = null,
+    avatar_decoration_data: jconfig.Omittable(?model.User.AvatarDecorationData) = .omit,
+    collectibles: jconfig.Omittable(?model.User.Collectibles) = .omit,
+    primary_guild: jconfig.Omittable(?model.User.PrimaryGuild) = .omit,
+
+    pub const jsonStringify = jconfig.stringifyWithOmit;
+
+    test "is partial user" {
+        try jconfig.testing.expectIsPartialOf(User.Partial, User);
+    }
+};
+
 pub const Flags = packed struct(u64) {
     /// discord employee, 1 << 0
     staff: bool = false,
@@ -116,7 +144,7 @@ pub const Connection = struct {
     name: []const u8,
     type: []const u8,
     revoked: ?bool = null,
-    integrations: []const model.guild.Integration.Partial = null,
+    integrations: ?[]const model.guild.Integration.Partial = null,
     verified: bool,
     friend_sync: bool,
     show_activity: bool,

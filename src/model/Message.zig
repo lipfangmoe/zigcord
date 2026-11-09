@@ -25,11 +25,11 @@ pinned: bool,
 webhook_id: ?Snowflake = null,
 type: Type,
 activity: ?Activity = null,
-application: ?jconfig.Partial(model.Application) = null,
+application: ?model.Application.Partial = null,
 application_id: ?Snowflake = null,
 flags: ?Flags = null,
 message_reference: ?Reference = null,
-message_snapshots: ?std.json.Value = null, // TODO - can't use jconfig.Partial(?*const Message) because i get the compile error "struct 'model.Message' depends on itself"
+message_snapshots: ?[]const Snapshot = null,
 referenced_message: jconfig.Omittable(?*const Message) = .omit,
 interaction_metadata: ?InteractionMetadata = null,
 thread: ?model.Channel = null,
@@ -43,6 +43,7 @@ poll: ?model.Poll = null,
 call: ?Call = null,
 
 pub const jsonStringify = jconfig.stringifyWithOmit;
+
 pub fn jsonParse(alloc: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !Message {
     return try jsonParseFromValue(
         alloc,
@@ -90,6 +91,98 @@ pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, opti
     }
     return message;
 }
+
+pub const Partial = struct {
+    id: ?Snowflake = null,
+    channel_id: ?Snowflake = null,
+    author: ?MessageAuthor = null,
+    content: ?[]const u8 = null,
+    timestamp: ?model.IsoTime = null,
+    edited_timestamp: jconfig.Omittable(?model.IsoTime) = .omit,
+    tts: ?bool = null,
+    mention_everyone: ?bool = null,
+    mentions: ?[]const model.User = null,
+    mention_roles: ?[]const model.Snowflake = null,
+    mention_channels: ?[]const ChannelMention = null,
+    attachments: ?[]const Attachment = null,
+    embeds: ?[]const Embed = null,
+    reactions: ?[]const Reaction = null,
+    nonce: ?Nonce = null,
+    pinned: ?bool = null,
+    webhook_id: ?Snowflake = null,
+    type: ?Type = null,
+    activity: ?Activity = null,
+    application: ?model.Application.Partial = null,
+    application_id: ?Snowflake = null,
+    flags: ?Flags = null,
+    message_reference: ?Reference = null,
+    message_snapshots: ?[]const Snapshot = null,
+    referenced_message: jconfig.Omittable(?*const Message) = .omit,
+    interaction_metadata: ?InteractionMetadata = null,
+    thread: ?model.Channel = null,
+    components: ?[]const model.components.TopLevelMessageComponent = null,
+    sticker_items: ?[]const model.Sticker.Item = null,
+    stickers: ?[]const model.Sticker = null,
+    position: ?i64 = null,
+    role_subscription_data: ?RoleSubscriptionData = null,
+    resolved: ?model.interaction.ResolvedData = null,
+    poll: ?model.Poll = null,
+    call: ?Call = null,
+
+    pub const jsonStringify = jconfig.stringifyWithOmit;
+
+    pub fn jsonParse(alloc: std.mem.Allocator, source: anytype, options: std.json.ParseOptions) !Message.Partial {
+        return try Message.Partial.jsonParseFromValue(
+            alloc,
+            try std.json.innerParse(std.json.Value, alloc, source, options),
+            options,
+        );
+    }
+
+    // custom parser is needed because parsing of `author` depends on the value of `webhook_id`
+    pub fn jsonParseFromValue(alloc: std.mem.Allocator, source: std.json.Value, options: std.json.ParseOptions) std.json.ParseFromValueError!Message.Partial {
+        const object = switch (source) {
+            .object => |obj| obj,
+            else => return error.UnexpectedToken,
+        };
+
+        const author: MessageAuthor = blk: {
+            if (object.get("webhook_id")) |_| {
+                break :blk .{ .webhook = try std.json.innerParseFromValue(MessageAuthor.WebhookAuthor, alloc, object.get("author") orelse return error.MissingField, options) };
+            } else {
+                break :blk .{ .user = try std.json.innerParseFromValue(model.User, alloc, object.get("author") orelse return error.MissingField, options) };
+            }
+        };
+
+        var message: Message.Partial = undefined;
+        const message_typeinfo = @typeInfo(Message.Partial).@"struct";
+        inline for (message_typeinfo.field_names, message_typeinfo.field_types, message_typeinfo.field_attrs) |field_name, FieldType, field_attrs| {
+            if (comptime std.mem.eql(u8, field_name, "author")) {
+                @field(message, "author") = author;
+            } else {
+                if (object.get(field_name)) |field_value| {
+                    @field(message, field_name) = std.json.innerParseFromValue(FieldType, alloc, field_value, options) catch |err| {
+                        logger.err("json parsing error while parsing Message field \"{s}\": {}", .{ field_name, err });
+                        return err;
+                    };
+                } else {
+                    const default_opt: ?*const FieldType = @ptrCast(@alignCast(field_attrs.default_value_ptr));
+                    if (default_opt) |default| {
+                        @field(message, field_name) = default.*;
+                    } else {
+                        logger.err("Missing field: {s}", .{field_name});
+                        return error.MissingField;
+                    }
+                }
+            }
+        }
+        return message;
+    }
+};
+
+pub const Snapshot = struct {
+    message: *Message.Partial,
+};
 
 pub const MessageAuthor = union(enum) {
     user: model.User,
@@ -246,7 +339,7 @@ pub const Reaction = struct {
     count_details: CountDetails,
     me: bool,
     me_burst: bool,
-    emoji: jconfig.Partial(model.Emoji),
+    emoji: model.Emoji.Partial,
     burst_colors: []const i64,
 
     pub const CountDetails = struct {

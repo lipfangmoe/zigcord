@@ -15,7 +15,7 @@ results: ?Results = null,
 pub const jsonStringify = jconfig.stringifyWithOmit;
 pub const Media = struct {
     text: ?[]const u8 = null,
-    emoji: ?jconfig.Partial(model.Emoji) = null,
+    emoji: ?model.Emoji.Partial = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };

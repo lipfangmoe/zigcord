@@ -152,7 +152,7 @@ pub const GuildCreate = model.guild.MaybeAvailable(struct {
     members: []const model.guild.Member,
     channels: []const model.Channel,
     threads: []const model.Channel,
-    presences: []const jconfig.Partial(PresenceUpdate),
+    presences: []const PresenceUpdate,
     stage_instances: []const model.StageInstance,
     guild_scheduled_events: []const model.GuildScheduledEvent,
 
@@ -356,7 +356,7 @@ pub const InviteDelete = struct {
 pub const MessageCreate = struct {
     message: model.Message,
     guild_id: ?model.Snowflake = null,
-    member: ?jconfig.Partial(model.guild.Member) = null,
+    member: ?model.guild.Member.Partial = null,
     mentions: []const UserWithPartialMember,
 
     const Mixin = jconfig.InlineSingleStructFieldMixin(@This(), "message");
@@ -366,7 +366,7 @@ pub const MessageCreate = struct {
 
     pub const UserWithPartialMember = struct {
         user: model.User,
-        member: ?jconfig.Partial(model.guild.Member) = null,
+        member: ?model.guild.Member.Partial = null,
 
         const Mixin2 = jconfig.InlineSingleStructFieldMixin(@This(), "user");
         pub const jsonStringify = Mixin2.jsonStringify;
@@ -378,7 +378,7 @@ pub const MessageCreate = struct {
 pub const MessageUpdate = struct {
     message: model.Message,
     guild_id: ?model.Snowflake = null,
-    member: ?jconfig.Partial(model.guild.Member) = null,
+    member: ?model.guild.Member.Partial = null,
     mentions: []const UserWithPartialMember,
 
     const Mixin = jconfig.InlineSingleStructFieldMixin(@This(), "message");
@@ -388,7 +388,7 @@ pub const MessageUpdate = struct {
 
     pub const UserWithPartialMember = struct {
         user: model.User,
-        member: ?jconfig.Partial(model.guild.Member) = null,
+        member: ?model.guild.Member.Partial = null,
 
         const Mixin2 = jconfig.InlineSingleStructFieldMixin(@This(), "user");
         pub const jsonStringify = Mixin2.jsonStringify;
@@ -419,7 +419,7 @@ pub const MessageReactionAdd = struct {
     message_id: model.Snowflake,
     guild_id: ?model.Snowflake = null,
     member: ?model.guild.Member = null,
-    emoji: jconfig.Partial(model.Emoji),
+    emoji: model.Emoji.Partial,
     message_author_id: ?model.Snowflake = null,
     burst: bool,
     burst_colors: ?[]const u8 = null,
@@ -433,7 +433,7 @@ pub const MessageReactionRemove = struct {
     channel_id: model.Snowflake,
     message_id: model.Snowflake,
     guild_id: ?model.Snowflake = null,
-    emoji: jconfig.Partial(model.Emoji),
+    emoji: model.Emoji.Partial,
     burst: bool,
     type: model.Message.Reaction.Type,
 
@@ -452,47 +452,19 @@ pub const MessageReactionRemoveEmoji = struct {
     channel_id: model.Snowflake,
     message_id: model.Snowflake,
     guild_id: ?model.Snowflake = null,
-    emoji: jconfig.Partial(model.Emoji),
+    emoji: model.Emoji.Partial,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const PresenceUpdate = struct {
-    user: ?PartialUser = null,
+    user: ?model.User.Partial = null,
     guild_id: ?model.Snowflake = null,
     status: ?Status = null,
     activities: ?[]const model.Activity = null,
     client_status: ?ClientStatus = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
-
-    pub const PartialUser = struct {
-        id: model.Snowflake,
-        username: ?[]const u8 = null,
-        discriminator: ?[]const u8 = null,
-        global_name: jconfig.Omittable(?[]const u8) = .omit,
-        avatar: jconfig.Omittable(?[]const u8) = .omit,
-        bot: ?bool = null,
-        system: ?bool = null,
-        mfa_enabled: ?(bool) = null,
-        banner: jconfig.Omittable(?[]const u8) = .omit,
-        accent_color: jconfig.Omittable(?i64) = .omit,
-        locale: ?([]const u8) = null,
-        verified: ?(bool) = null,
-        email: jconfig.Omittable(?[]const u8) = .omit,
-        flags: ?model.User.Flags = null,
-        premium_type: ?model.User.NitroType = null,
-        public_flags: ?model.User.Flags = null,
-        avatar_decoration_data: jconfig.Omittable(?model.User.AvatarDecorationData) = .omit,
-        collectibles: jconfig.Omittable(?model.User.Collectibles) = .omit,
-        primary_guild: jconfig.Omittable(?model.User.PrimaryGuild) = .omit,
-
-        pub const jsonStringify = jconfig.stringifyWithOmit;
-
-        test "is partial user" {
-            try jconfig.testing.expectIsPartialOf(PartialUser, model.User);
-        }
-    };
 
     pub const Status = enum {
         idle,

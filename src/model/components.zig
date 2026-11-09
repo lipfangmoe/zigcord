@@ -417,7 +417,7 @@ pub const Button = struct {
     custom_id: ?[]const u8 = null,
     style: ButtonStyle,
     label: ?[]const u8 = null,
-    emoji: ?jconfig.Partial(model.Emoji) = null,
+    emoji: ?model.Emoji.Partial = null,
     sku_id: ?model.Snowflake = null,
     url: ?[]const u8 = null,
     disabled: ?bool = null,
@@ -486,7 +486,7 @@ pub const Button = struct {
 
     pub const InitButtonOptions = struct {
         label: ?[]const u8 = null,
-        emoji: ?jconfig.Partial(model.Emoji) = null,
+        emoji: ?model.Emoji.Partial = null,
         disabled: ?bool = null,
     };
 
@@ -960,6 +960,8 @@ pub const UnfurledMediaItem = struct {
     content_scan_metadata: ?ContentScanMetadata = null,
     attachment_id: ?model.Snowflake = null,
 
+    pub const jsonStringify = jconfig.stringifyWithOmit;
+
     pub const Flags = packed struct(u64) {
         is_animated: bool = false,
         _padding: u63 = 0,
@@ -988,8 +990,6 @@ pub const UnfurledMediaItem = struct {
         pub const jsonParse = Mixin.jsonParse;
         pub const jsonParseFromValue = Mixin.jsonParseFromValue;
     };
-
-    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 test "parse discord example" {
@@ -1035,21 +1035,21 @@ test "stringify media gallery example" {
     const expected = reparseJsonAlloc(TopLevelMessageComponent, std.testing.allocator, expected_raw);
     defer std.testing.allocator.free(expected);
 
-    const input: TopLevelMessageComponent = .initMediaGallery(.{ .id = .initSome(1), .items = &.{.{
+    const input: TopLevelMessageComponent = .initMediaGallery(.{ .id = 1, .items = &.{.{
         .media = .{
             .url = "https://example.com",
             .width = .initSome(1300),
-            .proxy_url = .initSome("https://example.com"),
-            .placeholder_version = .initSome(1),
-            .placeholder = .initSome("redacted"),
+            .proxy_url = "https://example.com",
+            .placeholder_version = 1,
+            .placeholder = "redacted",
             .height = .initSome(541),
-            .flags = .initSome(.{}),
-            .content_type = .initSome("image/jpeg"),
-            .content_scan_metadata = .initSome(.{ .flags = .{} }),
-            .attachment_id = .initSome(.fromU64(0)),
+            .flags = .{},
+            .content_type = "image/jpeg",
+            .content_scan_metadata = .{ .flags = .{} },
+            .attachment_id = .fromU64(0),
         },
         .description = .initSome(null),
-        .spoiler = .initSome(false),
+        .spoiler = false,
     }} });
 
     const actual = try std.json.Stringify.valueAlloc(std.testing.allocator, input, .{ .whitespace = .indent_4 });

@@ -501,12 +501,12 @@ pub fn getGuildWidget(
 pub fn getGuildVanityUrl(
     client: *EndpointClient,
     guild_id: model.Snowflake,
-) !Result(jconfig.Partial(model.Invite)) {
+) !Result(model.Invite.Partial) {
     const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/vanity-url", .{guild_id});
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.request(jconfig.Partial(model.Invite), .GET, uri);
+    return client.rest_client.request(model.Invite.Partial, .GET, uri);
 }
 
 /// Because this endpoint is unauthenticated and does not return JSON (it returns a PNG), `std.http.client.rest_client.request` is
@@ -625,7 +625,7 @@ const CreateGuildChannelBody = struct {
     user_limit: Omittable(?i64) = .omit,
     rate_limit_per_user: Omittable(?i64) = .omit,
     position: Omittable(?i64) = .omit,
-    permission_overwrites: Omittable(?[]const jconfig.Partial(model.Channel.PermissionOverwrite)) = .omit,
+    permission_overwrites: Omittable(?[]const model.Channel.PermissionOverwrite.Partial) = .omit,
     parent_id: Omittable(?model.Snowflake) = .omit,
     nsfw: Omittable(?bool) = .omit,
     rtc_region: Omittable(?[]const u8) = .omit,

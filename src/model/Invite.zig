@@ -1,30 +1,51 @@
 const std = @import("std");
 const jconfig = @import("jconfig");
 const model = @import("../model.zig");
-const Omittable = jconfig.Omittable;
-const Partial = jconfig.Partial;
 
 const Invite = @This();
 
-// partial version of this object is included in `rest/endpoints/channel.zig`, changes here should be reflected in there.
-
 type: Type,
 code: []const u8,
-guild: Omittable(model.guild.PartialGuild) = .omit,
-channel: ?Partial(model.Channel),
-inviter: Omittable(model.User) = .omit,
-target_type: Omittable(i64) = .omit,
-target_user: Omittable(model.User) = .omit,
-target_application: Omittable(Partial(model.Application)) = .omit,
-approximate_presence_count: Omittable(i64) = .omit,
-approximate_member_count: Omittable(i64) = .omit,
-expires_at: Omittable(?[]const u8) = .omit,
-stage_instance: Omittable(InviteStageInstance) = .omit, // deprecated
-guild_scheduled_event: Omittable(model.GuildScheduledEvent) = .omit,
-flags: Omittable(Flags) = .omit,
-roles: Omittable(PartialRole) = .omit,
+guild: ?model.guild.PartialGuild = null,
+channel: ?model.Channel.Partial,
+inviter: ?model.User = null,
+target_type: ?i64 = null,
+target_user: ?model.User = null,
+target_application: ?model.Application.Partial = null,
+approximate_presence_count: ?i64 = null,
+approximate_member_count: ?i64 = null,
+expires_at: jconfig.Omittable(?[]const u8) = .omit,
+stage_instance: ?InviteStageInstance = null, // deprecated
+guild_scheduled_event: ?model.GuildScheduledEvent = null,
+flags: ?Flags = null,
+roles: ?PartialRole = null,
 
 pub const jsonStringify = jconfig.stringifyWithOmit;
+
+pub const Partial = struct {
+    type: ?Type = null,
+    code: ?[]const u8 = null,
+    guild: ?model.guild.PartialGuild = null,
+    channel: jconfig.Omittable(?model.Channel.Partial) = .omit,
+    inviter: ?model.User = null,
+    target_type: ?i64 = null,
+    target_user: ?model.User = null,
+    target_application: ?model.Application.Partial = null,
+    approximate_presence_count: ?i64 = null,
+    approximate_member_count: ?i64 = null,
+    expires_at: jconfig.Omittable(?[]const u8) = .omit,
+    stage_instance: ?InviteStageInstance = null, // deprecated
+    guild_scheduled_event: ?model.GuildScheduledEvent = null,
+    flags: ?Flags = null,
+    roles: ?PartialRole = null,
+
+    pub const jsonStringify = jconfig.stringifyWithOmit;
+
+    test "is partial invite" {
+        try jconfig.testing.expectIsPartialOfStrict(Invite.Partial, Invite);
+    }
+};
+
 pub const Type = enum(u2) {
     guild = 0,
     group_dm = 1,
@@ -34,7 +55,7 @@ pub const Type = enum(u2) {
 };
 
 pub const InviteStageInstance = struct {
-    members: []const Partial(model.guild.Member),
+    members: []const model.guild.Member.Partial,
     participant_count: i64,
     speaker_count: i64,
     topic: []const u8,
@@ -78,4 +99,8 @@ pub const PartialRole = struct {
     unicode_emoji: jconfig.Omittable(?[]const u8) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
+
+    test "is partial role (loose)" {
+        try jconfig.testing.expectIsPartialOfLoose(PartialRole, model.Role);
+    }
 };

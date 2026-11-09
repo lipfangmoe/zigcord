@@ -14,7 +14,7 @@ avatar: ?[]const u8, // avatar hash
 token: ?[]const u8 = null,
 application_id: ?Snowflake,
 source_guild: ?guild.PartialGuild = null,
-source_channel: ?jconfig.Partial(Channel) = null,
+source_channel: ?Channel.Partial = null,
 url: ?[]const u8 = null,
 
 pub const jsonStringify = jconfig.stringifyWithOmit;
