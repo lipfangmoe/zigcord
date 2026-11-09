@@ -13,7 +13,7 @@ linked_Channel: ?model.Channel = null,
 pub const LobbyMember = struct {
     id: model.Snowflake,
     metadata: jconfig.Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
-    flags: jconfig.Omittable(Flags),
+    flags: ?Flags = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 

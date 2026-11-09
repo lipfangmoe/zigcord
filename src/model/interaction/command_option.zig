@@ -28,11 +28,11 @@ pub const ApplicationCommandOption = struct {
     name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     description: []const u8,
     description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
-    required: Omittable(bool) = .omit,
-    choices: Omittable(Choices) = .omit,
-    options: Omittable([]const ApplicationCommandOption) = .omit,
-    channel_types: Omittable([]const Channel.Type) = .omit,
-    min_value: Omittable(union(enum) {
+    required: ?bool = null,
+    choices: ?Choices = null,
+    options: ?[]const ApplicationCommandOption = null,
+    channel_types: ?[]const Channel.Type = null,
+    min_value: ?union(enum) {
         double: f64,
         integer: i64,
 
@@ -40,8 +40,8 @@ pub const ApplicationCommandOption = struct {
         pub const jsonStringify = Mixin.jsonStringify;
         pub const jsonParse = Mixin.jsonParse;
         pub const jsonParseFromValue = Mixin.jsonParseFromValue;
-    }) = .omit,
-    max_value: Omittable(union(enum) {
+    } = null,
+    max_value: ?union(enum) {
         double: f64,
         integer: i64,
 
@@ -49,11 +49,11 @@ pub const ApplicationCommandOption = struct {
         pub const jsonStringify = Mixin.jsonStringify;
         pub const jsonParse = Mixin.jsonParse;
         pub const jsonParseFromValue = Mixin.jsonParseFromValue;
-    }) = .omit,
-    min_length: Omittable(i64) = .omit,
-    max_length: Omittable(i64) = .omit,
-    autocomplete: Omittable(bool) = .omit,
-    file_types: Omittable([]const []const u8) = .omit,
+    } = null,
+    min_length: ?i64 = null,
+    max_length: ?i64 = null,
+    autocomplete: ?bool = null,
+    file_types: ?[]const []const u8 = null,
 
     pub const Choices = union(enum) {
         string: []const StringChoice,
@@ -118,9 +118,9 @@ pub const SubcommandOptionBuilder = struct {
     name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     description: []const u8,
     description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
-    required: Omittable(bool) = .omit,
-    options: Omittable([]const ApplicationCommandOption) = .omit,
-    channel_types: Omittable([]const Channel.Type) = .omit,
+    required: ?bool = null,
+    options: ?[]const ApplicationCommandOption = null,
+    channel_types: ?[]const Channel.Type = null,
 
     fn build(self: @This()) ApplicationCommandOption {
         return ApplicationCommandOption{
@@ -147,9 +147,9 @@ pub const SubcommandGroupOptionBuilder = struct {
     name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     description: []const u8,
     description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
-    required: Omittable(bool) = .omit,
-    options: Omittable([]const ApplicationCommandOption) = .omit,
-    channel_types: Omittable([]const Channel.Type) = .omit,
+    required: ?bool = null,
+    options: ?[]const ApplicationCommandOption = null,
+    channel_types: ?[]const Channel.Type = null,
 
     fn build(self: @This()) ApplicationCommandOption {
         return ApplicationCommandOption{
@@ -176,12 +176,12 @@ pub const StringOptionBuilder = struct {
     name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     description: []const u8,
     description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
-    required: Omittable(bool) = .omit,
-    choices: Omittable([]const StringChoice) = .omit,
-    channel_types: Omittable([]const Channel.Type) = .omit,
-    min_length: Omittable(i64) = .omit,
-    max_length: Omittable(i64) = .omit,
-    autocomplete: Omittable(bool) = .omit,
+    required: ?bool = null,
+    choices: ?[]const StringChoice = null,
+    channel_types: ?[]const Channel.Type = null,
+    min_length: ?i64 = null,
+    max_length: ?i64 = null,
+    autocomplete: ?bool = null,
 
     fn build(self: @This()) ApplicationCommandOption {
         return ApplicationCommandOption{
@@ -191,11 +191,11 @@ pub const StringOptionBuilder = struct {
             .description = self.description,
             .description_localizations = self.description_localizations,
             .required = self.required,
-            .choices = if (self.choices == .some) .initSome(.{ .string = self.choices.some }) else .omit,
-            .options = .omit,
+            .choices = if (self.choices) |choices| .{ .string = choices } else null,
+            .options = null,
             .channel_types = self.channel_types,
-            .min_value = .omit,
-            .max_value = .omit,
+            .min_value = null,
+            .max_value = null,
             .min_length = self.min_length,
             .max_length = self.max_length,
             .autocomplete = self.autocomplete,
@@ -208,12 +208,12 @@ pub const IntegerOptionBuilder = struct {
     name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     description: []const u8,
     description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
-    required: Omittable(bool) = .omit,
-    choices: Omittable([]const IntegerChoice) = .omit,
-    channel_types: Omittable([]const Channel.Type) = .omit,
-    min_value: Omittable(i64) = .omit,
-    max_value: Omittable(i64) = .omit,
-    autocomplete: Omittable(bool) = .omit,
+    required: ?bool = null,
+    choices: ?[]const IntegerChoice = null,
+    channel_types: ?[]const Channel.Type = null,
+    min_value: ?i64 = null,
+    max_value: ?i64 = null,
+    autocomplete: ?bool = null,
 
     fn build(self: @This()) ApplicationCommandOption {
         return ApplicationCommandOption{
@@ -240,12 +240,12 @@ pub const NumberOptionBuilder = struct {
     name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     description: []const u8,
     description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
-    required: Omittable(bool) = .omit,
-    choices: Omittable([]const DoubleChoice) = .omit,
-    channel_types: Omittable([]const Channel.Type) = .omit,
-    min_value: Omittable(f64) = .omit,
-    max_value: Omittable(f64) = .omit,
-    autocomplete: Omittable(bool) = .omit,
+    required: ?bool = null,
+    choices: ?[]const DoubleChoice = null,
+    channel_types: ?[]const Channel.Type = null,
+    min_value: ?f64 = null,
+    max_value: ?f64 = null,
+    autocomplete: ?bool = null,
 
     fn build(self: @This()) ApplicationCommandOption {
         return ApplicationCommandOption{
@@ -272,9 +272,9 @@ pub const AttachmentOptionBuilder = struct {
     name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     description: []const u8,
     description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
-    required: Omittable(bool) = .omit,
-    channel_types: Omittable([]const Channel.Type) = .omit,
-    file_types: Omittable([]const []const u8) = .omit,
+    required: ?bool = null,
+    channel_types: ?[]const Channel.Type = null,
+    file_types: ?[]const []const u8 = null,
 
     fn build(self: @This()) ApplicationCommandOption {
         return ApplicationCommandOption{
@@ -303,8 +303,8 @@ pub fn GenericOptionBuilder(optType: ApplicationCommandOptionType) type {
         name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
         description: []const u8,
         description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
-        required: Omittable(bool) = .omit,
-        channel_types: Omittable([]const Channel.Type) = .omit,
+        required: ?bool = null,
+        channel_types: ?[]const Channel.Type = null,
 
         fn build(self: @This()) ApplicationCommandOption {
             return ApplicationCommandOption{

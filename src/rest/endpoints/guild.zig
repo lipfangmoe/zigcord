@@ -590,28 +590,28 @@ pub fn searchGuildMessages(
 // BODY / QUERY CONTRACTS
 
 pub const ModifyGuildBody = struct {
-    name: Omittable([]const u8) = .omit,
+    name: ?[]const u8 = null,
     region: Omittable(?[]const u8) = .omit,
     verification_level: Omittable(?model.guild.VerificationLevel) = .omit,
     default_message_notifications: Omittable(?model.guild.MessageNotificationLevel) = .omit,
     explicit_content_filter: Omittable(?model.guild.ExplicitContentFilterLevel) = .omit,
-    afk_channel_id: Omittable(model.Snowflake) = .omit,
-    afk_timeout: Omittable(model.Snowflake) = .omit,
+    afk_channel_id: ?model.Snowflake = null,
+    afk_timeout: ?model.Snowflake = null,
     icon: Omittable(?model.DataUri) = .omit,
-    owner_id: Omittable(model.Snowflake) = .omit,
+    owner_id: ?model.Snowflake = null,
     splash: Omittable(?model.DataUri) = .omit,
     discovery_splash: Omittable(?model.DataUri) = .omit,
     banner: Omittable(?model.DataUri) = .omit,
-    system_channel_id: Omittable(model.Snowflake) = .omit,
-    system_channel_flags: Omittable(model.guild.SystemChannelFlags) = .omit,
+    system_channel_id: ?model.Snowflake = null,
+    system_channel_flags: ?model.guild.SystemChannelFlags = null,
     rules_channel_id: Omittable(?model.Snowflake) = .omit,
     public_updates_channel_id: Omittable(?model.Snowflake) = .omit,
     /// https://discord.com/developers/docs/reference#locales
-    preferred_locale: Omittable([]const u8) = .omit,
+    preferred_locale: ?[]const u8 = null,
     /// https://discord.com/developers/docs/resources/guild#guild-object-guild-features
-    features: Omittable([]const []const u8) = .omit,
+    features: ?[]const []const u8 = null,
     description: Omittable(?[]const u8) = .omit,
-    premium_progress_bar_enabled: Omittable(bool) = .omit,
+    premium_progress_bar_enabled: ?bool = null,
     safety_alerts_channel_id: Omittable(?model.Snowflake) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
@@ -670,10 +670,10 @@ pub const SearchGuildMembersParams = struct {
 
 pub const AddGuildMemberBody = struct {
     access_token: []const u8,
-    nick: Omittable([]const u8) = .omit,
-    roles: Omittable([]const model.Snowflake) = .omit,
-    mute: Omittable(bool) = .omit,
-    deaf: Omittable(bool) = .omit,
+    nick: ?[]const u8 = null,
+    roles: ?[]const model.Snowflake = null,
+    mute: ?bool = null,
+    deaf: ?bool = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
@@ -700,7 +700,7 @@ pub const GetGuildBansQuery = struct {
 
 pub const BulkGuildBanBody = struct {
     user_ids: []const model.Snowflake,
-    delete_message_seconds: Omittable(i64) = .omit,
+    delete_message_seconds: ?i64 = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
@@ -711,13 +711,13 @@ pub const BulkGuildBanResponse = struct {
 };
 
 pub const CreateGuildRoleBody = struct {
-    name: Omittable([]const u8) = .omit,
-    permissions: Omittable(model.Permissions) = .omit,
-    color: Omittable(i64) = .omit,
-    hoist: Omittable(bool) = .omit,
+    name: ?[]const u8 = null,
+    permissions: ?model.Permissions = null,
+    color: ?i64 = null,
+    hoist: ?bool = null,
     icon: Omittable(?model.DataUri) = .omit,
     unicode_emoji: Omittable(?[]const u8) = .omit,
-    mentionable: Omittable(bool) = .omit,
+    mentionable: ?bool = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
@@ -783,16 +783,16 @@ pub const BeginGuildPruneResponse = struct {
 };
 
 pub const BeginGuildPruneBody = struct {
-    days: Omittable(i64) = .omit,
-    compute_prune_count: Omittable(bool) = .omit,
-    include_roles: Omittable([]const model.Snowflake) = .omit,
-    reason: Omittable([]const u8) = .omit,
+    days: ?i64 = null,
+    compute_prune_count: ?bool = null,
+    include_roles: ?[]const model.Snowflake = null,
+    reason: ?[]const u8 = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };
 
 pub const ModifyGuildWidgetBody = struct {
-    enabled: Omittable(bool) = .omit,
+    enabled: ?bool = null,
     channel_id: Omittable(?model.Snowflake) = .omit,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;

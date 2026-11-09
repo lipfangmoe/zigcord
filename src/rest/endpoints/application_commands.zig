@@ -188,32 +188,32 @@ pub const CreateGlobalApplicationCommandBody = struct {
     /// If you are not creating a slash command, you may set it to an empty-string.
     description: []const u8,
     description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
-    options: Omittable([]const ApplicationCommandOption) = .omit,
+    options: ?[]const ApplicationCommandOption = null,
     default_member_permissions: Omittable(?model.Permissions) = .omit,
     /// Deprecated (use contexts instead);
     dm_permission: Omittable(?bool) = .omit,
     /// Replaced by default_member_permissions and will be deprecated in the future
-    default_permission: Omittable(bool) = .omit,
-    integration_types: Omittable([]const model.Application.IntegrationType) = .omit,
-    contexts: Omittable([]const model.interaction.Context) = .omit,
-    type: Omittable(ApplicationCommandType) = .omit,
-    nsfw: Omittable(bool) = .omit,
+    default_permission: ?bool = null,
+    integration_types: ?[]const model.Application.IntegrationType = null,
+    contexts: ?[]const model.interaction.Context = null,
+    type: ?ApplicationCommandType = null,
+    nsfw: ?bool = null,
 
     pub const jsonStringify = stringifyWithOmit;
 };
 
 pub const EditGlobalApplicationCommandBody = struct {
-    name: Omittable([]const u8) = .omit,
+    name: ?[]const u8 = null,
     name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
-    description: Omittable([]const u8) = .omit,
+    description: ?[]const u8 = null,
     description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
-    options: Omittable([]const ApplicationCommandOption) = .omit,
+    options: ?[]const ApplicationCommandOption = null,
     default_member_permissions: Omittable(?model.Permissions) = .omit,
     dm_permission: Omittable(?bool) = .omit,
-    default_permission: Omittable(bool) = .omit,
-    integration_types: Omittable([]const model.Application.IntegrationType) = .omit,
-    contexts: Omittable([]const model.interaction.Context) = .omit,
-    nsfw: Omittable(bool) = .omit,
+    default_permission: ?bool = null,
+    integration_types: ?[]const model.Application.IntegrationType = null,
+    contexts: ?[]const model.interaction.Context = null,
+    nsfw: ?bool = null,
 
     pub const jsonStringify = stringifyWithOmit;
 };
@@ -221,44 +221,44 @@ pub const EditGlobalApplicationCommandBody = struct {
 pub const CreateGuildApplicationCommandBody = struct {
     name: []const u8,
     name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
-    description: Omittable([]const u8) = .omit,
+    description: ?[]const u8 = null,
     description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
-    options: Omittable([]const ApplicationCommandOption) = .omit,
+    options: ?[]const ApplicationCommandOption = null,
     default_member_permissions: Omittable(?model.Permissions) = .omit,
-    default_permission: Omittable(bool) = .omit,
-    type: Omittable(ApplicationCommandType) = .omit,
-    nsfw: Omittable(bool) = .omit,
+    default_permission: ?bool = null,
+    type: ?ApplicationCommandType = null,
+    nsfw: ?bool = null,
 
     pub const jsonStringify = stringifyWithOmit;
 };
 
 pub const EditGuildApplicationCommandBody = struct {
-    name: Omittable([]const u8) = .omit,
+    name: ?[]const u8 = null,
     name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
-    description: Omittable([]const u8) = .omit,
+    description: ?[]const u8 = null,
     description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
-    options: Omittable([]const ApplicationCommandOption) = .omit,
+    options: ?[]const ApplicationCommandOption = null,
     default_member_permissions: Omittable(?model.Permissions) = .omit,
-    default_permission: Omittable(bool) = .omit,
-    nsfw: Omittable(bool) = .omit,
+    default_permission: ?bool = null,
+    nsfw: ?bool = null,
 
     pub const jsonStringify = stringifyWithOmit;
 };
 
 pub const OverwriteApplicationCommand = struct {
-    id: Omittable(Snowflake) = .omit,
+    id: ?Snowflake = null,
     name: []const u8,
     name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     description: []const u8,
     description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
-    options: Omittable([]const ApplicationCommandOption) = .omit,
+    options: ?[]const ApplicationCommandOption = null,
     default_member_permissions: Omittable(?model.Permissions) = .omit,
-    dm_permission: Omittable(bool) = .omit,
+    dm_permission: ?bool = null,
     default_permission: Omittable(?bool) = .omit,
-    integration_types: Omittable([]const model.Application.IntegrationType) = .omit,
-    contexts: Omittable([]const model.interaction.Context) = .omit,
-    type: Omittable(ApplicationCommandType) = .omit,
-    nsfw: Omittable(bool) = .omit,
+    integration_types: ?[]const model.Application.IntegrationType = null,
+    contexts: ?[]const model.interaction.Context = null,
+    type: ?ApplicationCommandType = null,
+    nsfw: ?bool = null,
 
     pub const jsonStringify = stringifyWithOmit;
 };

@@ -11,18 +11,18 @@ pub const ApplicationCommand = struct {
     id: Snowflake,
     type: ApplicationCommandType, // documentation says this is omittable but REST api seems to disagree
     application_id: Snowflake,
-    guild_id: Omittable(Snowflake) = .omit,
+    guild_id: ?Snowflake = null,
     name: []const u8,
     name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     description: []const u8,
     description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
-    options: Omittable([]const ApplicationCommandOption) = .omit,
+    options: ?[]const ApplicationCommandOption = null,
     default_member_permissions: ?Permissions,
-    dm_permission: Omittable(bool) = .omit,
+    dm_permission: ?bool = null,
     default_permission: Omittable(?bool) = .omit,
-    nsfw: Omittable(bool) = .omit,
+    nsfw: ?bool = null,
     version: Snowflake,
-    handler: Omittable(HandlerType) = .omit,
+    handler: ?HandlerType = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 };

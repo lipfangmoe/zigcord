@@ -4,7 +4,8 @@ const std = @import("std");
 ///
 /// In order for this to work properly, you must declare `pub const jsonStringify = stringifyWithOmit`
 ///
-/// To properly represent an omitted field, define the field as `field: Omittable(T) = .omit`.
+/// To properly represent an omittable field that is not nullable, do not use this utility.
+/// instead, define the field as `field: ?T = null`, and be sure to still add the above jsonStringify.
 ///
 /// To properly use this alongside nullable fields, define the field as `field: Omittable(?T) = .omit`,
 /// and a null field would then be represented as the value `.{ .some = null }`.
@@ -112,7 +113,7 @@ pub fn writeOmittableFieldToStream(
 
 test "stringify with omit" {
     const OmittableTest = struct {
-        omittable_omitted: Omittable(bool) = .omit,
+        omittable_omitted: bool = null,
         omittable_included: Omittable(bool) = .initSome(true),
         nullable_omitted: Omittable(?bool) = .omit,
         nullable_null: Omittable(?bool) = .initSome(null),
