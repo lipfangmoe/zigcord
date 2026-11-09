@@ -9,7 +9,7 @@ const User = @This();
 id: model.Snowflake,
 /// This user's username
 username: []const u8,
-/// This user's discriminator. May likely be #0 after the username update.
+/// This user's discriminator. May likely be "0" after the username update.
 discriminator: []const u8,
 /// This user's display name. This should be used where possible.
 global_name: ?[]const u8,
