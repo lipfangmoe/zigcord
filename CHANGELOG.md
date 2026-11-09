@@ -1,4 +1,4 @@
-# pending changes
+# v0.16.0
 
 This release contains *major* breaking changes, with the general goal being to reduce the verbosity of zigcord
 

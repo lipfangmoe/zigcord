@@ -2,7 +2,7 @@
 
 A Discord API for the Zig programming language.
 
-Currently built off of Zig Version `0.16.0`. If you notice that it is broken
+Currently built off of Zig Version `0.17.1`. If you notice that it is broken
 on a more recent version of Zig, please create an [issue](https://codeberg.org/lipfang/zigcord/issues)!
 
 # Including in your project
@@ -10,7 +10,7 @@ on a more recent version of Zig, please create an [issue](https://codeberg.org/l
 To include this in your zig project, use the Zig Package Manager:
 
 ```sh
-# you can get a lock a specific version by replacing "#main" with the version number, ie "#v0.15.6"
+# you can get a lock a specific version by replacing "#main" with the version number, ie "#v0.16.0"
 zig fetch --save 'git+https://codeberg.org/lipfang/zigcord#main'
 ```
 
