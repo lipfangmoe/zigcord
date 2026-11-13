@@ -1,3 +1,10 @@
+# pending changes
+
+this unreleased version contains minor breaking changes
+
+* fixed `Ready.PartialApplication` to have omittable/nullable flags
+* added `flags_new` to `Ready.PartialApplication`
+
 # v0.16.0
 
 This release contains *major* breaking changes, with the general goal being to reduce the verbosity of zigcord

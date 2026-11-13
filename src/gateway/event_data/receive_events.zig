@@ -19,7 +19,12 @@ pub const Ready = struct {
 
     pub const PartialApplication = struct {
         id: model.Snowflake,
-        flags: model.Application.Flags,
+        flags: ?model.Application.Flags = null,
+        flags_new: ?model.Application.Flags = null,
+
+        test "is partial application" {
+            try jconfig.testing.expectIsPartialOfLoose(PartialApplication, model.Application);
+        }
     };
 };
 
@@ -559,3 +564,7 @@ pub const MessagePollVoteRemove = struct {
 };
 
 pub const Undocumented = std.json.Value;
+
+test {
+    std.testing.refAllDecls(@This());
+}

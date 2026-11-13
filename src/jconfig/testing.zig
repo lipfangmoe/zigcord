@@ -66,6 +66,7 @@ pub fn expectIsPartialOf(comptime PartialT: type, comptime BaseT: type) !void {
             }
             std.debug.print("{s}", .{field_name});
         }
+        std.debug.print("\n", .{});
         return error.UnmatchingFieldNames;
     }
     if (base_extra_fields.items.len > 0) {
@@ -76,6 +77,7 @@ pub fn expectIsPartialOf(comptime PartialT: type, comptime BaseT: type) !void {
             }
             std.debug.print("{s}", .{field_name});
         }
+        std.debug.print("\n", .{});
         return error.UnmatchingFieldNames;
     }
 
@@ -94,7 +96,7 @@ pub fn expectIsPartialOf(comptime PartialT: type, comptime BaseT: type) !void {
 
         if (PartialFieldType != BaseFieldType and PartialFieldType != ?BaseFieldType and PartialFieldType != Omittable(BaseFieldType)) {
             std.debug.print("Type {s} is not a partial type of {s}\n", .{ @typeName(PartialT), @typeName(BaseT) });
-            std.debug.print("  Field Types for field `{s}` do not match:\n    {s}: {s}\n    {s}: {s}", .{ base_field_name, @typeName(PartialT), @typeName(PartialFieldType), @typeName(BaseT), @typeName(BaseFieldType) });
+            std.debug.print("  Field Types for field `{s}` do not match:\n    {s}: {s}\n    {s}: {s}\n", .{ base_field_name, @typeName(PartialT), @typeName(PartialFieldType), @typeName(BaseT), @typeName(BaseFieldType) });
 
             return error.UnmatchingFieldType;
         }
@@ -105,10 +107,10 @@ pub fn expectIsPartialOfLoose(comptime PartialT: type, comptime BaseT: type) !vo
     const partial_info = @typeInfo(PartialT).@"struct";
     const base_info = @typeInfo(BaseT).@"struct";
 
-    const partial_field_name_set: std.StringHashMapUnmanaged(void) = .empty;
+    var partial_field_name_set: std.StringHashMapUnmanaged(void) = .empty;
     defer partial_field_name_set.deinit(std.testing.allocator);
     for (partial_info.field_names) |name| try partial_field_name_set.put(std.testing.allocator, name, {});
-    const base_field_name_set: std.StringHashMapUnmanaged(void) = .empty;
+    var base_field_name_set: std.StringHashMapUnmanaged(void) = .empty;
     defer base_field_name_set.deinit(std.testing.allocator);
     for (base_info.field_names) |name| try base_field_name_set.put(std.testing.allocator, name, {});
 
@@ -118,26 +120,22 @@ pub fn expectIsPartialOfLoose(comptime PartialT: type, comptime BaseT: type) !vo
 
     if (partial_extra_fields.items.len > 0) {
         std.debug.print("Type {s} is not a partial type of {s}\n", .{ @typeName(PartialT), @typeName(BaseT) });
-        std.debug.print("  Partial Type {s} contains the following extra fields: {s}", .{ @typeName(PartialT), partial_extra_fields.items });
+        std.debug.print("  Partial Type {s} contains the following extra fields: ", .{@typeName(PartialT)});
+        for (0.., partial_extra_fields.items) |idx, field_name| {
+            if (idx > 0) {
+                std.debug.print(", ", .{});
+            }
+            std.debug.print("{s}", .{field_name});
+        }
+        std.debug.print("\n", .{});
         return error.UnmatchingFieldNames;
     }
 
-    for (
-        partial_info.field_names,
-        partial_info.field_types,
-        base_info.field_names,
-        base_info.field_types,
-    ) |partial_field_name, PartialFieldType, base_field_name, BaseFieldType| {
-        if (!std.mem.eql(u8, partial_field_name, base_field_name)) {
-            std.debug.print("Type {s} is not a partial type of {s}\n", .{ @typeName(PartialT), @typeName(BaseT) });
-            std.debug.print("  Fields do not match:\n    {s}: {s}\n    {s}: {s}", .{ @typeName(PartialT), partial_field_name, @typeName(BaseT), base_field_name });
-
-            return error.UnmatchingField;
-        }
-
+    inline for (partial_info.field_names, partial_info.field_types) |field_name, PartialFieldType| {
+        const BaseFieldType = @FieldType(BaseT, field_name);
         if (PartialFieldType != BaseFieldType and PartialFieldType != ?BaseFieldType and PartialFieldType != Omittable(BaseFieldType)) {
             std.debug.print("Type {s} is not a partial type of {s}\n", .{ @typeName(PartialT), @typeName(BaseT) });
-            std.debug.print("  Field Types for field `{s}` do not match:\n    {s}: {s}\n    {s}: {s}", .{ base_field_name, @typeName(PartialT), @typeName(PartialFieldType), @typeName(BaseT), @typeName(BaseFieldType) });
+            std.debug.print("  Field Types for field `{s}` do not match:\n    {s}: {s}\n    {s}: {s}\n", .{ field_name, @typeName(PartialT), @typeName(PartialFieldType), @typeName(BaseT), @typeName(BaseFieldType) });
 
             return error.UnmatchingFieldType;
         }

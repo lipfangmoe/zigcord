@@ -113,7 +113,7 @@ pub fn writeOmittableFieldToStream(
 
 test "stringify with omit" {
     const OmittableTest = struct {
-        omittable_omitted: bool = null,
+        omittable_omitted: ?bool = null,
         omittable_included: Omittable(bool) = .initSome(true),
         nullable_omitted: Omittable(?bool) = .omit,
         nullable_null: Omittable(?bool) = .initSome(null),
