@@ -50,7 +50,7 @@ fn setupRequest(
     var auth_value = std.Io.Writer.fixed(auth_value_buf);
     auth_value.print("{f}", .{self.auth}) catch return error.OutOfMemory;
 
-    var defaulted_headers = headers orelse .{};
+    var defaulted_headers = headers orelse std.http.Client.Request.Headers{};
     if (defaulted_headers.authorization == .default) {
         defaulted_headers.authorization = .{ .override = auth_value.buffered() };
     }
@@ -58,7 +58,7 @@ fn setupRequest(
         defaulted_headers.content_type = .{ .override = "application/json" };
     }
 
-    var req = self.client.request(method, url, .{
+    var req = self.client.request(method, url, std.http.Client.RequestOptions{
         .headers = defaulted_headers,
         .extra_headers = extra_headers orelse &.{},
     }) catch |err| switch (err) {
@@ -112,37 +112,32 @@ fn handleResponse(
             else => blk: {
                 var json_reader = std.json.Reader.init(allocator, body_reader);
                 defer json_reader.deinit();
-                const parsed = std.json.parseFromTokenSource(DiscordError, allocator, &json_reader, .{ .ignore_unknown_fields = true }) catch |err| return reduceJsonParseError(err);
+                const parsed = std.json.parseFromTokenSource(DiscordError, allocator, &json_reader, .{ .ignore_unknown_fields = true, .max_value_len = config.max_response_length }) catch |err| return reduceJsonParseError(err);
                 break :blk Result(ResponseT){ .err = .{ .status = status, .value = parsed.value, .parsed = parsed } };
             },
         };
     }
 
-    const body = body_reader.allocRemaining(allocator, .limited(config.max_response_length)) catch return error.ResponseReadError;
-
     var json_reader = std.json.Reader.init(allocator, body_reader);
     defer json_reader.deinit();
 
-    switch (status_class) {
-        .success => {
+    const value = switch (status_class) {
+        .success => blk: {
             if (ResponseT != void) {
-                if (std.json.parseFromSlice(ResponseT, allocator, body, .{ .ignore_unknown_fields = true })) |parsed| {
-                    return .{ .ok = .{ .status = status, .value = parsed.value, .parsed = parsed } };
-                } else |_| if (std.json.parseFromSlice(std.json.Value, allocator, body, .{ .ignore_unknown_fields = true })) |parsed| {
-                    return .{ .json_err = .{ .status = status, .value = parsed.value, .parsed = parsed } };
-                } else {
-                    return error.ResponseJsonParseError;
-                }
+                const parsed = std.json.parseFromTokenSource(ResponseT, allocator, &json_reader, .{ .ignore_unknown_fields = true, .max_value_len = config.max_response_length }) catch |err| return reduceJsonParseError(err);
+                break :blk Result(ResponseT){ .ok = .{ .status = status, .value = parsed.value, .parsed = parsed } };
             } else {
                 // unreachable because we have a special case for `T == void and status_class == .success` earlier
                 unreachable;
             }
         },
-        else => {
-            const parsed = std.json.parseFromSlice(DiscordError, allocator, body, .{ .ignore_unknown_fields = true, .max_value_len = config.max_response_length }) catch |err| return reduceJsonParseError(err);
-            return .{ .err = .{ .status = status, .value = parsed.value, .parsed = parsed } };
+        else => blk: {
+            const parsed = std.json.parseFromTokenSource(DiscordError, allocator, &json_reader, .{ .ignore_unknown_fields = true, .max_value_len = config.max_response_length }) catch |err| return reduceJsonParseError(err);
+            break :blk Result(ResponseT){ .err = .{ .status = status, .value = parsed.value, .parsed = parsed } };
         },
-    }
+    };
+
+    return value;
 }
 
 pub fn beginMultipartRequest(
@@ -432,10 +427,6 @@ pub fn Result(T: type) type {
             status: std.http.Status,
             value: T,
             parsed: ?std.json.Parsed(T),
-
-            pub fn format(self: @This(), writer: *std.Io.Writer) !void {
-                try writer.print("{f}", .{self.value});
-            }
         },
         err: struct {
             status: std.http.Status,
@@ -446,27 +437,16 @@ pub fn Result(T: type) type {
                 try writer.print("{f}", .{self.value});
             }
         },
-        json_err: struct {
-            status: std.http.Status,
-            value: std.json.Value,
-            parsed: ?std.json.Parsed(std.json.Value),
-
-            pub fn format(self: @This(), writer: *std.Io.Writer) !void {
-                try writer.print("{f}", .{std.json.fmt(self.value, .{})});
-            }
-        },
 
         pub const Value = union(enum) {
             ok: T,
             err: DiscordError,
-            json_err: std.json.Value,
         };
 
         pub fn value(self: Result(T)) Value {
             return switch (self) {
                 .ok => |ok| .{ .ok = ok.value },
                 .err => |err| .{ .err = err.value },
-                .json_err => |json_err| .{ .err = json_err.value },
             };
         }
 
@@ -478,42 +458,21 @@ pub fn Result(T: type) type {
 
         /// converts the Result into an error union, returning the unwrapped value if its ok,
         /// and otherwise returns `error.DiscordError`
-        pub fn valueOk(self: Result(T)) error{ DiscordError, JsonError }!T {
+        pub fn valueOk(self: Result(T)) error{DiscordError}!T {
             return switch (self) {
                 .ok => |ok| ok.value,
                 .err => error.DiscordError,
-                .json_err => error.JsonError,
             };
         }
 
         /// similar to `valueOk()`, but logs additional information on error.
-        pub fn expectOk(self: Result(T), context_on_error: []const u8) error{ DiscordError, JsonError }!T {
+        pub fn expectOk(self: Result(T), context_on_error: []const u8) error{DiscordError}!T {
             return switch (self) {
                 .ok => |ok| ok.value,
-                .err => |err| {
-                    const error_code = @backingInt(err.value.code);
-                    shared.logger.err("{s}: {d} ({s})\n{f}", .{ context_on_error, error_code, err.value.message, err });
+                .err => |discord_err| {
+                    const error_code = @backingInt(discord_err.value.code);
+                    shared.logger.err("{s}: {d} ({s})\n{f}", .{ context_on_error, error_code, discord_err.value.message, discord_err });
                     return error.DiscordError;
-                },
-                .json_err => |err| {
-                    shared.logger.err("{s}: the following response does not conform to zigcord's `{s}` type:\n{f}", .{ context_on_error, @typeName(T), err });
-                    return error.JsonError;
-                },
-            };
-        }
-
-        /// similar to `valueOk()`, but logs additional information on error. Allows a fmt-string to be passed in as the context string.
-        pub fn expectOkFmt(self: Result(T), comptime context_on_error_fmt: []const u8, fmt_args: anytype) error{ DiscordError, JsonError }!T {
-            return switch (self) {
-                .ok => |ok| ok.value,
-                .err => |err| {
-                    const error_code = @backingInt(err.value.code);
-                    shared.logger.err(context_on_error_fmt ++ ": {d} ({s})\n{f}", fmt_args ++ .{ error_code, err.value.message, err });
-                    return error.DiscordError;
-                },
-                .json_err => |err| {
-                    shared.logger.err(context_on_error_fmt ++ ": the following response does not conform to zigcord's `{s}` type:\n{f}", fmt_args ++ .{ @typeName(T), err });
-                    return error.JsonError;
                 },
             };
         }
