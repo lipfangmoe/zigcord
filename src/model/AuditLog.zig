@@ -14,7 +14,7 @@ webhooks: []const model.Webhook,
 
 pub const Entry = struct {
     target_id: ?[]const u8,
-    changes: ?[]const std.json.Value = null,
+    changes: ?[]const Change = null,
     user_id: ?model.Snowflake,
     id: model.Snowflake,
     action_type: Event,
@@ -112,6 +112,14 @@ pub const Event = enum(u64) {
     voice_channel_status_delete = 193,
 
     _,
+
+    pub const jsonStringify = jconfig.stringifyEnumAsInt;
+};
+
+pub const Change = struct {
+    new_value: jconfig.Omittable(std.json.Value) = .omit,
+    old_value: jconfig.Omittable(std.json.Value) = .omit,
+    key: []const u8,
 
     pub const jsonStringify = jconfig.stringifyEnumAsInt;
 };

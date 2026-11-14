@@ -14,6 +14,8 @@ this unreleased version contains major breaking changes
   * The result now contains its own arena rather than a `std.json.Parsed`
 * **minor breaking change**: fixed `Ready.PartialApplication` to have omittable/nullable flags
 * added `flags_new` to `Ready.PartialApplication`
+* added `channel_position_update` and `role_position_update` audit log entry types
+* more-strongly typed audit log entry changes, the changes themselves are still a `std.json.Value` that the caller should parse themselves
 * new testing infrastructure added to `zigcord.rest.testing.TestServer`, allowing the creation of a stubbed testing environment
   * see `zigcord.rest.RestClient` tests for examples
 
