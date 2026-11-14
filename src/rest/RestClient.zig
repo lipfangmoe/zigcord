@@ -603,45 +603,32 @@ const SomeJsonObj = struct {
 };
 
 test "request parses response body" {
-    const allocator = std.testing.allocator;
+    const gpa = std.testing.allocator;
     const io = std.testing.io;
 
-    const ThisTestServer = testing.TestServer(struct {
-        pub fn onRequest(req: *std.http.Server.Request) !testing.TestResponse {
-            try std.testing.expectEqual(.GET, req.head.method);
-            try std.testing.expectEqualStrings("/api/v10/lol", req.head.target);
+    var server: testing.TestServer = try .init(gpa, io);
+    defer server.deinit(gpa, io);
 
-            var body_buf: [100]u8 = undefined;
-            var body_reader = req.readerExpectNone(&body_buf);
-            const body = try body_reader.allocRemaining(std.testing.allocator, .limited(1000));
-            defer std.testing.allocator.free(body);
+    const body =
+        \\{"str":"some string","num":123}
+    ;
 
-            try std.testing.expectEqualStrings("", body);
-
-            return .{
-                .status = std.http.Status.ok,
-                .body = "{\"str\":\"some string\",\"num\":123}",
-            };
-        }
+    const expected_request_body = "";
+    try server.queueResponse(io, .{
+        .expected_request_method = .GET,
+        .expected_request_path = "/api/v10/lol",
+        .expected_request_body = expected_request_body,
+        .body = body,
     });
 
-    var test_server: ThisTestServer = try .init(io);
-
-    var fut = try io.concurrent(ThisTestServer.accept, .{ &test_server, io });
-    defer fut.cancel(io);
-    defer test_server.destroy(io);
-
-    var client = init(io, allocator, .{ .bot = "sometoken" });
+    var client = init(io, gpa, .{ .bot = "sometoken" });
     defer client.deinit();
 
-    const url = std.Uri{
-        .scheme = "http",
-        .host = .{ .raw = "127.0.0.1" },
-        .path = .{ .raw = "/api/v10/lol" },
-        .port = test_server.port(),
-    };
+    const url = try server.url(gpa, "/api/v10/lol");
+    defer gpa.free(url);
+    const uri: std.Uri = try .parse(url);
 
-    const result = try client.request(SomeJsonObj, .GET, url);
+    const result = try client.request(SomeJsonObj, .GET, uri);
     defer result.deinit();
 
     const expected: SomeJsonObj = .{ .str = "some string", .num = 123 };
@@ -650,46 +637,39 @@ test "request parses response body" {
 }
 
 test "requestWithJsonBody stringifies struct request body" {
-    const allocator = std.testing.allocator;
+    const gpa = std.testing.allocator;
     const io = std.testing.io;
 
-    const ThisTestServer = testing.TestServer(struct {
-        pub fn onRequest(req: *std.http.Server.Request) !testing.TestResponse {
-            try std.testing.expectEqual(.POST, req.head.method);
-            try std.testing.expectEqualStrings("/api/v10/lol", req.head.target);
+    var server: testing.TestServer = try .init(gpa, io);
+    defer server.deinit(gpa, io);
 
-            var body_buf: [1000]u8 = undefined;
-            var body_reader = req.readerExpectNone(&body_buf);
-            const body = try body_reader.allocRemaining(std.testing.allocator, .unlimited);
-            defer std.testing.allocator.free(body);
-            try std.testing.expectEqualStrings("{\"str\":\"lol lmao\",\"num\":42}", body);
+    const body =
+        \\{"str":"some string","num":123}
+    ;
 
-            return .{
-                .status = std.http.Status.ok,
-                .body = "{\"str\":\"some string\",\"num\":123}",
-            };
-        }
+    const expected_request_body =
+        \\{"str":"lol lmao","num":42}
+    ;
+    try server.queueResponse(io, .{
+        .expected_request_method = .POST,
+        .expected_request_path = "/api/v10/lol",
+        .expected_request_body = expected_request_body,
+        .body = body,
     });
-    var test_server: ThisTestServer = try .init(io);
-    var fut = try io.concurrent(ThisTestServer.accept, .{ &test_server, io });
-    defer fut.cancel(io);
-    defer test_server.destroy(io);
+
+    var client = init(io, gpa, .{ .bot = "sometoken" });
+    defer client.deinit();
+
+    const url = try server.url(gpa, "/api/v10/lol");
+    defer gpa.free(url);
+    const uri: std.Uri = try .parse(url);
 
     const obj = SomeJsonObj{
         .str = "lol lmao",
         .num = 42,
     };
 
-    var client = init(io, allocator, .{ .bot = "sometoken" });
-    defer client.deinit();
-
-    const url = std.Uri{
-        .host = .{ .raw = "127.0.0.1" },
-        .path = .{ .raw = "/api/v10/lol" },
-        .scheme = "http",
-        .port = test_server.port(),
-    };
-    const result = client.requestWithJsonBody(SomeJsonObj, .POST, url, obj, .{ .emit_null_optional_fields = true }) catch undefined;
+    const result = try client.requestWithJsonBody(SomeJsonObj, .POST, uri, obj, .{ .emit_null_optional_fields = true });
     defer result.deinit();
 
     const value = try result.valueOk();
@@ -698,48 +678,39 @@ test "requestWithJsonBody stringifies struct request body" {
 }
 
 test "requestWithJsonBody jsonError in response" {
-    const allocator = std.testing.allocator;
+    const gpa = std.testing.allocator;
     const io = std.testing.io;
 
-    const MyTestServer = testing.TestServer(struct {
-        pub fn onRequest(req: *std.http.Server.Request) !testing.TestResponse {
-            try std.testing.expectEqual(.POST, req.head.method);
-            try std.testing.expectEqualStrings("/api/v10/lol", req.head.target);
+    var server: testing.TestServer = try .init(gpa, io);
+    defer server.deinit(gpa, io);
 
-            var buf: [1000]u8 = undefined;
-            const body_reader = req.readerExpectNone(&buf);
-            var body_buf: [100]u8 = undefined;
-            var body = std.Io.Writer.fixed(&body_buf);
-            _ = try body_reader.stream(&body, .unlimited);
+    const body =
+        \\{"str":"some string","num":"this is a string, not a number!"}
+    ;
+    const expected_request_body =
+        \\{"str":"lol lmao","num":42}
+    ;
 
-            try std.testing.expectEqualStrings("{\"str\":\"lol lmao\",\"num\":42}", body.buffered());
-
-            return .{
-                .status = std.http.Status.ok,
-                .body = "{\"str\":\"some string\",\"num\":\"this is a string, not a number!\"}",
-            };
-        }
+    try server.queueResponse(io, .{
+        .expected_request_method = .POST,
+        .expected_request_path = "/api/v10/lol",
+        .expected_request_body = expected_request_body,
+        .body = body,
     });
-    var test_server: MyTestServer = try .init(io);
-    var fut = try io.concurrent(MyTestServer.accept, .{ &test_server, io });
-    defer fut.cancel(io);
-    defer test_server.destroy(io);
+
+    var client = init(io, gpa, .{ .bot = "sometoken" });
+    defer client.deinit();
+
+    const url = try server.url(gpa, "/api/v10/lol");
+    defer gpa.free(url);
+    const uri: std.Uri = try .parse(url);
 
     const obj = SomeJsonObj{
         .str = "lol lmao",
         .num = 42,
     };
 
-    var client = init(io, allocator, .{ .bot = "sometoken" });
-    defer client.deinit();
-
-    const url = std.Uri{
-        .host = .{ .raw = "127.0.0.1" },
-        .path = .{ .raw = "/api/v10/lol" },
-        .scheme = "http",
-        .port = test_server.port(),
-    };
-    const response = try client.requestWithJsonBody(SomeJsonObj, .POST, url, obj, .{ .emit_null_optional_fields = true });
+    const response = try client.requestWithJsonBody(SomeJsonObj, .POST, uri, obj, .{ .emit_null_optional_fields = true });
     defer response.deinit();
 
     const json_err = response.value.json_err;
@@ -748,48 +719,28 @@ test "requestWithJsonBody jsonError in response" {
 }
 
 test "requestWithJsonBody with non-json response" {
-    const allocator = std.testing.allocator;
+    const gpa = std.testing.allocator;
     const io = std.testing.io;
 
-    const MyTestServer = testing.TestServer(struct {
-        pub fn onRequest(req: *std.http.Server.Request) !testing.TestResponse {
-            try std.testing.expectEqual(.POST, req.head.method);
-            try std.testing.expectEqualStrings("/api/v10/lol", req.head.target);
+    var server: testing.TestServer = try .init(gpa, io);
+    defer server.deinit(gpa, io);
 
-            var buf: [1000]u8 = undefined;
-            const body_reader = req.readerExpectNone(&buf);
-            var body_buf: [100]u8 = undefined;
-            var body = std.Io.Writer.fixed(&body_buf);
-            _ = try body_reader.stream(&body, .unlimited);
+    const body = "this is not json";
+    try server.queueResponse(io, .{ .body = body });
 
-            try std.testing.expectEqualStrings("{\"str\":\"lol lmao\",\"num\":42}", body.buffered());
+    var client = init(io, gpa, .{ .bot = "sometoken" });
+    defer client.deinit();
 
-            return .{
-                .status = std.http.Status.ok,
-                .body = "this isnt even json",
-            };
-        }
-    });
-    var test_server: MyTestServer = try .init(io);
-    var fut = try io.concurrent(MyTestServer.accept, .{ &test_server, io });
-    defer fut.cancel(io);
-    defer test_server.destroy(io);
+    const url = try server.url(gpa, "/");
+    defer gpa.free(url);
+    const uri: std.Uri = try .parse(url);
 
     const obj = SomeJsonObj{
         .str = "lol lmao",
         .num = 42,
     };
 
-    var client = init(io, allocator, .{ .bot = "sometoken" });
-    defer client.deinit();
-
-    const url = std.Uri{
-        .host = .{ .raw = "127.0.0.1" },
-        .path = .{ .raw = "/api/v10/lol" },
-        .scheme = "http",
-        .port = test_server.port(),
-    };
-    const response_err_union = client.requestWithJsonBody(SomeJsonObj, .POST, url, obj, .{ .emit_null_optional_fields = true });
+    const response_err_union = client.requestWithJsonBody(SomeJsonObj, .POST, uri, obj, .{ .emit_null_optional_fields = true });
     defer if (response_err_union) |r| r.deinit() else |_| {};
 
     try std.testing.expectError(error.ResponseReadError, response_err_union);

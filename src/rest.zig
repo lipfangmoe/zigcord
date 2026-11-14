@@ -21,6 +21,8 @@ const query_strings = @import("./rest/query_strings.zig");
 pub const queryFmt = query_strings.fmt;
 pub const formatAsQueryString = query_strings.formatAsQueryString;
 
+pub const testing = @import("./rest/testing.zig");
+
 test {
     std.testing.refAllDecls(@This());
 }
