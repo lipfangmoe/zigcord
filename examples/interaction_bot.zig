@@ -87,13 +87,7 @@ fn registerEchoCommand(application_id: zigcord.model.Snowflake, endpoint_client:
     });
     defer command_result.deinit();
 
-    const command = switch (command_result.value()) {
-        .ok => |ok| ok,
-        .err => |err| {
-            std.log.err("error: {f}", .{std.json.fmt(err, .{})});
-            return error.DiscordError;
-        },
-    };
+    const command = try command_result.expectOk("error registering echo command");
     return command.id;
 }
 

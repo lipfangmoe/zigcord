@@ -42,10 +42,14 @@ pub fn initWithRestClient(io: std.Io, allocator: std.mem.Allocator, client: *res
     const gateway_resp = try client.getGateway();
     defer gateway_resp.deinit();
 
-    const url = switch (gateway_resp.value()) {
+    const url = switch (gateway_resp.value) {
         .ok => |value| value.url,
-        .err => |err| {
+        .discord_err => |err| {
             logger.err("Error while opening gateway response: {f}", .{err});
+            return error.GetGatwayError;
+        },
+        .json_err => |err| {
+            logger.err("Error while opening gateway response: {f}", .{std.json.fmt(err, .{})});
             return error.GetGatwayError;
         },
     };

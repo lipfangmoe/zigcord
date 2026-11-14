@@ -3,6 +3,7 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const shared = @import("shared");
+const testing = @import("./testing.zig");
 const Authorization = @import("./authorization.zig").Authorization;
 const ErrorCode = @import("./JsonErrorCodes.zig").ErrorCode;
 
@@ -50,7 +51,7 @@ fn setupRequest(
     var auth_value = std.Io.Writer.fixed(auth_value_buf);
     auth_value.print("{f}", .{self.auth}) catch return error.OutOfMemory;
 
-    var defaulted_headers = headers orelse .{};
+    var defaulted_headers: std.http.Client.Request.Headers = headers orelse .{};
     if (defaulted_headers.authorization == .default) {
         defaulted_headers.authorization = .{ .override = auth_value.buffered() };
     }
@@ -73,7 +74,7 @@ fn setupRequest(
 }
 
 fn handleResponse(
-    allocator: std.mem.Allocator,
+    gpa: std.mem.Allocator,
     config: Config,
     comptime ResponseT: type,
     response: *std.http.Client.Response,
@@ -86,7 +87,7 @@ fn handleResponse(
     const status = response.head.status;
     const status_class = status.class();
     if (ResponseT == void and status_class == .success) {
-        return Result(ResponseT){ .ok = .{ .status = status, .value = {}, .parsed = null } };
+        return .{ .gpa = gpa, .arena = null, .status = status, .value = .{ .ok = {} } };
     }
     if (ResponseT != void and status == .no_content) {
         return error.ResponseJsonParseError;
@@ -96,42 +97,52 @@ fn handleResponse(
     var decompress: std.http.Decompress = undefined;
     const decompress_buffer: []u8 = switch (response.head.content_encoding) {
         .identity => &.{},
-        .zstd => try allocator.alloc(u8, std.compress.zstd.default_window_len),
-        .deflate, .gzip => try allocator.alloc(u8, std.compress.flate.max_window_len),
+        .zstd => try gpa.alloc(u8, std.compress.zstd.default_window_len),
+        .deflate, .gzip => try gpa.alloc(u8, std.compress.flate.max_window_len),
         .compress => return error.ResponseReadError,
     };
     defer switch (response.head.content_encoding) {
-        .zstd, .deflate, .gzip => allocator.free(decompress_buffer),
+        .zstd, .deflate, .gzip => gpa.free(decompress_buffer),
         else => {},
     };
     const body_reader = response.readerDecompressing(&buf, &decompress, decompress_buffer);
 
     if (ResponseT == RawBody) {
         return switch (status_class) {
-            .success => Result(RawBody){ .ok = .{ .status = status, .value = RawBody{ .reader = body_reader }, .parsed = null } },
-            else => blk: {
-                var json_reader = std.json.Reader.init(allocator, body_reader);
-                defer json_reader.deinit();
-                const parsed = std.json.parseFromTokenSource(DiscordError, allocator, &json_reader, .{ .ignore_unknown_fields = true }) catch |err| return reduceJsonParseError(err);
-                break :blk Result(ResponseT){ .err = .{ .status = status, .value = parsed.value, .parsed = parsed } };
+            .success => .{ .gpa = gpa, .arena = null, .status = status, .value = .{ .ok = .{ .reader = body_reader } } },
+            else => {
+                var arena = try gpa.create(std.heap.ArenaAllocator);
+                errdefer gpa.destroy(arena);
+                arena.* = .init(gpa);
+                errdefer arena.deinit();
+
+                var json_reader: std.json.Reader = .init(arena.allocator(), body_reader);
+                const weak_value = std.json.parseFromTokenSourceLeaky(std.json.Value, arena.allocator(), &json_reader, .{ .allocate = .alloc_always, .max_value_len = config.max_response_length }) catch |err| return reduceJsonParseError(err);
+
+                if (std.json.parseFromValueLeaky(DiscordError, arena.allocator(), weak_value, .{ .ignore_unknown_fields = true })) |value| {
+                    return .{ .gpa = gpa, .arena = arena, .status = status, .value = .{ .discord_err = value } };
+                } else |_| {
+                    return error.ResponseJsonParseError;
+                }
             },
         };
     }
 
-    const body = body_reader.allocRemaining(allocator, .limited(config.max_response_length)) catch return error.ResponseReadError;
+    const arena = try gpa.create(std.heap.ArenaAllocator);
+    errdefer gpa.destroy(arena);
+    arena.* = .init(gpa);
+    errdefer arena.deinit();
 
-    var json_reader = std.json.Reader.init(allocator, body_reader);
-    defer json_reader.deinit();
+    var json_reader: std.json.Reader = .init(arena.allocator(), body_reader);
+    const weak_value = std.json.parseFromTokenSourceLeaky(std.json.Value, arena.allocator(), &json_reader, .{ .allocate = .alloc_always, .max_value_len = config.max_response_length }) catch |err| return reduceJsonParseError(err);
 
     switch (status_class) {
         .success => {
             if (ResponseT != void) {
-                if (std.json.parseFromSlice(ResponseT, allocator, body, .{ .ignore_unknown_fields = true })) |parsed| {
-                    return .{ .ok = .{ .status = status, .value = parsed.value, .parsed = parsed } };
-                } else |_| if (std.json.parseFromSlice(std.json.Value, allocator, body, .{ .ignore_unknown_fields = true })) |parsed| {
-                    return .{ .json_err = .{ .status = status, .value = parsed.value, .parsed = parsed } };
-                } else {
-                    return error.ResponseJsonParseError;
+                if (std.json.parseFromValueLeaky(ResponseT, arena.allocator(), weak_value, .{ .ignore_unknown_fields = true })) |value| {
+                    return .{ .gpa = gpa, .arena = arena, .status = status, .value = .{ .ok = value } };
+                } else |_| {
+                    return .{ .gpa = gpa, .arena = arena, .status = status, .value = .{ .json_err = weak_value } };
                 }
             } else {
                 // unreachable because we have a special case for `T == void and status_class == .success` earlier
@@ -139,8 +150,11 @@ fn handleResponse(
             }
         },
         else => {
-            const parsed = std.json.parseFromSlice(DiscordError, allocator, body, .{ .ignore_unknown_fields = true, .max_value_len = config.max_response_length }) catch |err| return reduceJsonParseError(err);
-            return .{ .err = .{ .status = status, .value = parsed.value, .parsed = parsed } };
+            if (std.json.parseFromValueLeaky(DiscordError, arena.allocator(), weak_value, .{ .ignore_unknown_fields = true })) |value| {
+                return .{ .gpa = gpa, .arena = arena, .status = status, .value = .{ .discord_err = value } };
+            } else |_| {
+                return .{ .gpa = gpa, .arena = arena, .status = status, .value = .{ .json_err = weak_value } };
+            }
         },
     }
 }
@@ -427,76 +441,45 @@ pub fn PendingRequest(comptime T: type) type {
 }
 
 pub fn Result(T: type) type {
-    return union(enum) {
-        ok: struct {
-            status: std.http.Status,
-            value: T,
-            parsed: ?std.json.Parsed(T),
-
-            pub fn format(self: @This(), writer: *std.Io.Writer) !void {
-                try writer.print("{f}", .{self.value});
-            }
-        },
-        err: struct {
-            status: std.http.Status,
-            value: DiscordError,
-            parsed: ?std.json.Parsed(DiscordError),
-
-            pub fn format(self: @This(), writer: *std.Io.Writer) !void {
-                try writer.print("{f}", .{self.value});
-            }
-        },
-        json_err: struct {
-            status: std.http.Status,
-            value: std.json.Value,
-            parsed: ?std.json.Parsed(std.json.Value),
-
-            pub fn format(self: @This(), writer: *std.Io.Writer) !void {
-                try writer.print("{f}", .{std.json.fmt(self.value, .{})});
-            }
-        },
-
-        pub const Value = union(enum) {
+    return struct {
+        gpa: std.mem.Allocator,
+        arena: ?*std.heap.ArenaAllocator,
+        status: std.http.Status,
+        value: union(enum) {
             ok: T,
-            err: DiscordError,
+            discord_err: DiscordError,
             json_err: std.json.Value,
-        };
+        },
 
-        pub fn value(self: Result(T)) Value {
-            return switch (self) {
-                .ok => |ok| .{ .ok = ok.value },
-                .err => |err| .{ .err = err.value },
-                .json_err => |json_err| .{ .err = json_err.value },
-            };
+        pub fn format(self: @This(), writer: *std.Io.Writer) !void {
+            switch (self.value) {
+                .ok => |ok| try writer.print(if (@hasDecl(T, "format")) "{f}" else "{}", .{ok}),
+                .discord_err => |err| try writer.print("{f}", err),
+                .json_err => |err| try writer.print("{f}", .{std.json.fmt(err.value, .{})}),
+            }
         }
 
-        pub fn status(self: Result(T)) std.http.Status {
-            return switch (self) {
-                inline else => |either| either.status,
-            };
-        }
-
-        /// converts the Result into an error union, returning the unwrapped value if its ok,
-        /// and otherwise returns `error.DiscordError`
+        /// converts the Result's .value into an error union, returning the unwrapped value if its ok,
+        /// and otherwise returns an error
         pub fn valueOk(self: Result(T)) error{ DiscordError, JsonError }!T {
-            return switch (self) {
-                .ok => |ok| ok.value,
-                .err => error.DiscordError,
+            return switch (self.value) {
+                .ok => |ok| ok,
+                .discord_err => error.DiscordError,
                 .json_err => error.JsonError,
             };
         }
 
         /// similar to `valueOk()`, but logs additional information on error.
         pub fn expectOk(self: Result(T), context_on_error: []const u8) error{ DiscordError, JsonError }!T {
-            return switch (self) {
-                .ok => |ok| ok.value,
-                .err => |err| {
-                    const error_code = @backingInt(err.value.code);
-                    shared.logger.err("{s}: {d} ({s})\n{f}", .{ context_on_error, error_code, err.value.message, err });
+            return switch (self.value) {
+                .ok => |ok| ok,
+                .discord_err => |err| {
+                    const error_code = @backingInt(err.code);
+                    shared.logger.err("{s}: {d} ({s})\n{f}", .{ context_on_error, error_code, err.message, err });
                     return error.DiscordError;
                 },
                 .json_err => |err| {
-                    shared.logger.err("{s}: the following response does not conform to zigcord's `{s}` type:\n{f}", .{ context_on_error, @typeName(T), err });
+                    shared.logger.err("{s}: the following response does not conform to zigcord's `{s}` type:\n{f}", .{ context_on_error, @typeName(T), std.json.fmt(err, .{}) });
                     return error.JsonError;
                 },
             };
@@ -506,8 +489,8 @@ pub fn Result(T: type) type {
         pub fn expectOkFmt(self: Result(T), comptime context_on_error_fmt: []const u8, fmt_args: anytype) error{ DiscordError, JsonError }!T {
             return switch (self) {
                 .ok => |ok| ok.value,
-                .err => |err| {
-                    const error_code = @backingInt(err.value.code);
+                .discord_err => |err| {
+                    const error_code = @backingInt(err.code);
                     shared.logger.err(context_on_error_fmt ++ ": {d} ({s})\n{f}", fmt_args ++ .{ error_code, err.value.message, err });
                     return error.DiscordError;
                 },
@@ -519,12 +502,9 @@ pub fn Result(T: type) type {
         }
 
         pub fn deinit(self: Result(T)) void {
-            switch (self) {
-                inline else => |val| {
-                    if (val.parsed) |parsed| {
-                        parsed.deinit();
-                    }
-                },
+            if (self.arena) |arena| {
+                arena.deinit();
+                self.gpa.destroy(arena);
             }
         }
     };
@@ -617,54 +597,6 @@ pub const RawBody = struct {
     reader: *std.Io.Reader,
 };
 
-pub const TestResponse = if (builtin.is_test) struct {
-    status: std.http.Status,
-    body: []const u8,
-} else void;
-
-// inspiration from `std/http/test.zig`
-pub fn TestServer(S: type) type {
-    comptime {
-        std.debug.assert(builtin.is_test);
-        std.debug.assert(@hasDecl(S, "onRequest"));
-    }
-    return struct {
-        net_server: std.Io.net.Server,
-
-        fn init(io: std.Io) !TestServer(S) {
-            const address: std.Io.net.IpAddress = std.Io.net.IpAddress.resolve(io, "127.0.0.1", 0) catch unreachable;
-            return .{ .net_server = try address.listen(io, .{ .reuse_address = true }) };
-        }
-
-        fn accept(self: *TestServer(S), io: std.Io) void {
-            var reader_buf: [2048]u8 = undefined;
-            var writer_buf: [2048]u8 = undefined;
-
-            var conn = self.net_server.accept(io) catch |err| std.debug.panic("while initializing connection: {}", .{err});
-            var conn_reader = conn.reader(io, &reader_buf);
-            var conn_writer = conn.writer(io, &writer_buf);
-
-            var server = std.http.Server.init(&conn_reader.interface, &conn_writer.interface);
-            while (true) {
-                var req = server.receiveHead() catch |err| switch (err) {
-                    error.HttpConnectionClosing => break,
-                    else => std.debug.panic("while receiving headers: {}", .{err}),
-                };
-                const response: TestResponse = S.onRequest(&req) catch |err| std.debug.panic("while calling onRequest: {}", .{err});
-                req.respond(response.body, .{ .status = response.status }) catch |err| std.debug.panic("while writing request: {}", .{err});
-            }
-        }
-
-        fn destroy(self: *TestServer(S), io: std.Io) void {
-            self.net_server.deinit(io);
-        }
-
-        fn port(self: *const TestServer(S)) u16 {
-            return self.net_server.socket.address.getPort();
-        }
-    };
-}
-
 const SomeJsonObj = struct {
     str: []const u8,
     num: f64,
@@ -674,8 +606,8 @@ test "request parses response body" {
     const allocator = std.testing.allocator;
     const io = std.testing.io;
 
-    const ThisTestServer = TestServer(struct {
-        pub fn onRequest(req: *std.http.Server.Request) !TestResponse {
+    const ThisTestServer = testing.TestServer(struct {
+        pub fn onRequest(req: *std.http.Server.Request) !testing.TestResponse {
             try std.testing.expectEqual(.GET, req.head.method);
             try std.testing.expectEqualStrings("/api/v10/lol", req.head.target);
 
@@ -686,7 +618,7 @@ test "request parses response body" {
 
             try std.testing.expectEqualStrings("", body);
 
-            return TestResponse{
+            return .{
                 .status = std.http.Status.ok,
                 .body = "{\"str\":\"some string\",\"num\":123}",
             };
@@ -713,16 +645,16 @@ test "request parses response body" {
     defer result.deinit();
 
     const expected: SomeJsonObj = .{ .str = "some string", .num = 123 };
-    try std.testing.expectEqualDeep(expected, result.value().ok);
-    try std.testing.expectEqual(std.http.Status.ok, result.status());
+    try std.testing.expectEqualDeep(expected, result.value.ok);
+    try std.testing.expectEqual(std.http.Status.ok, result.status);
 }
 
 test "requestWithJsonBody stringifies struct request body" {
     const allocator = std.testing.allocator;
     const io = std.testing.io;
 
-    const ThisTestServer = TestServer(struct {
-        pub fn onRequest(req: *std.http.Server.Request) !TestResponse {
+    const ThisTestServer = testing.TestServer(struct {
+        pub fn onRequest(req: *std.http.Server.Request) !testing.TestResponse {
             try std.testing.expectEqual(.POST, req.head.method);
             try std.testing.expectEqualStrings("/api/v10/lol", req.head.target);
 
@@ -732,7 +664,7 @@ test "requestWithJsonBody stringifies struct request body" {
             defer std.testing.allocator.free(body);
             try std.testing.expectEqualStrings("{\"str\":\"lol lmao\",\"num\":42}", body);
 
-            return TestResponse{
+            return .{
                 .status = std.http.Status.ok,
                 .body = "{\"str\":\"some string\",\"num\":123}",
             };
@@ -760,20 +692,17 @@ test "requestWithJsonBody stringifies struct request body" {
     const result = client.requestWithJsonBody(SomeJsonObj, .POST, url, obj, .{ .emit_null_optional_fields = true }) catch undefined;
     defer result.deinit();
 
-    switch (result.value()) {
-        .ok => {},
-        .err => unreachable,
-    }
-    std.testing.expectEqualStrings("some string", result.value().ok.str) catch unreachable;
-    std.testing.expectEqual(123, result.value().ok.num) catch unreachable;
+    const value = try result.valueOk();
+    try std.testing.expectEqualStrings("some string", value.str);
+    try std.testing.expectEqual(123, value.num);
 }
 
 test "requestWithJsonBody jsonError in response" {
     const allocator = std.testing.allocator;
     const io = std.testing.io;
 
-    const MyTestServer = TestServer(struct {
-        pub fn onRequest(req: *std.http.Server.Request) !TestResponse {
+    const MyTestServer = testing.TestServer(struct {
+        pub fn onRequest(req: *std.http.Server.Request) !testing.TestResponse {
             try std.testing.expectEqual(.POST, req.head.method);
             try std.testing.expectEqualStrings("/api/v10/lol", req.head.target);
 
@@ -785,7 +714,7 @@ test "requestWithJsonBody jsonError in response" {
 
             try std.testing.expectEqualStrings("{\"str\":\"lol lmao\",\"num\":42}", body.buffered());
 
-            return TestResponse{
+            return .{
                 .status = std.http.Status.ok,
                 .body = "{\"str\":\"some string\",\"num\":\"this is a string, not a number!\"}",
             };
@@ -810,6 +739,58 @@ test "requestWithJsonBody jsonError in response" {
         .scheme = "http",
         .port = test_server.port(),
     };
-    const err = client.requestWithJsonBody(SomeJsonObj, .POST, url, obj, .{ .emit_null_optional_fields = true });
-    try std.testing.expectError(error.ResponseJsonParseError, err);
+    const response = try client.requestWithJsonBody(SomeJsonObj, .POST, url, obj, .{ .emit_null_optional_fields = true });
+    defer response.deinit();
+
+    const json_err = response.value.json_err;
+    try std.testing.expectEqualStrings("some string", json_err.object.get("str").?.string);
+    try std.testing.expectEqualStrings("this is a string, not a number!", json_err.object.get("num").?.string);
+}
+
+test "requestWithJsonBody with non-json response" {
+    const allocator = std.testing.allocator;
+    const io = std.testing.io;
+
+    const MyTestServer = testing.TestServer(struct {
+        pub fn onRequest(req: *std.http.Server.Request) !testing.TestResponse {
+            try std.testing.expectEqual(.POST, req.head.method);
+            try std.testing.expectEqualStrings("/api/v10/lol", req.head.target);
+
+            var buf: [1000]u8 = undefined;
+            const body_reader = req.readerExpectNone(&buf);
+            var body_buf: [100]u8 = undefined;
+            var body = std.Io.Writer.fixed(&body_buf);
+            _ = try body_reader.stream(&body, .unlimited);
+
+            try std.testing.expectEqualStrings("{\"str\":\"lol lmao\",\"num\":42}", body.buffered());
+
+            return .{
+                .status = std.http.Status.ok,
+                .body = "this isnt even json",
+            };
+        }
+    });
+    var test_server: MyTestServer = try .init(io);
+    var fut = try io.concurrent(MyTestServer.accept, .{ &test_server, io });
+    defer fut.cancel(io);
+    defer test_server.destroy(io);
+
+    const obj = SomeJsonObj{
+        .str = "lol lmao",
+        .num = 42,
+    };
+
+    var client = init(io, allocator, .{ .bot = "sometoken" });
+    defer client.deinit();
+
+    const url = std.Uri{
+        .host = .{ .raw = "127.0.0.1" },
+        .path = .{ .raw = "/api/v10/lol" },
+        .scheme = "http",
+        .port = test_server.port(),
+    };
+    const response_err_union = client.requestWithJsonBody(SomeJsonObj, .POST, url, obj, .{ .emit_null_optional_fields = true });
+    defer if (response_err_union) |r| r.deinit() else |_| {};
+
+    try std.testing.expectError(error.ResponseReadError, response_err_union);
 }

@@ -1,8 +1,17 @@
 # pending changes
 
-this unreleased version contains minor breaking changes
+this unreleased version contains major breaking changes
 
-* fixed `Ready.PartialApplication` to have omittable/nullable flags
+* **major breaking change**: RestResult (the container returned from EndpointClient/RestClient calls) has been refactored
+  * Refactored from a discriminated union to a struct
+  * The discriminated union is now isolated to `RestResult.value`, which has 3 prongs instead of 2
+    * `.ok` (unchanged)
+    * `.discord_err` (renamed from `.err`)
+    * `.json_err` (new) - this field is active when discord returns a response that zigcord cannot understand
+      * contains a `std.json.Value`, allowing callers to continue reading the response even if it doesn't conform to
+      zigcord's type system.
+  * The result now contains its own arena rather than a `std.json.Parsed`
+* **minor breaking change**: fixed `Ready.PartialApplication` to have omittable/nullable flags
 * added `flags_new` to `Ready.PartialApplication`
 
 # v0.16.0
