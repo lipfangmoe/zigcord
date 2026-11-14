@@ -126,7 +126,7 @@ pub fn listGuildMembers(
     client: *EndpointClient,
     guild_id: model.Snowflake,
     query: ListGuildMembersParams,
-) !Result(model.guild.Member) {
+) !Result([]const model.guild.Member) {
     const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/members?{f}", .{ guild_id, query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
@@ -138,12 +138,24 @@ pub fn searchGuildMembers(
     client: *EndpointClient,
     guild_id: model.Snowflake,
     query: SearchGuildMembersParams,
-) !Result(model.guild.Member) {
+) !Result([]const model.guild.Member) {
     const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/members/search?{f}", .{ guild_id, query });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
     return client.rest_client.request(model.guild.Member, .GET, uri);
+}
+
+pub fn getGuildMemberPermissions(
+    client: *EndpointClient,
+    guild_id: model.Snowflake,
+    user_id: model.Snowflake,
+) !Result(GuildPermissionsBody) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/permissions/member/{f}", .{ guild_id, user_id });
+    defer client.rest_client.allocator.free(uri_str);
+    const uri = try std.Uri.parse(uri_str);
+
+    return client.rest_client.request(GuildPermissionsBody, .GET, uri);
 }
 
 pub fn addGuildMember(
@@ -312,6 +324,18 @@ pub fn getGuildRole(
     const uri = try std.Uri.parse(uri_str);
 
     return client.rest_client.request(model.Role, .GET, uri);
+}
+
+pub fn getGuildRolePermissions(
+    client: *EndpointClient,
+    guild_id: model.Snowflake,
+    role_id: model.Snowflake,
+) !Result(GuildPermissionsBody) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}/permissions/role/{f}", .{ guild_id, role_id });
+    defer client.rest_client.allocator.free(uri_str);
+    const uri = try std.Uri.parse(uri_str);
+
+    return client.rest_client.request(GuildPermissionsBody, .GET, uri);
 }
 
 pub fn getGuildRoleMemberCounts(
@@ -966,6 +990,10 @@ pub const SearchGuildMessagesResponse = struct {
     members: ?[]const model.Channel.ThreadMember = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
+};
+
+pub const GuildPermissionsBody = struct {
+    permissions: model.Permissions,
 };
 
 pub const CreateGuildBanBody = struct {

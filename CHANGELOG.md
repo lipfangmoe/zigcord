@@ -16,6 +16,8 @@ this unreleased version contains major breaking changes
 * added `flags_new` to `Ready.PartialApplication`
 * added `channel_position_update` and `role_position_update` audit log entry types
 * more-strongly typed audit log entry changes, the changes themselves are still a `std.json.Value` that the caller should parse themselves
+* Fixed `listGuildMembers` and `searchGuildMembers` to return lists of members
+* Added `getGuildMemberPermissions`, `getGuildRolePermissions`, `getChannelMemberPermissions`, and `getChannelRolePermissions` to EndpointClient to support [new endpoints](https://docs.discord.com/developers/change-log#new-endpoints-for-getting-member-and-role-permissions-for-guilds-and-channels)
 * new testing infrastructure added to `zigcord.rest.testing.TestServer`, allowing the creation of a stubbed testing environment
   * see `zigcord.rest.RestClient` tests for examples
 
