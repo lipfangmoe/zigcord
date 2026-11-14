@@ -10,9 +10,12 @@ this unreleased version contains major breaking changes
     * `.json_err` (new) - this field is active when discord returns a response that zigcord cannot understand
       * contains a `std.json.Value`, allowing callers to continue reading the response even if it doesn't conform to
       zigcord's type system.
+      * please file an issue with zigcord upon seeing this error, and include the json string you received!
   * The result now contains its own arena rather than a `std.json.Parsed`
 * **minor breaking change**: fixed `Ready.PartialApplication` to have omittable/nullable flags
 * added `flags_new` to `Ready.PartialApplication`
+* new testing infrastructure added to `zigcord.rest.testing.TestServer`, allowing the creation of a stubbed testing environment
+  * see `zigcord.rest.RestClient` tests for examples
 
 # v0.16.0
 
