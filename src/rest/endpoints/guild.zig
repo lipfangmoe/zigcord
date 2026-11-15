@@ -131,7 +131,7 @@ pub fn listGuildMembers(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.request(model.guild.Member, .GET, uri);
+    return client.rest_client.request([]const model.guild.Member, .GET, uri);
 }
 
 pub fn searchGuildMembers(
@@ -143,7 +143,7 @@ pub fn searchGuildMembers(
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
-    return client.rest_client.request(model.guild.Member, .GET, uri);
+    return client.rest_client.request([]const model.guild.Member, .GET, uri);
 }
 
 pub fn getGuildMemberPermissions(
