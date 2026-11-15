@@ -445,17 +445,18 @@ pub fn Result(T: type) type {
         gpa: std.mem.Allocator,
         arena: ?*std.heap.ArenaAllocator,
         status: std.http.Status,
+        raw: std.json.Value,
         value: union(enum) {
             ok: T,
             discord_err: DiscordError,
-            json_err: std.json.Value,
+            json_err: void,
         },
 
         pub fn format(self: @This(), writer: *std.Io.Writer) !void {
             switch (self.value) {
                 .ok => |ok| try writer.print(if (@hasDecl(T, "format")) "{f}" else "{}", .{ok}),
                 .discord_err => |err| try writer.print("{f}", err),
-                .json_err => |err| try writer.print("{f}", .{std.json.fmt(err.value, .{})}),
+                .json_err => try writer.print("{f}", .{std.json.fmt(self.raw, .{})}),
             }
         }
 
@@ -494,8 +495,8 @@ pub fn Result(T: type) type {
                     shared.logger.err(context_on_error_fmt ++ ": {d} ({s})\n{f}", fmt_args ++ .{ error_code, err.value.message, err });
                     return error.DiscordError;
                 },
-                .json_err => |err| {
-                    shared.logger.err(context_on_error_fmt ++ ": the following response does not conform to zigcord's `{s}` type:\n{f}", fmt_args ++ .{ @typeName(T), err });
+                .json_err => {
+                    shared.logger.err(context_on_error_fmt ++ ": the following response does not conform to zigcord's `{s}` type:\n{f}", fmt_args ++ .{ @typeName(T), std.json.fmt(self.raw, .{}) });
                     return error.JsonError;
                 },
             };
@@ -673,6 +674,7 @@ test "requestWithJsonBody stringifies struct request body" {
     defer result.deinit();
 
     const value = try result.valueOk();
+    try std.testing.expectEqualDeep(expected: anytype, actual: anytype)
     try std.testing.expectEqualStrings("some string", value.str);
     try std.testing.expectEqual(123, value.num);
 }
