@@ -48,8 +48,8 @@ pub fn initWithRestClient(io: std.Io, allocator: std.mem.Allocator, client: *res
             logger.err("Error while opening gateway response: {f}", .{err});
             return error.GetGatwayError;
         },
-        .json_err => |err| {
-            logger.err("Error while opening gateway response: {f}", .{std.json.fmt(err, .{})});
+        .json_err => {
+            logger.err("Error while opening gateway response: {f}", .{std.json.fmt(gateway_resp.raw, .{})});
             return error.GetGatwayError;
         },
     };

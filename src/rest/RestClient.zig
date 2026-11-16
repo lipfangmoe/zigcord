@@ -483,8 +483,8 @@ pub fn Result(T: type) type {
                     shared.logger.err("{s}: {d} ({s})\n{f}", .{ context_on_error, error_code, err.message, err });
                     return error.DiscordError;
                 },
-                .json_err => |err| {
-                    shared.logger.err("{s}: the following response does not conform to zigcord's `{s}` type:\n{f}", .{ context_on_error, @typeName(T), std.json.fmt(err, .{}) });
+                .json_err => {
+                    shared.logger.err("{s}: the following response does not conform to zigcord's `{s}` type:\n{f}", .{ context_on_error, @typeName(T), std.json.fmt(self.raw, .{}) });
                     return error.JsonError;
                 },
             };
