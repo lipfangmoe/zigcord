@@ -3,15 +3,16 @@
 this unreleased version contains major breaking changes
 
 * **major breaking change**: RestResult (the container returned from EndpointClient/RestClient calls) has been refactored
-  * Refactored from a discriminated union to a struct
-  * The discriminated union is now isolated to `RestResult.value`, which has 3 prongs instead of 2
+  * refactored from a discriminated union to a struct
+  * new field: `raw: std.json.Value`
+    * this new field contains the raw json value that Discord returned
+    * allows callers to use undocumented fields that zigcord doesn't parse
+  * the discriminated union is now isolated to `RestResult.value`, which has 3 prongs instead of 2
     * `.ok` (unchanged)
     * `.discord_err` (renamed from `.err`)
     * `.json_err` (new) - this field is active when discord returns a response that zigcord cannot understand
-      * contains a `std.json.Value`, allowing callers to continue reading the response even if it doesn't conform to
-      zigcord's type system.
-      * please file an issue with zigcord upon seeing this error, and include the json string you received!
-  * The result now contains its own arena rather than a `std.json.Parsed`
+      * in combination with the new `raw` field, unblocks callers by allowing them to use `result.raw` until we fix our library!
+      * please file an issue with zigcord upon seeing this error, and include the json string you received
 * **minor breaking change**: fixed `Ready.PartialApplication` to have omittable/nullable flags
 * added `flags_new` to `Ready.PartialApplication`
 * added `channel_position_update` and `role_position_update` audit log entry types
