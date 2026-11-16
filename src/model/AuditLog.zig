@@ -121,5 +121,5 @@ pub const Change = struct {
     old_value: jconfig.Omittable(std.json.Value) = .omit,
     key: []const u8,
 
-    pub const jsonStringify = jconfig.stringifyEnumAsInt;
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };
