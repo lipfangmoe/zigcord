@@ -87,7 +87,7 @@ fn handleResponse(
     const status = response.head.status;
     const status_class = status.class();
     if (ResponseT == void and status_class == .success) {
-        return .{ .gpa = gpa, .arena = null, .status = status, .value = .{ .ok = {} } };
+        return .{ .gpa = gpa, .arena = null, .status = status, .raw = null, .value = .{ .ok = {} } };
     }
     if (ResponseT != void and status == .no_content) {
         return error.ResponseJsonParseError;
@@ -107,31 +107,35 @@ fn handleResponse(
     };
     const body_reader = response.readerDecompressing(&buf, &decompress, decompress_buffer);
 
-    if (ResponseT == RawBody) {
-        return switch (status_class) {
-            .success => .{ .gpa = gpa, .arena = null, .status = status, .value = .{ .ok = .{ .reader = body_reader } } },
-            else => {
-                var arena = try gpa.create(std.heap.ArenaAllocator);
-                errdefer gpa.destroy(arena);
-                arena.* = .init(gpa);
-                errdefer arena.deinit();
+    const arena = try gpa.create(std.heap.ArenaAllocator);
+    errdefer gpa.destroy(arena);
+    arena.* = .init(gpa);
+    errdefer arena.deinit();
 
+    if (ResponseT == RawBody) {
+        _ = switch (status_class) {
+            .success => {
+                const body = body_reader.allocRemaining(arena.allocator(), .limited(response.head.content_length orelse @intCast(config.max_response_length))) catch return error.ResponseReadError;
+                return .{
+                    .gpa = gpa,
+                    .arena = arena,
+                    .status = status,
+                    .raw = null,
+                    .value = .{ .ok = .{ .body = body } },
+                };
+            },
+            else => {
                 var json_reader: std.json.Reader = .init(arena.allocator(), body_reader);
                 const weak_value = std.json.parseFromTokenSourceLeaky(std.json.Value, arena.allocator(), &json_reader, .{ .allocate = .alloc_always, .max_value_len = config.max_response_length }) catch |err| return reduceJsonParseError(err);
 
                 if (std.json.parseFromValueLeaky(DiscordError, arena.allocator(), weak_value, .{ .ignore_unknown_fields = true })) |value| {
-                    return .{ .gpa = gpa, .arena = arena, .status = status, .value = .{ .discord_err = value } };
+                    return .{ .gpa = gpa, .arena = arena, .status = status, .raw = weak_value, .value = .{ .discord_err = value } };
                 } else |_| {
                     return error.ResponseJsonParseError;
                 }
             },
         };
     }
-
-    const arena = try gpa.create(std.heap.ArenaAllocator);
-    errdefer gpa.destroy(arena);
-    arena.* = .init(gpa);
-    errdefer arena.deinit();
 
     var json_reader: std.json.Reader = .init(arena.allocator(), body_reader);
     const weak_value = std.json.parseFromTokenSourceLeaky(std.json.Value, arena.allocator(), &json_reader, .{ .allocate = .alloc_always, .max_value_len = config.max_response_length }) catch |err| return reduceJsonParseError(err);
@@ -140,9 +144,9 @@ fn handleResponse(
         .success => {
             if (ResponseT != void) {
                 if (std.json.parseFromValueLeaky(ResponseT, arena.allocator(), weak_value, .{ .ignore_unknown_fields = true })) |value| {
-                    return .{ .gpa = gpa, .arena = arena, .status = status, .value = .{ .ok = value } };
+                    return .{ .gpa = gpa, .arena = arena, .status = status, .raw = weak_value, .value = .{ .ok = value } };
                 } else |_| {
-                    return .{ .gpa = gpa, .arena = arena, .status = status, .value = .{ .json_err = weak_value } };
+                    return .{ .gpa = gpa, .arena = arena, .status = status, .raw = weak_value, .value = .json_err };
                 }
             } else {
                 // unreachable because we have a special case for `T == void and status_class == .success` earlier
@@ -151,9 +155,9 @@ fn handleResponse(
         },
         else => {
             if (std.json.parseFromValueLeaky(DiscordError, arena.allocator(), weak_value, .{ .ignore_unknown_fields = true })) |value| {
-                return .{ .gpa = gpa, .arena = arena, .status = status, .value = .{ .discord_err = value } };
+                return .{ .gpa = gpa, .arena = arena, .status = status, .raw = weak_value, .value = .{ .discord_err = value } };
             } else |_| {
-                return .{ .gpa = gpa, .arena = arena, .status = status, .value = .{ .json_err = weak_value } };
+                return .{ .gpa = gpa, .arena = arena, .status = status, .raw = weak_value, .value = .json_err };
             }
         },
     }
@@ -445,7 +449,7 @@ pub fn Result(T: type) type {
         gpa: std.mem.Allocator,
         arena: ?*std.heap.ArenaAllocator,
         status: std.http.Status,
-        raw: std.json.Value,
+        raw: ?std.json.Value,
         value: union(enum) {
             ok: T,
             discord_err: DiscordError,
@@ -595,7 +599,7 @@ pub const DiscordError = struct {
 
 /// Can be used in place of ResponseT to be supplied with the raw value for the response rather than a json-parsed one.
 pub const RawBody = struct {
-    reader: *std.Io.Reader,
+    body: []const u8,
 };
 
 const SomeJsonObj = struct {
@@ -674,7 +678,15 @@ test "requestWithJsonBody stringifies struct request body" {
     defer result.deinit();
 
     const value = try result.valueOk();
-    try std.testing.expectEqualDeep(expected: anytype, actual: anytype)
+    var expected_raw_value_map: std.json.ObjectMap = try .init(
+        std.testing.allocator,
+        &.{ "str", "num" },
+        &.{ .{ .string = "some string" }, .{ .integer = 123 } },
+    );
+    const expected_raw_value: std.json.Value = .{ .object = expected_raw_value_map };
+    defer expected_raw_value_map.deinit(std.testing.allocator);
+
+    try testing.expectEqualJsonValues(expected_raw_value, result.raw.?);
     try std.testing.expectEqualStrings("some string", value.str);
     try std.testing.expectEqual(123, value.num);
 }
@@ -715,9 +727,9 @@ test "requestWithJsonBody jsonError in response" {
     const response = try client.requestWithJsonBody(SomeJsonObj, .POST, uri, obj, .{ .emit_null_optional_fields = true });
     defer response.deinit();
 
-    const json_err = response.value.json_err;
-    try std.testing.expectEqualStrings("some string", json_err.object.get("str").?.string);
-    try std.testing.expectEqualStrings("this is a string, not a number!", json_err.object.get("num").?.string);
+    try std.testing.expectEqualStrings("json_err", @tagName(response.value));
+    try std.testing.expectEqualStrings("some string", response.raw.?.object.get("str").?.string);
+    try std.testing.expectEqualStrings("this is a string, not a number!", response.raw.?.object.get("num").?.string);
 }
 
 test "requestWithJsonBody with non-json response" {
@@ -746,4 +758,35 @@ test "requestWithJsonBody with non-json response" {
     defer if (response_err_union) |r| r.deinit() else |_| {};
 
     try std.testing.expectError(error.ResponseReadError, response_err_union);
+}
+
+test "request with non-json response (expected)" {
+    const gpa = std.testing.allocator;
+    const io = std.testing.io;
+
+    var server: testing.TestServer = try .init(gpa, io);
+    defer server.deinit(gpa, io);
+
+    const body = "this is a raw response body";
+    try server.queueResponse(io, .{ .body = body });
+
+    var client = init(io, gpa, .{ .bot = "sometoken" });
+    defer client.deinit();
+
+    const url = try server.url(gpa, "/");
+    defer gpa.free(url);
+    const uri: std.Uri = try .parse(url);
+
+    const obj: SomeJsonObj = .{
+        .str = "lol lmao",
+        .num = 42,
+    };
+
+    const result = try client.requestWithJsonBody(RawBody, .POST, uri, obj, .{ .emit_null_optional_fields = true });
+    defer result.deinit();
+    const response = try result.valueOk();
+
+    const expected_raw: ?std.json.Value = null;
+    try std.testing.expectEqual(expected_raw, result.raw);
+    try std.testing.expectEqualStrings("this is a raw response body", response.body);
 }

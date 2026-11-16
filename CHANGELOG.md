@@ -21,6 +21,7 @@ this unreleased version contains major breaking changes
 * added support for `name_localized` and `description_localized` fields being added to interactions when listing commands without explicitly asking for localizations
 * new testing infrastructure added to `zigcord.rest.testing.TestServer`, allowing the creation of a stubbed testing environment
   * see `zigcord.rest.RestClient` tests for examples
+* RawBody never worked correctly, it should work correctly now.
 
 # v0.16.0
 
