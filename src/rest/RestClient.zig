@@ -476,27 +476,16 @@ pub fn Result(T: type) type {
 
         /// similar to `valueOk()`, but logs additional information on error.
         pub fn expectOk(self: Result(T), context_on_error: []const u8) error{ DiscordError, JsonError }!T {
-            return switch (self.value) {
-                .ok => |ok| ok,
-                .discord_err => |err| {
-                    const error_code = @backingInt(err.code);
-                    shared.logger.err("{s}: {d} ({s})\n{f}", .{ context_on_error, error_code, err.message, err });
-                    return error.DiscordError;
-                },
-                .json_err => {
-                    shared.logger.err("{s}: the following response does not conform to zigcord's `{s}` type:\n{f}", .{ context_on_error, @typeName(T), std.json.fmt(self.raw, .{}) });
-                    return error.JsonError;
-                },
-            };
+            return try self.expectOkFmt("{s}", .{context_on_error});
         }
 
         /// similar to `valueOk()`, but logs additional information on error. Allows a fmt-string to be passed in as the context string.
         pub fn expectOkFmt(self: Result(T), comptime context_on_error_fmt: []const u8, fmt_args: anytype) error{ DiscordError, JsonError }!T {
-            return switch (self) {
-                .ok => |ok| ok.value,
+            return switch (self.value) {
+                .ok => |ok| ok,
                 .discord_err => |err| {
                     const error_code = @backingInt(err.code);
-                    shared.logger.err(context_on_error_fmt ++ ": {d} ({s})\n{f}", fmt_args ++ .{ error_code, err.value.message, err });
+                    shared.logger.err(context_on_error_fmt ++ ": {d} ({s})\n{f}", fmt_args ++ .{ error_code, err.message, err });
                     return error.DiscordError;
                 },
                 .json_err => {
@@ -636,8 +625,10 @@ test "request parses response body" {
     const result = try client.request(SomeJsonObj, .GET, uri);
     defer result.deinit();
 
+    const actual = try result.expectOk("");
+
     const expected: SomeJsonObj = .{ .str = "some string", .num = 123 };
-    try std.testing.expectEqualDeep(expected, result.value.ok);
+    try std.testing.expectEqualDeep(expected, actual);
     try std.testing.expectEqual(std.http.Status.ok, result.status);
 }
 
@@ -784,7 +775,7 @@ test "request with non-json response (expected)" {
 
     const result = try client.requestWithJsonBody(RawBody, .POST, uri, obj, .{ .emit_null_optional_fields = true });
     defer result.deinit();
-    const response = try result.valueOk();
+    const response = try result.expectOk("some context");
 
     const expected_raw: ?std.json.Value = null;
     try std.testing.expectEqual(expected_raw, result.raw);
