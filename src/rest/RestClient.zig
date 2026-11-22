@@ -497,8 +497,9 @@ pub fn Result(T: type) type {
 
         pub fn deinit(self: Result(T)) void {
             if (self.arena) |arena| {
+                const gpa = arena.child_allocator;
                 arena.deinit();
-                self.gpa.destroy(arena);
+                gpa.destroy(arena);
             }
         }
 

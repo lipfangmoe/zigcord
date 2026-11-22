@@ -17,6 +17,7 @@ this unreleased version contains major breaking changes
     * `.json_err` (new) - this field is active when discord returns a response that zigcord cannot understand
       * in combination with the new `raw` field, unblocks callers by allowing `result.raw` while the type is fixed!
       * please file an issue with zigcord upon seeing this error, and include the json string you received
+* on a similar vein, `GatewayClient.readEvent()` now returns an arena and a `std.json.Value` so that you can read the raw json, similar to the RestResult changes.
 * **minor breaking change**: fixed `Ready.PartialApplication` to have omittable/nullable flags
 * added `flags_new` to `Ready.PartialApplication`
 * added `channel_position_update` and `role_position_update` audit log entry types

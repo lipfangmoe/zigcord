@@ -22,7 +22,7 @@ sequence: ?i64,
 ready_event: ?ReadyEvent,
 
 pub const ReadyEvent = struct {
-    json_parsed: std.json.Parsed(ReceiveEvent),
+    raw_event: ReadEventResult,
     event: receive_events.Ready,
 };
 
@@ -99,18 +99,51 @@ pub fn deinit(self: *JsonWSClient) void {
     self.allocator.destroy(self.ws_client);
     self.allocator.destroy(self.ws_conn);
     if (self.ready_event) |ready| {
-        ready.json_parsed.deinit();
+        ready.raw_event.deinit();
     }
 }
 
-pub const ReadEventError = error{ ResponseTooLong, WebsocketError, JsonError, ServerClosed } || std.Io.Cancelable;
-pub fn readEvent(self: *JsonWSClient) ReadEventError!std.json.Parsed(ReceiveEvent) {
+pub const ReadEventError = error{ OutOfMemory, ResponseTooLong, WebsocketError, JsonError, ServerClosed } || std.Io.Cancelable;
+pub const ReadEventResult = struct {
+    arena: *std.heap.ArenaAllocator,
+    raw: std.json.Value,
+    value: ReceiveEvent,
+
+    pub fn deinit(self: ReadEventResult) void {
+        const gpa = self.arena.child_allocator;
+        self.arena.deinit();
+        gpa.destroy(self.arena);
+    }
+};
+pub fn readEvent(self: *JsonWSClient) ReadEventError!ReadEventResult {
     var buf: [1000]u8 = undefined;
     var message = self.ws_conn.receiveMessage(&buf);
 
-    // normally i would avoid allocating here, but it's useful for error logging
-    const payload_data = message.interface.allocRemaining(self.allocator, .limited(10_000_000)) catch |err| return switch (err) {
-        error.OutOfMemory, error.StreamTooLong => error.ResponseTooLong,
+    const arena: *std.heap.ArenaAllocator = try self.allocator.create(std.heap.ArenaAllocator);
+    errdefer self.allocator.destroy(arena);
+    arena.* = .init(self.allocator);
+    errdefer arena.deinit();
+
+    var json_reader: std.json.Reader = .init(self.allocator, &message.interface);
+    defer json_reader.deinit();
+
+    const payload_raw = std.json.parseFromTokenSourceLeaky(std.json.Value, arena.allocator(), &json_reader, .{ .ignore_unknown_fields = true, .allocate = .alloc_always }) catch |err| return switch (err) {
+        error.OutOfMemory,
+        error.EndOfStream,
+        error.ValueTooLong,
+        error.UnexpectedEndOfInput,
+        => error.ResponseTooLong,
+        error.Overflow,
+        error.InvalidCharacter,
+        error.UnexpectedToken,
+        error.InvalidNumber,
+        error.InvalidEnumTag,
+        error.DuplicateField,
+        error.UnknownField,
+        error.MissingField,
+        error.LengthMismatch,
+        error.SyntaxError,
+        => error.JsonError,
         error.ReadFailed => switch (message.state.err) {
             error.Canceled => error.Canceled,
             error.ReceivedCloseFrame => error.ServerClosed,
@@ -125,18 +158,20 @@ pub fn readEvent(self: *JsonWSClient) ReadEventError!std.json.Parsed(ReceiveEven
             error.PayloadTooLong => error.ResponseTooLong,
         },
     };
-    defer self.allocator.free(payload_data);
 
-    const payload_json_parsed = std.json.parseFromSlice(ReceiveEvent, self.allocator, payload_data, .{ .ignore_unknown_fields = true, .allocate = .alloc_always }) catch {
-        logger.err("json deserialization error for input: {s}", .{payload_data});
+    const payload_parsed = std.json.parseFromValueLeaky(ReceiveEvent, arena.allocator(), payload_raw, .{ .ignore_unknown_fields = true }) catch {
+        logger.err("json deserialization error for input: {f}", .{std.json.fmt(payload_raw, .{})});
         return error.JsonError;
     };
-    errdefer payload_json_parsed.deinit();
 
-    if (payload_json_parsed.value.s) |sequence| {
+    if (payload_parsed.s) |sequence| {
         self.sequence = sequence;
     }
-    return payload_json_parsed;
+    return .{
+        .arena = arena,
+        .raw = payload_raw,
+        .value = payload_parsed,
+    };
 }
 
 pub fn writeEvent(self: *JsonWSClient, event: SendEvent) error{ Canceled, WebsocketError }!void {
@@ -185,7 +220,7 @@ pub fn authenticate(self: *JsonWSClient, token: []const u8, intents: model.Inten
         switch (event.value.d) {
             .ready => |ready| {
                 self.ready_event = .{
-                    .json_parsed = event,
+                    .raw_event = event,
                     .event = ready,
                 };
                 logger.debug("authentication complete", .{});

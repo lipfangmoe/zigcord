@@ -46,18 +46,22 @@ pub fn getReadyEvent(self: Client) event_data.receive_events.Ready {
 }
 
 pub const ReadEvent = struct {
+    arena: *std.heap.ArenaAllocator,
+    raw: std.json.Value,
     event: ?event_data.ReceiveEventData,
-    json_parsed_value: std.json.Parsed(ReceiveEvent),
 
     pub fn deinit(self: ReadEvent) void {
-        self.json_parsed_value.deinit();
+        const gpa = self.arena.child_allocator;
+        self.arena.deinit();
+        gpa.destroy(self.arena);
     }
 };
 
 /// Reads an event from the gateway. The returned object is owned by the caller, so remember to call `.deinit()` on the event.
-pub fn readEvent(self: *Client) error{ Canceled, Disconnected, JsonError, ResponseTooLong }!ReadEvent {
+pub fn readEvent(self: *Client) error{ OutOfMemory, Canceled, Disconnected, JsonError, ResponseTooLong }!ReadEvent {
     const json_parsed_value = self.json_ws_client.readEvent() catch |err| {
         switch (err) {
+            error.OutOfMemory => return error.OutOfMemory,
             error.Canceled => return error.Canceled,
             error.JsonError => return error.JsonError,
             error.ResponseTooLong => return error.ResponseTooLong,
@@ -115,8 +119,9 @@ pub fn readEvent(self: *Client) error{ Canceled, Disconnected, JsonError, Respon
     }
 
     return .{
+        .arena = json_parsed_value.arena,
+        .raw = json_parsed_value.raw,
         .event = json_parsed_value.value.d,
-        .json_parsed_value = json_parsed_value,
     };
 }
 
