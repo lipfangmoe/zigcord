@@ -3,6 +3,7 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const shared = @import("shared");
+const testing = @import("./testing.zig");
 const Authorization = @import("./authorization.zig").Authorization;
 const ErrorCode = @import("./JsonErrorCodes.zig").ErrorCode;
 
@@ -50,7 +51,7 @@ fn setupRequest(
     var auth_value = std.Io.Writer.fixed(auth_value_buf);
     auth_value.print("{f}", .{self.auth}) catch return error.OutOfMemory;
 
-    var defaulted_headers = headers orelse std.http.Client.Request.Headers{};
+    var defaulted_headers: std.http.Client.Request.Headers = headers orelse .{};
     if (defaulted_headers.authorization == .default) {
         defaulted_headers.authorization = .{ .override = auth_value.buffered() };
     }
@@ -58,7 +59,7 @@ fn setupRequest(
         defaulted_headers.content_type = .{ .override = "application/json" };
     }
 
-    var req = self.client.request(method, url, std.http.Client.RequestOptions{
+    var req = self.client.request(method, url, .{
         .headers = defaulted_headers,
         .extra_headers = extra_headers orelse &.{},
     }) catch |err| switch (err) {
@@ -73,7 +74,7 @@ fn setupRequest(
 }
 
 fn handleResponse(
-    allocator: std.mem.Allocator,
+    gpa: std.mem.Allocator,
     config: Config,
     comptime ResponseT: type,
     response: *std.http.Client.Response,
@@ -86,7 +87,7 @@ fn handleResponse(
     const status = response.head.status;
     const status_class = status.class();
     if (ResponseT == void and status_class == .success) {
-        return Result(ResponseT){ .ok = .{ .status = status, .value = {}, .parsed = null } };
+        return .{ .gpa = gpa, .arena = null, .status = status, .raw = null, .value = .{ .ok = {} } };
     }
     if (ResponseT != void and status == .no_content) {
         return error.ResponseJsonParseError;
@@ -96,48 +97,70 @@ fn handleResponse(
     var decompress: std.http.Decompress = undefined;
     const decompress_buffer: []u8 = switch (response.head.content_encoding) {
         .identity => &.{},
-        .zstd => try allocator.alloc(u8, std.compress.zstd.default_window_len),
-        .deflate, .gzip => try allocator.alloc(u8, std.compress.flate.max_window_len),
+        .zstd => try gpa.alloc(u8, std.compress.zstd.default_window_len),
+        .deflate, .gzip => try gpa.alloc(u8, std.compress.flate.max_window_len),
         .compress => return error.ResponseReadError,
     };
     defer switch (response.head.content_encoding) {
-        .zstd, .deflate, .gzip => allocator.free(decompress_buffer),
+        .zstd, .deflate, .gzip => gpa.free(decompress_buffer),
         else => {},
     };
     const body_reader = response.readerDecompressing(&buf, &decompress, decompress_buffer);
 
+    const arena = try gpa.create(std.heap.ArenaAllocator);
+    errdefer gpa.destroy(arena);
+    arena.* = .init(gpa);
+    errdefer arena.deinit();
+
     if (ResponseT == RawBody) {
-        return switch (status_class) {
-            .success => Result(RawBody){ .ok = .{ .status = status, .value = RawBody{ .reader = body_reader }, .parsed = null } },
-            else => blk: {
-                var json_reader = std.json.Reader.init(allocator, body_reader);
-                defer json_reader.deinit();
-                const parsed = std.json.parseFromTokenSource(DiscordError, allocator, &json_reader, .{ .ignore_unknown_fields = true, .max_value_len = config.max_response_length }) catch |err| return reduceJsonParseError(err);
-                break :blk Result(ResponseT){ .err = .{ .status = status, .value = parsed.value, .parsed = parsed } };
+        _ = switch (status_class) {
+            .success => {
+                const body = body_reader.allocRemaining(arena.allocator(), .limited(response.head.content_length orelse @intCast(config.max_response_length))) catch return error.ResponseReadError;
+                return .{
+                    .gpa = gpa,
+                    .arena = arena,
+                    .status = status,
+                    .raw = null,
+                    .value = .{ .ok = .{ .body = body } },
+                };
+            },
+            else => {
+                var json_reader: std.json.Reader = .init(arena.allocator(), body_reader);
+                const weak_value = std.json.parseFromTokenSourceLeaky(std.json.Value, arena.allocator(), &json_reader, .{ .allocate = .alloc_always, .max_value_len = config.max_response_length }) catch |err| return reduceJsonParseError(err);
+
+                if (std.json.parseFromValueLeaky(DiscordError, arena.allocator(), weak_value, .{ .ignore_unknown_fields = true })) |value| {
+                    return .{ .gpa = gpa, .arena = arena, .status = status, .raw = weak_value, .value = .{ .discord_err = value } };
+                } else |_| {
+                    return error.ResponseJsonParseError;
+                }
             },
         };
     }
 
-    var json_reader = std.json.Reader.init(allocator, body_reader);
-    defer json_reader.deinit();
+    var json_reader: std.json.Reader = .init(arena.allocator(), body_reader);
+    const weak_value = std.json.parseFromTokenSourceLeaky(std.json.Value, arena.allocator(), &json_reader, .{ .allocate = .alloc_always, .max_value_len = config.max_response_length }) catch |err| return reduceJsonParseError(err);
 
-    const value = switch (status_class) {
-        .success => blk: {
+    switch (status_class) {
+        .success => {
             if (ResponseT != void) {
-                const parsed = std.json.parseFromTokenSource(ResponseT, allocator, &json_reader, .{ .ignore_unknown_fields = true, .max_value_len = config.max_response_length }) catch |err| return reduceJsonParseError(err);
-                break :blk Result(ResponseT){ .ok = .{ .status = status, .value = parsed.value, .parsed = parsed } };
+                if (std.json.parseFromValueLeaky(ResponseT, arena.allocator(), weak_value, .{ .ignore_unknown_fields = true })) |value| {
+                    return .{ .gpa = gpa, .arena = arena, .status = status, .raw = weak_value, .value = .{ .ok = value } };
+                } else |_| {
+                    return .{ .gpa = gpa, .arena = arena, .status = status, .raw = weak_value, .value = .json_err };
+                }
             } else {
                 // unreachable because we have a special case for `T == void and status_class == .success` earlier
                 unreachable;
             }
         },
-        else => blk: {
-            const parsed = std.json.parseFromTokenSource(DiscordError, allocator, &json_reader, .{ .ignore_unknown_fields = true, .max_value_len = config.max_response_length }) catch |err| return reduceJsonParseError(err);
-            break :blk Result(ResponseT){ .err = .{ .status = status, .value = parsed.value, .parsed = parsed } };
+        else => {
+            if (std.json.parseFromValueLeaky(DiscordError, arena.allocator(), weak_value, .{ .ignore_unknown_fields = true })) |value| {
+                return .{ .gpa = gpa, .arena = arena, .status = status, .raw = weak_value, .value = .{ .discord_err = value } };
+            } else |_| {
+                return .{ .gpa = gpa, .arena = arena, .status = status, .raw = weak_value, .value = .json_err };
+            }
         },
-    };
-
-    return value;
+    }
 }
 
 pub fn beginMultipartRequest(
@@ -422,68 +445,71 @@ pub fn PendingRequest(comptime T: type) type {
 }
 
 pub fn Result(T: type) type {
-    return union(enum) {
-        ok: struct {
-            status: std.http.Status,
-            value: T,
-            parsed: ?std.json.Parsed(T),
-        },
-        err: struct {
-            status: std.http.Status,
-            value: DiscordError,
-            parsed: ?std.json.Parsed(DiscordError),
-
-            pub fn format(self: @This(), writer: *std.Io.Writer) !void {
-                try writer.print("{f}", .{self.value});
-            }
-        },
-
-        pub const Value = union(enum) {
+    return struct {
+        gpa: std.mem.Allocator,
+        arena: ?*std.heap.ArenaAllocator,
+        status: std.http.Status,
+        raw: ?std.json.Value,
+        value: union(enum) {
             ok: T,
-            err: DiscordError,
-        };
+            discord_err: DiscordError,
+            json_err: void,
+        },
 
-        pub fn value(self: Result(T)) Value {
-            return switch (self) {
-                .ok => |ok| .{ .ok = ok.value },
-                .err => |err| .{ .err = err.value },
-            };
+        pub fn format(self: @This(), writer: *std.Io.Writer) !void {
+            switch (self.value) {
+                .ok => |ok| try writer.print(if (@hasDecl(T, "format")) "{f}" else "{}", .{ok}),
+                .discord_err => |err| try writer.print("{f}", err),
+                .json_err => try writer.print("{f}", .{std.json.fmt(self.raw, .{})}),
+            }
         }
 
-        pub fn status(self: Result(T)) std.http.Status {
-            return switch (self) {
-                inline else => |either| either.status,
-            };
-        }
-
-        /// converts the Result into an error union, returning the unwrapped value if its ok,
-        /// and otherwise returns `error.DiscordError`
-        pub fn valueOk(self: Result(T)) error{DiscordError}!T {
-            return switch (self) {
-                .ok => |ok| ok.value,
-                .err => error.DiscordError,
+        /// converts the Result's .value into an error union, returning the unwrapped value if its ok,
+        /// and otherwise returns an error
+        pub fn valueOk(self: Result(T)) error{ DiscordError, JsonError }!T {
+            return switch (self.value) {
+                .ok => |ok| ok,
+                .discord_err => error.DiscordError,
+                .json_err => error.JsonError,
             };
         }
 
         /// similar to `valueOk()`, but logs additional information on error.
-        pub fn expectOk(self: Result(T), context_on_error: []const u8) error{DiscordError}!T {
+        pub fn expectOk(self: Result(T), context_on_error: []const u8) error{ DiscordError, JsonError }!T {
+            return switch (self.value) {
+                .ok => |ok| ok,
+                .discord_err => |err| {
+                    const error_code = @backingInt(err.code);
+                    shared.logger.err("{s}: {d} ({s})\n{f}", .{ context_on_error, error_code, err.message, err });
+                    return error.DiscordError;
+                },
+                .json_err => {
+                    shared.logger.err("{s}: the following response does not conform to zigcord's `{s}` type:\n{f}", .{ context_on_error, @typeName(T), std.json.fmt(self.raw, .{}) });
+                    return error.JsonError;
+                },
+            };
+        }
+
+        /// similar to `valueOk()`, but logs additional information on error. Allows a fmt-string to be passed in as the context string.
+        pub fn expectOkFmt(self: Result(T), comptime context_on_error_fmt: []const u8, fmt_args: anytype) error{ DiscordError, JsonError }!T {
             return switch (self) {
                 .ok => |ok| ok.value,
-                .err => |discord_err| {
-                    const error_code = @backingInt(discord_err.value.code);
-                    shared.logger.err("{s}: {d} ({s})\n{f}", .{ context_on_error, error_code, discord_err.value.message, discord_err });
+                .discord_err => |err| {
+                    const error_code = @backingInt(err.code);
+                    shared.logger.err(context_on_error_fmt ++ ": {d} ({s})\n{f}", fmt_args ++ .{ error_code, err.value.message, err });
                     return error.DiscordError;
+                },
+                .json_err => {
+                    shared.logger.err(context_on_error_fmt ++ ": the following response does not conform to zigcord's `{s}` type:\n{f}", fmt_args ++ .{ @typeName(T), std.json.fmt(self.raw, .{}) });
+                    return error.JsonError;
                 },
             };
         }
 
         pub fn deinit(self: Result(T)) void {
-            switch (self) {
-                inline else => |val| {
-                    if (val.parsed) |parsed| {
-                        parsed.deinit();
-                    }
-                },
+            if (self.arena) |arena| {
+                arena.deinit();
+                self.gpa.destroy(arena);
             }
         }
     };
@@ -573,56 +599,8 @@ pub const DiscordError = struct {
 
 /// Can be used in place of ResponseT to be supplied with the raw value for the response rather than a json-parsed one.
 pub const RawBody = struct {
-    reader: *std.Io.Reader,
-};
-
-pub const TestResponse = if (builtin.is_test) struct {
-    status: std.http.Status,
     body: []const u8,
-} else void;
-
-// inspiration from `std/http/test.zig`
-pub fn TestServer(S: type) type {
-    comptime {
-        std.debug.assert(builtin.is_test);
-        std.debug.assert(@hasDecl(S, "onRequest"));
-    }
-    return struct {
-        net_server: std.Io.net.Server,
-
-        fn init(io: std.Io) !TestServer(S) {
-            const address: std.Io.net.IpAddress = std.Io.net.IpAddress.resolve(io, "127.0.0.1", 0) catch unreachable;
-            return .{ .net_server = try address.listen(io, .{ .reuse_address = true }) };
-        }
-
-        fn accept(self: *TestServer(S), io: std.Io) void {
-            var reader_buf: [2048]u8 = undefined;
-            var writer_buf: [2048]u8 = undefined;
-
-            var conn = self.net_server.accept(io) catch |err| std.debug.panic("while initializing connection: {}", .{err});
-            var conn_reader = conn.reader(io, &reader_buf);
-            var conn_writer = conn.writer(io, &writer_buf);
-
-            var server = std.http.Server.init(&conn_reader.interface, &conn_writer.interface);
-            while (true) {
-                var req = server.receiveHead() catch |err| switch (err) {
-                    error.HttpConnectionClosing => break,
-                    else => std.debug.panic("while receiving headers: {}", .{err}),
-                };
-                const response: TestResponse = S.onRequest(&req) catch |err| std.debug.panic("while calling onRequest: {}", .{err});
-                req.respond(response.body, .{ .status = response.status }) catch |err| std.debug.panic("while writing request: {}", .{err});
-            }
-        }
-
-        fn destroy(self: *TestServer(S), io: std.Io) void {
-            self.net_server.deinit(io);
-        }
-
-        fn port(self: *const TestServer(S)) u16 {
-            return self.net_server.socket.address.getPort();
-        }
-    };
-}
+};
 
 const SomeJsonObj = struct {
     str: []const u8,
@@ -630,145 +608,185 @@ const SomeJsonObj = struct {
 };
 
 test "request parses response body" {
-    const allocator = std.testing.allocator;
+    const gpa = std.testing.allocator;
     const io = std.testing.io;
 
-    const ThisTestServer = TestServer(struct {
-        pub fn onRequest(req: *std.http.Server.Request) !TestResponse {
-            try std.testing.expectEqual(.GET, req.head.method);
-            try std.testing.expectEqualStrings("/api/v10/lol", req.head.target);
+    var server: testing.TestServer = try .init(gpa, io);
+    defer server.deinit(gpa, io);
 
-            var body_buf: [100]u8 = undefined;
-            var body_reader = req.readerExpectNone(&body_buf);
-            const body = try body_reader.allocRemaining(std.testing.allocator, .limited(1000));
-            defer std.testing.allocator.free(body);
+    const body =
+        \\{"str":"some string","num":123}
+    ;
 
-            try std.testing.expectEqualStrings("", body);
-
-            return TestResponse{
-                .status = std.http.Status.ok,
-                .body = "{\"str\":\"some string\",\"num\":123}",
-            };
-        }
+    const expected_request_body = "";
+    try server.queueResponse(io, .{
+        .expected_request_method = .GET,
+        .expected_request_path = "/api/v10/lol",
+        .expected_request_body = expected_request_body,
+        .body = body,
     });
 
-    var test_server: ThisTestServer = try .init(io);
-
-    var fut = try io.concurrent(ThisTestServer.accept, .{ &test_server, io });
-    defer fut.cancel(io);
-    defer test_server.destroy(io);
-
-    var client = init(io, allocator, .{ .bot = "sometoken" });
+    var client = init(io, gpa, .{ .bot = "sometoken" });
     defer client.deinit();
 
-    const url = std.Uri{
-        .scheme = "http",
-        .host = .{ .raw = "127.0.0.1" },
-        .path = .{ .raw = "/api/v10/lol" },
-        .port = test_server.port(),
-    };
+    const url = try server.url(gpa, "/api/v10/lol");
+    defer gpa.free(url);
+    const uri: std.Uri = try .parse(url);
 
-    const result = try client.request(SomeJsonObj, .GET, url);
+    const result = try client.request(SomeJsonObj, .GET, uri);
     defer result.deinit();
 
     const expected: SomeJsonObj = .{ .str = "some string", .num = 123 };
-    try std.testing.expectEqualDeep(expected, result.value().ok);
-    try std.testing.expectEqual(std.http.Status.ok, result.status());
+    try std.testing.expectEqualDeep(expected, result.value.ok);
+    try std.testing.expectEqual(std.http.Status.ok, result.status);
 }
 
 test "requestWithJsonBody stringifies struct request body" {
-    const allocator = std.testing.allocator;
+    const gpa = std.testing.allocator;
     const io = std.testing.io;
 
-    const ThisTestServer = TestServer(struct {
-        pub fn onRequest(req: *std.http.Server.Request) !TestResponse {
-            try std.testing.expectEqual(.POST, req.head.method);
-            try std.testing.expectEqualStrings("/api/v10/lol", req.head.target);
+    var server: testing.TestServer = try .init(gpa, io);
+    defer server.deinit(gpa, io);
 
-            var body_buf: [1000]u8 = undefined;
-            var body_reader = req.readerExpectNone(&body_buf);
-            const body = try body_reader.allocRemaining(std.testing.allocator, .unlimited);
-            defer std.testing.allocator.free(body);
-            try std.testing.expectEqualStrings("{\"str\":\"lol lmao\",\"num\":42}", body);
+    const body =
+        \\{"str":"some string","num":123}
+    ;
 
-            return TestResponse{
-                .status = std.http.Status.ok,
-                .body = "{\"str\":\"some string\",\"num\":123}",
-            };
-        }
+    const expected_request_body =
+        \\{"str":"lol lmao","num":42}
+    ;
+    try server.queueResponse(io, .{
+        .expected_request_method = .POST,
+        .expected_request_path = "/api/v10/lol",
+        .expected_request_body = expected_request_body,
+        .body = body,
     });
-    var test_server: ThisTestServer = try .init(io);
-    var fut = try io.concurrent(ThisTestServer.accept, .{ &test_server, io });
-    defer fut.cancel(io);
-    defer test_server.destroy(io);
+
+    var client = init(io, gpa, .{ .bot = "sometoken" });
+    defer client.deinit();
+
+    const url = try server.url(gpa, "/api/v10/lol");
+    defer gpa.free(url);
+    const uri: std.Uri = try .parse(url);
 
     const obj = SomeJsonObj{
         .str = "lol lmao",
         .num = 42,
     };
 
-    var client = init(io, allocator, .{ .bot = "sometoken" });
-    defer client.deinit();
-
-    const url = std.Uri{
-        .host = .{ .raw = "127.0.0.1" },
-        .path = .{ .raw = "/api/v10/lol" },
-        .scheme = "http",
-        .port = test_server.port(),
-    };
-    const result = client.requestWithJsonBody(SomeJsonObj, .POST, url, obj, .{ .emit_null_optional_fields = true }) catch undefined;
+    const result = try client.requestWithJsonBody(SomeJsonObj, .POST, uri, obj, .{ .emit_null_optional_fields = true });
     defer result.deinit();
 
-    switch (result.value()) {
-        .ok => {},
-        .err => unreachable,
-    }
-    std.testing.expectEqualStrings("some string", result.value().ok.str) catch unreachable;
-    std.testing.expectEqual(123, result.value().ok.num) catch unreachable;
+    const value = try result.valueOk();
+    var expected_raw_value_map: std.json.ObjectMap = try .init(
+        std.testing.allocator,
+        &.{ "str", "num" },
+        &.{ .{ .string = "some string" }, .{ .integer = 123 } },
+    );
+    const expected_raw_value: std.json.Value = .{ .object = expected_raw_value_map };
+    defer expected_raw_value_map.deinit(std.testing.allocator);
+
+    try testing.expectEqualJsonValues(expected_raw_value, result.raw.?);
+    try std.testing.expectEqualStrings("some string", value.str);
+    try std.testing.expectEqual(123, value.num);
 }
 
 test "requestWithJsonBody jsonError in response" {
-    const allocator = std.testing.allocator;
+    const gpa = std.testing.allocator;
     const io = std.testing.io;
 
-    const MyTestServer = TestServer(struct {
-        pub fn onRequest(req: *std.http.Server.Request) !TestResponse {
-            try std.testing.expectEqual(.POST, req.head.method);
-            try std.testing.expectEqualStrings("/api/v10/lol", req.head.target);
+    var server: testing.TestServer = try .init(gpa, io);
+    defer server.deinit(gpa, io);
 
-            var buf: [1000]u8 = undefined;
-            const body_reader = req.readerExpectNone(&buf);
-            var body_buf: [100]u8 = undefined;
-            var body = std.Io.Writer.fixed(&body_buf);
-            _ = try body_reader.stream(&body, .unlimited);
+    const body =
+        \\{"str":"some string","num":"this is a string, not a number!"}
+    ;
+    const expected_request_body =
+        \\{"str":"lol lmao","num":42}
+    ;
 
-            try std.testing.expectEqualStrings("{\"str\":\"lol lmao\",\"num\":42}", body.buffered());
-
-            return TestResponse{
-                .status = std.http.Status.ok,
-                .body = "{\"str\":\"some string\",\"num\":\"this is a string, not a number!\"}",
-            };
-        }
+    try server.queueResponse(io, .{
+        .expected_request_method = .POST,
+        .expected_request_path = "/api/v10/lol",
+        .expected_request_body = expected_request_body,
+        .body = body,
     });
-    var test_server: MyTestServer = try .init(io);
-    var fut = try io.concurrent(MyTestServer.accept, .{ &test_server, io });
-    defer fut.cancel(io);
-    defer test_server.destroy(io);
+
+    var client = init(io, gpa, .{ .bot = "sometoken" });
+    defer client.deinit();
+
+    const url = try server.url(gpa, "/api/v10/lol");
+    defer gpa.free(url);
+    const uri: std.Uri = try .parse(url);
 
     const obj = SomeJsonObj{
         .str = "lol lmao",
         .num = 42,
     };
 
-    var client = init(io, allocator, .{ .bot = "sometoken" });
+    const response = try client.requestWithJsonBody(SomeJsonObj, .POST, uri, obj, .{ .emit_null_optional_fields = true });
+    defer response.deinit();
+
+    try std.testing.expectEqualStrings("json_err", @tagName(response.value));
+    try std.testing.expectEqualStrings("some string", response.raw.?.object.get("str").?.string);
+    try std.testing.expectEqualStrings("this is a string, not a number!", response.raw.?.object.get("num").?.string);
+}
+
+test "requestWithJsonBody with non-json response" {
+    const gpa = std.testing.allocator;
+    const io = std.testing.io;
+
+    var server: testing.TestServer = try .init(gpa, io);
+    defer server.deinit(gpa, io);
+
+    const body = "this is not json";
+    try server.queueResponse(io, .{ .body = body });
+
+    var client = init(io, gpa, .{ .bot = "sometoken" });
     defer client.deinit();
 
-    const url = std.Uri{
-        .host = .{ .raw = "127.0.0.1" },
-        .path = .{ .raw = "/api/v10/lol" },
-        .scheme = "http",
-        .port = test_server.port(),
+    const url = try server.url(gpa, "/");
+    defer gpa.free(url);
+    const uri: std.Uri = try .parse(url);
+
+    const obj = SomeJsonObj{
+        .str = "lol lmao",
+        .num = 42,
     };
-    const err = client.requestWithJsonBody(SomeJsonObj, .POST, url, obj, .{ .emit_null_optional_fields = true });
-    try std.testing.expectError(error.ResponseJsonParseError, err);
+
+    const response_err_union = client.requestWithJsonBody(SomeJsonObj, .POST, uri, obj, .{ .emit_null_optional_fields = true });
+    defer if (response_err_union) |r| r.deinit() else |_| {};
+
+    try std.testing.expectError(error.ResponseReadError, response_err_union);
+}
+
+test "request with non-json response (expected)" {
+    const gpa = std.testing.allocator;
+    const io = std.testing.io;
+
+    var server: testing.TestServer = try .init(gpa, io);
+    defer server.deinit(gpa, io);
+
+    const body = "this is a raw response body";
+    try server.queueResponse(io, .{ .body = body });
+
+    var client = init(io, gpa, .{ .bot = "sometoken" });
+    defer client.deinit();
+
+    const url = try server.url(gpa, "/");
+    defer gpa.free(url);
+    const uri: std.Uri = try .parse(url);
+
+    const obj: SomeJsonObj = .{
+        .str = "lol lmao",
+        .num = 42,
+    };
+
+    const result = try client.requestWithJsonBody(RawBody, .POST, uri, obj, .{ .emit_null_optional_fields = true });
+    defer result.deinit();
+    const response = try result.valueOk();
+
+    const expected_raw: ?std.json.Value = null;
+    try std.testing.expectEqual(expected_raw, result.raw);
+    try std.testing.expectEqualStrings("this is a raw response body", response.body);
 }

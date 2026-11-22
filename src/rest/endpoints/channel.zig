@@ -34,6 +34,32 @@ pub fn modifyChannel(
     return client.rest_client.requestWithJsonBodyAndAuditLogReason(Channel, .PATCH, uri, body, .{}, audit_log_reason);
 }
 
+pub fn getChannelMemberPermissions(
+    client: *EndpointClient,
+    guild_id: model.Snowflake,
+    user_id: model.Snowflake,
+    query: GetChannelMemberPermissionsQuery,
+) !Result(ChannelPermissionsBody) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/permissions/member/{f}?{f}", .{ guild_id, user_id, query_strings.fmt(query) });
+    defer client.rest_client.allocator.free(uri_str);
+    const uri = try std.Uri.parse(uri_str);
+
+    return client.rest_client.request(ChannelPermissionsBody, .GET, uri);
+}
+
+pub fn getChannelRolePermissions(
+    client: *EndpointClient,
+    guild_id: model.Snowflake,
+    user_id: model.Snowflake,
+    query: GetChannelRolePermissionsQuery,
+) !Result(ChannelPermissionsBody) {
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/channels/{f}/permissions/role/{f}?{f}", .{ guild_id, user_id, query_strings.fmt(query) });
+    defer client.rest_client.allocator.free(uri_str);
+    const uri = try std.Uri.parse(uri_str);
+
+    return client.rest_client.request(ChannelPermissionsBody, .GET, uri);
+}
+
 pub fn setVoiceChannelStatus(
     client: *EndpointClient,
     channel_id: Snowflake,
@@ -1036,4 +1062,16 @@ pub const GetChannelPinsQuery = struct {
     limit: ?i64 = null,
 
     pub const format = query_strings.formatAsQueryString;
+};
+
+pub const ChannelPermissionsBody = struct {
+    permissions: model.Permissions,
+};
+
+pub const GetChannelMemberPermissionsQuery = struct {
+    implicit: ?bool = null,
+};
+
+pub const GetChannelRolePermissionsQuery = struct {
+    implicit: ?bool = null,
 };

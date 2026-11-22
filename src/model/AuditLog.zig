@@ -14,7 +14,7 @@ webhooks: []const model.Webhook,
 
 pub const Entry = struct {
     target_id: ?[]const u8,
-    changes: ?[]const std.json.Value = null,
+    changes: ?[]const Change = null,
     user_id: ?model.Snowflake,
     id: model.Snowflake,
     action_type: Event,
@@ -50,6 +50,7 @@ pub const Event = enum(u64) {
     channel_overwrite_create = 13,
     channel_overwrite_update = 14,
     channel_overwrite_delete = 15,
+    channel_position_update = 16,
     member_kick = 20,
     member_prune = 21,
     member_ban_add = 22,
@@ -62,6 +63,7 @@ pub const Event = enum(u64) {
     role_create = 30,
     role_update = 31,
     role_delete = 32,
+    role_position_update = 33,
     invite_create = 40,
     invite_update = 41,
     invite_delete = 42,
@@ -112,4 +114,12 @@ pub const Event = enum(u64) {
     _,
 
     pub const jsonStringify = jconfig.stringifyEnumAsInt;
+};
+
+pub const Change = struct {
+    new_value: jconfig.Omittable(std.json.Value) = .omit,
+    old_value: jconfig.Omittable(std.json.Value) = .omit,
+    key: []const u8,
+
+    pub const jsonStringify = jconfig.stringifyWithOmit;
 };

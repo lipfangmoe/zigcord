@@ -25,8 +25,10 @@ pub const ApplicationCommandOption = struct {
 
     type: ApplicationCommandOptionType,
     name: []const u8,
+    name_localized: Omittable(?[]const u8) = .omit,
     name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     description: []const u8,
+    description_localized: Omittable(?[]const u8) = .omit,
     description_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     required: ?bool = null,
     choices: ?Choices = null,
@@ -330,6 +332,7 @@ pub fn GenericOptionBuilder(optType: ApplicationCommandOptionType) type {
 /// A possible choice for an ApplicationCommandOption of type `string`.
 pub const StringChoice = struct {
     name: []const u8,
+    name_localized: Omittable(?[]const u8) = .omit,
     name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     value: []const u8,
 
@@ -339,6 +342,7 @@ pub const StringChoice = struct {
 /// A possible choice for an ApplicationCommandOption of type `integer`.
 pub const IntegerChoice = struct {
     name: []const u8,
+    name_localized: Omittable(?[]const u8) = .omit,
     name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     value: i64,
 
@@ -348,6 +352,7 @@ pub const IntegerChoice = struct {
 /// A possible choice for an ApplicationCommandOption of type `double`.
 pub const DoubleChoice = struct {
     name: []const u8,
+    name_localized: Omittable(?[]const u8) = .omit,
     name_localizations: Omittable(?std.json.ArrayHashMap([]const u8)) = .omit,
     value: f64,
 
