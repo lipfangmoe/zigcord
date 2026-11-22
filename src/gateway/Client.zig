@@ -16,8 +16,8 @@ token: []const u8,
 intents: model.Intents,
 json_ws_client: *JsonWSClient,
 
-oldest_reconnect: ?std.Io.Timestamp = null,
-reconnects: u5 = 0,
+oldest_recent_reconnect: ?std.Io.Timestamp = null,
+recent_reconnects: u5 = 0,
 
 const InitError = error{AuthError} || std.mem.Allocator.Error;
 
@@ -156,22 +156,23 @@ pub fn reinit(self: *Client) ReinitError!void {
 }
 
 fn reconnect(self: *Client) !void {
-    self.reconnects += 1;
-    if (self.oldest_reconnect) |oldest| {
+    if (self.oldest_recent_reconnect) |oldest| {
         const now = std.Io.Clock.awake.now(self.io);
         if (oldest.durationTo(now).toSeconds() > 60) {
-            self.oldest_reconnect = now;
-            self.reconnects = 0;
+            self.oldest_recent_reconnect = now;
+            self.recent_reconnects = 0;
         }
     } else {
         const now = std.Io.Clock.awake.now(self.io);
-        self.oldest_reconnect = now;
+        self.oldest_recent_reconnect = now;
+        self.recent_reconnects = 0;
     }
 
-    if (self.reconnects > 5) {
+    if (self.recent_reconnects > 5) {
         return error.TooManyReconnects;
     }
 
+    self.recent_reconnects += 1;
     try self.reinit();
     logger.debug("reconnected!", .{});
 }
