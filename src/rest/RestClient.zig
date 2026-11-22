@@ -458,8 +458,8 @@ pub fn Result(T: type) type {
 
         pub fn format(self: @This(), writer: *std.Io.Writer) !void {
             switch (self.value) {
-                .ok => |ok| try writer.print(if (@hasDecl(T, "format")) "{f}" else "{}", .{ok}),
-                .discord_err => |err| try writer.print("{f}", err),
+                .ok => |ok| if (T == void) try writer.writeAll("(void)") else if (T == RawBody) try writer.print("{q}", .{ok.body}) else try writer.print("{qf}", .{std.json.fmt(ok, .{})}),
+                .discord_err => |err| try writer.print("{f}", .{err}),
                 .json_err => try writer.print("{f}", .{std.json.fmt(self.raw, .{})}),
             }
         }
@@ -501,6 +501,39 @@ pub fn Result(T: type) type {
                 self.gpa.destroy(arena);
             }
         }
+
+        test "ref all decls" {
+            std.testing.refAllDecls(@This());
+        }
+    };
+}
+
+fn isContainer(comptime T: type) bool {
+    return switch (@typeInfo(T)) {
+        .@"struct", .@"enum", .@"union" => true,
+        .type,
+        .void,
+        .bool,
+        .noreturn,
+        .int,
+        .float,
+        .pointer,
+        .array,
+        .comptime_float,
+        .comptime_int,
+        .undefined,
+        .null,
+        .optional,
+        .error_union,
+        .error_set,
+        .@"fn",
+        .@"opaque",
+        .frame,
+        .@"anyframe",
+        .vector,
+        .enum_literal,
+        .spirv,
+        => false,
     };
 }
 
