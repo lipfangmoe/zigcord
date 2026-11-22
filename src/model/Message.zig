@@ -146,34 +146,33 @@ pub const Partial = struct {
             else => return error.UnexpectedToken,
         };
 
-        const author: MessageAuthor = blk: {
+        var message: Message.Partial = .{};
+        if (object.get("author")) |author| {
             if (object.get("webhook_id")) |_| {
-                break :blk .{ .webhook = try std.json.innerParseFromValue(MessageAuthor.WebhookAuthor, alloc, object.get("author") orelse return error.MissingField, options) };
+                message.author = .{ .webhook = try std.json.innerParseFromValue(MessageAuthor.WebhookAuthor, alloc, author, options) };
             } else {
-                break :blk .{ .user = try std.json.innerParseFromValue(model.User, alloc, object.get("author") orelse return error.MissingField, options) };
+                message.author = .{ .user = try std.json.innerParseFromValue(model.User, alloc, author, options) };
             }
-        };
-
-        var message: Message.Partial = undefined;
+        }
         const message_typeinfo = @typeInfo(Message.Partial).@"struct";
-        inline for (message_typeinfo.field_names, message_typeinfo.field_types, message_typeinfo.field_attrs) |field_name, FieldType, field_attrs| {
+
+        var obj_iter = object.iterator();
+        while (obj_iter.next()) |entry| {
+            if (std.mem.eql(u8, entry.key_ptr.*, "author")) {
+                continue;
+            }
+        }
+
+        inline for (message_typeinfo.field_names, message_typeinfo.field_types) |field_name, FieldType| {
             if (comptime std.mem.eql(u8, field_name, "author")) {
-                @field(message, "author") = author;
-            } else {
-                if (object.get(field_name)) |field_value| {
-                    @field(message, field_name) = std.json.innerParseFromValue(FieldType, alloc, field_value, options) catch |err| {
-                        logger.err("json parsing error while parsing Message field \"{s}\": {}", .{ field_name, err });
-                        return err;
-                    };
-                } else {
-                    const default_opt: ?*const FieldType = @ptrCast(@alignCast(field_attrs.default_value_ptr));
-                    if (default_opt) |default| {
-                        @field(message, field_name) = default.*;
-                    } else {
-                        logger.err("Missing field: {s}", .{field_name});
-                        return error.MissingField;
-                    }
-                }
+                continue;
+            }
+
+            if (object.get(field_name)) |field_value| {
+                @field(message, field_name) = std.json.innerParseFromValue(FieldType, alloc, field_value, options) catch |err| {
+                    logger.err("json parsing error while parsing Message field \"{s}\": {}", .{ field_name, err });
+                    return err;
+                };
             }
         }
         return message;
@@ -535,4 +534,10 @@ test "embeds 2" {
     const input = @embedFile("./test/message_embeds.test.json");
 
     try jconfig.testing.expectParsedSuccessfully([]const Embed, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
+}
+
+test "snapshot" {
+    const input = @embedFile("./test/message_snapshot.test.json");
+
+    try jconfig.testing.expectParsedSuccessfully(Message, std.testing.allocator, input, .{ .ignore_unknown_fields = true });
 }
