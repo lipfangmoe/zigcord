@@ -4,6 +4,10 @@ this unreleased version contains major breaking changes
 
 * **major breaking change**: RestResult (the container returned from EndpointClient/RestClient calls) has been refactored
   * refactored from a discriminated union to a struct
+  * migration
+    * `switch (result)` -> use `result` directly
+    * `result.ok.value` -> `result.value.ok`
+    * `switch (result.value())` -> `switch (result.value)`
   * new field: `raw: std.json.Value`
     * this new field contains the raw json value that Discord returned
     * allows callers to use undocumented fields that zigcord doesn't parse
@@ -11,12 +15,12 @@ this unreleased version contains major breaking changes
     * `.ok` (unchanged)
     * `.discord_err` (renamed from `.err`)
     * `.json_err` (new) - this field is active when discord returns a response that zigcord cannot understand
-      * in combination with the new `raw` field, unblocks callers by allowing them to use `result.raw` until we fix our library!
+      * in combination with the new `raw` field, unblocks callers by allowing `result.raw` while the type is fixed!
       * please file an issue with zigcord upon seeing this error, and include the json string you received
 * **minor breaking change**: fixed `Ready.PartialApplication` to have omittable/nullable flags
 * added `flags_new` to `Ready.PartialApplication`
 * added `channel_position_update` and `role_position_update` audit log entry types
-* more-strongly typed audit log entry changes, the changes themselves are still a `std.json.Value` that the caller should parse themselves
+* **minor breaking change**: more-strongly typed audit log entry changes, the changes themselves are still a `std.json.Value` that the caller should parse themselves
 * fixed `listGuildMembers` and `searchGuildMembers` to return lists of members
 * added `getGuildMemberPermissions`, `getGuildRolePermissions`, `getChannelMemberPermissions`, and `getChannelRolePermissions` to EndpointClient to support [new endpoints](https://docs.discord.com/developers/change-log#new-endpoints-for-getting-member-and-role-permissions-for-guilds-and-channels)
 * added support for `name_localized` and `description_localized` fields being added to interactions when listing commands without explicitly asking for localizations
