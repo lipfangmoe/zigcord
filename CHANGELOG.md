@@ -28,6 +28,7 @@ this unreleased version contains major breaking changes
 * new testing infrastructure added to `zigcord.rest.testing.TestServer`, allowing the creation of a stubbed testing environment
   * see `zigcord.rest.RestClient` tests for examples
 * RawBody never worked correctly, it should work correctly now.
+* Unfurled Media Items inside of Media Gallery components should now be correctly persisted when updating messages
 
 # v0.16.0
 
