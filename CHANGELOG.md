@@ -1,6 +1,6 @@
-# pending changes
+# v0.17.0
 
-this unreleased version contains major breaking changes
+this version contains major breaking changes
 
 * **major breaking change**: RestResult (the container returned from EndpointClient/RestClient calls) has been refactored
   * refactored from a discriminated union to a struct
@@ -18,6 +18,7 @@ this unreleased version contains major breaking changes
       * in combination with the new `raw` field, unblocks callers by allowing `result.raw` while the type is fixed!
       * please file an issue with zigcord upon seeing this error, and include the json string you received
 * on a similar vein, `GatewayClient.readEvent()` now returns an arena and a `std.json.Value` so that you can read the raw json, similar to the RestResult changes.
+* **minor breaking change**: `GatewayClient.readEvent()`'s error set now includes `error.OutOfMemory`
 * **minor breaking change**: fixed `Ready.PartialApplication` to have omittable/nullable flags
 * added `flags_new` to `Ready.PartialApplication`
 * added `channel_position_update` and `role_position_update` audit log entry types
