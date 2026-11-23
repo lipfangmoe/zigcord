@@ -959,6 +959,8 @@ pub const UnfurledMediaItem = struct {
     flags: ?Flags = null,
     content_scan_metadata: ?ContentScanMetadata = null,
     attachment_id: ?model.Snowflake = null,
+    /// undocumented property, sometimes required for maintaining referential integrity when updating existing messages
+    id: ?model.Snowflake = null,
 
     pub const jsonStringify = jconfig.stringifyWithOmit;
 
