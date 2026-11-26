@@ -1,3 +1,10 @@
+# untagged changes (0.17.1)
+
+this version contains minor breaking changes
+
+* **minor breaking change**: the new "audio" embed type has been added ([audio link previews](https://docs.discord.com/developers/change-log#audio-link-previews))
+* **minor breaking change**: in accordance with the discord documentation, the "Media" has been renamed/duplicated as "Image" and "Video" (despite the structs being identical)
+
 # v0.17.0
 
 this version contains major breaking changes

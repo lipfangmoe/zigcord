@@ -251,9 +251,10 @@ pub const Embed = struct {
     timestamp: ?model.IsoTime = null,
     color: ?i64 = null,
     footer: ?Footer = null,
-    image: ?Media = null,
-    thumbnail: ?Media = null,
-    video: ?Media = null,
+    image: ?Image = null,
+    thumbnail: ?Image = null,
+    video: ?Video = null,
+    audio: ?Audio = null,
     provider: ?Provider = null,
     author: ?Author = null,
     fields: ?[]const Field = null,
@@ -284,11 +285,52 @@ pub const Embed = struct {
         pub const jsonStringify = jconfig.stringifyWithOmit;
     };
 
-    pub const Media = struct {
+    pub const Video = struct {
         url: ?[]const u8 = null,
         proxy_url: ?[]const u8 = null,
         height: ?i64 = null,
         width: ?i64 = null,
+        content_type: ?[]const u8 = null,
+        placeholder: ?[]const u8 = null,
+        placeholder_version: ?[]const u8 = null,
+        description: ?[]const u8 = null,
+        flags: ?MediaFlags = null,
+
+        pub const jsonStringify = jconfig.stringifyWithOmit;
+    };
+
+    pub const Image = struct {
+        url: ?[]const u8 = null,
+        proxy_url: ?[]const u8 = null,
+        height: ?i64 = null,
+        width: ?i64 = null,
+        content_type: ?[]const u8 = null,
+        placeholder: ?[]const u8 = null,
+        placeholder_version: ?[]const u8 = null,
+        description: ?[]const u8 = null,
+        flags: ?MediaFlags = null,
+
+        pub const jsonStringify = jconfig.stringifyWithOmit;
+    };
+
+    pub const MediaFlags = packed struct(u64) {
+        _unused: u4 = 0,
+        is_animated: bool = false,
+        _unused2: u59 = 0,
+
+        const Mixin = model.PackedFlagsMixin(@This());
+        pub const format = Mixin.format;
+        pub const formatNumber = Mixin.formatNumber;
+        pub const jsonParse = Mixin.jsonParse;
+        pub const jsonParseFromValue = Mixin.jsonParseFromValue;
+        pub const jsonStringify = Mixin.jsonStringify;
+    };
+
+    pub const Audio = struct {
+        url: ?[]const u8 = null,
+        proxy_url: ?[]const u8 = null,
+        content_type: ?[]const u8 = null,
+        description: ?[]const u8 = null,
 
         pub const jsonStringify = jconfig.stringifyWithOmit;
     };
