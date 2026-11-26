@@ -14,13 +14,9 @@ pub fn getGuild(
     guild_id: model.Snowflake,
     with_counts: ?bool,
 ) !Result(Guild) {
-    const Query = struct {
-        with_counts: ?bool,
-
-        pub const format = query_strings.formatAsQueryString;
-    };
-    const query = Query{ .with_counts = with_counts };
-    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}?{f}", .{ guild_id, query });
+    const Query = struct { with_counts: ?bool };
+    const query: Query = .{ .with_counts = with_counts };
+    const uri_str = try allocDiscordUriStr(client.rest_client.allocator, "/guilds/{f}?{f}", .{ guild_id, query_strings.fmt(query) });
     defer client.rest_client.allocator.free(uri_str);
     const uri = try std.Uri.parse(uri_str);
 
