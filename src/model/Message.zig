@@ -266,6 +266,7 @@ pub const Embed = struct {
         rich,
         image,
         video,
+        audio,
         gifv,
         article,
         link,
