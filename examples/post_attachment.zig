@@ -29,11 +29,10 @@ pub fn main(init: std.process.Init) !void {
 
     const postattachment_id = try registerPostAttachmentCommand(app_id, &endpoint_client);
 
-    while (true) {
-        const event = try gateway_client.readEvent();
+    while (gateway_client.nextEvent()) |event| {
         defer event.deinit();
 
-        switch (event.event orelse continue) {
+        switch (event.data) {
             .interaction_create => |interaction| {
                 switch (interaction.data orelse continue) {
                     .application_command => |cmd| {

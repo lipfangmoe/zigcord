@@ -1,9 +1,12 @@
-# untagged changes (0.17.1)
+# main (pending changes)
 
-this version contains minor breaking changes
+this version contains a minor breaking change that affects everyone, but is extremely easy to fix
 
+* **kinda-minor breaking change**: renamed: `GatewayClient.ReadEvent.event` to `.data`, and changed it's type to no longer be nullable
+  * the type was nullable because the documentation stated `.d` is nullable, but that's just because some events return null, which we already have typed correctly.
 * **minor breaking change**: the new "audio" embed type has been added ([audio link previews](https://docs.discord.com/developers/change-log#audio-link-previews))
-* **minor breaking change**: in accordance with the discord documentation, the "Media" has been renamed/duplicated as "Image" and "Video" (despite the structs being identical)
+* **minor breaking change**: in accordance with the discord documentation, the "Media" has been renamed/duplicated as "Image" and "Video" (despite the structs being * added new `nextEvent()` function, which is a logging+opinionated version of `readEvent` which continues on non-critical errors and returns null on critical errors
+  * this allows callers to simply use `while (gateway.nextEvent()) |event| { ... }` instead of `while (true) { gateway.readEvent() catch |err| switch (err) { ... }; ... }`
 
 # v0.17.0
 
@@ -24,7 +27,7 @@ this version contains major breaking changes
     * `.json_err` (new) - this field is active when discord returns a response that zigcord cannot understand
       * in combination with the new `raw` field, unblocks callers by allowing `result.raw` while the type is fixed!
       * please file an issue with zigcord upon seeing this error, and include the json string you received
-* on a similar vein, `GatewayClient.readEvent()` now returns an arena and a `std.json.Value` so that you can read the raw json, similar to the RestResult changes.
+* on a similar vein, `GatewayClient.ReadEvent` now contains an arena and a `std.json.Value` so that you can read the raw json, similar to the RestResult changes.
 * **minor breaking change**: `GatewayClient.readEvent()`'s error set now includes `error.OutOfMemory`
 * **minor breaking change**: fixed `Ready.PartialApplication` to have omittable/nullable flags
 * added `flags_new` to `Ready.PartialApplication`

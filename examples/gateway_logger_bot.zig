@@ -18,11 +18,10 @@ pub fn main(init: std.process.Init) !void {
     defer gateway_client.deinit();
     std.log.info("authenticated as user {f}", .{gateway_client.json_ws_client.ready_event.?.event.user.id});
 
-    while (true) {
-        const event = try gateway_client.readEvent();
+    while (gateway_client.nextEvent()) |event| {
         defer event.deinit();
 
-        switch (event.event orelse continue) {
+        switch (event.data) {
             .message_create => |msg_event| {
                 if (std.mem.eql(u8, msg_event.message.content, "send error")) {
                     return error.UserRestart;

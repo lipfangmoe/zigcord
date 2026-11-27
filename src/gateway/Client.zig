@@ -48,7 +48,7 @@ pub fn getReadyEvent(self: Client) event_data.receive_events.Ready {
 pub const ReadEvent = struct {
     arena: *std.heap.ArenaAllocator,
     raw: std.json.Value,
-    event: ?event_data.ReceiveEventData,
+    data: event_data.ReceiveEventData,
 
     pub fn deinit(self: ReadEvent) void {
         const gpa = self.arena.child_allocator;
@@ -121,8 +121,26 @@ pub fn readEvent(self: *Client) error{ OutOfMemory, Canceled, Disconnected, Json
     return .{
         .arena = json_parsed_value.arena,
         .raw = json_parsed_value.raw,
-        .event = json_parsed_value.value.d,
+        .data = json_parsed_value.value.d,
     };
+}
+
+/// Easier-to-use version of `readEvent` which logs for non-critical errors, and logs + returns null for critical errors.
+pub fn nextEvent(self: *Client) ?ReadEvent {
+    while (true) {
+        const event = self.readEvent() catch |err| switch (err) {
+            error.JsonError, error.ResponseTooLong => {
+                logger.warn("recieved an invalid response from discord {}", .{err});
+                continue;
+            },
+            error.OutOfMemory, error.Disconnected, error.Canceled => {
+                logger.err("{}", .{err});
+                return null;
+            },
+        };
+
+        return event;
+    }
 }
 
 /// Sends an event over the gateway. This functionality is rarely needed, you may be looking for REST API (located under `zigcord.rest`).
